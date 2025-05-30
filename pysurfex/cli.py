@@ -1,11 +1,11 @@
 """Command line interfaces."""
+import contextlib
 import json
 import logging
 import os
 import sys
 
 import numpy as np
-import toml
 import yaml
 
 try:
@@ -15,13 +15,6 @@ except ModuleNotFoundError:
 
 
 from .binary_input import JsonOutputDataFromFile
-from .binary_input_legacy import (
-    InlineForecastInputData,
-    OfflineInputData,
-    PgdInputData,
-    PrepInputData,
-    SodaInputData,
-)
 from .cache import Cache
 from .cmd_parsing import (
     parse_args_bufr2json,
@@ -30,14 +23,11 @@ from .cmd_parsing import (
     parse_args_dump_environ,
     parse_args_first_guess_for_oi,
     parse_args_gridpp,
-    parse_args_hm2pysurfex,
     parse_args_lsm_file_assim,
-    parse_args_masterodb,
     parse_args_merge_qc_data,
     parse_args_modify_forcing,
     parse_args_obs2json,
     parse_args_oi2soda,
-    parse_args_plot_field,
     parse_args_plot_points,
     parse_args_qc2obsmon,
     parse_args_set_geo_from_obs_set,
@@ -49,30 +39,25 @@ from .cmd_parsing import (
     parse_sentinel_obs,
     parse_set_domain,
 )
-from .configuration import (
-    ConfigurationFromHarmonieAndConfigFile,
-    ConfigurationFromTomlFile,
-)
-from .datetime_utils import as_datetime, as_datetime_args, as_timedelta
+from .datetime_utils import as_datetime, as_datetime_args, as_timedelta, get_decade
 from .file import PGDFile, PREPFile, SURFFile
 from .forcing import modify_forcing, run_time_loop, set_forcing_config
-from .geo import LonLatVal, get_geo_object, set_domain, shape2ign
+from .geo import ConfProjFromHarmonie, LonLatVal, get_geo_object, shape2ign
 from .input_methods import create_obsset_file, get_datasources, set_geo_from_obs_set
 from .interpolation import horizontal_oi
-from .namelist import NamelistGenerator
-from .namelist_legacy import BaseNamelist, Namelist
+from .namelist import NamelistGeneratorAssemble, NamelistGeneratorFromNamelistFile
 from .netcdf import (
     create_netcdf_first_guess_template,
     oi2soda,
     read_first_guess_netcdf_file,
     write_analysis_netcdf_file,
 )
-from .obs import Observation
+from .obs import StationList
 from .obsmon import write_obsmon_sqlite_file
 from .platform_deps import SystemFilePathsFromFile
 from .pseudoobs import CryoclimObservationSet, SentinelObservationSet
-from .read import ConvertedInput, Converter
-from .run import BatchJob, Masterodb, PerturbedOffline, SURFEXBinary
+from .read import ConvertedInput, Converter, get_multi_converters
+from .run import BatchJob, PerturbedOffline, SURFEXBinary
 from .titan import (
     TitanDataSet,
     dataset_from_file,
@@ -82,391 +67,20 @@ from .titan import (
 from .variable import Variable
 
 
-def get_geo_and_config_from_cmd(**kwargs):
-    """Get geo and config from cmd."""
-    if "harmonie" in kwargs and kwargs["harmonie"]:
-        config_exp = None
-        if "config_exp" in kwargs:
-            if kwargs["config_exp"] is not None:
-                config_exp = kwargs["config_exp"]
-        if config_exp is None:
-            config_exp = (
-                f"{os.path.abspath(os.path.dirname(__file__))}/cfg/config_exp_surfex.toml"
-            )
-        logging.info("Using default config from: %s", config_exp)
-        config = ConfigurationFromHarmonieAndConfigFile(os.environ, config_exp)
-        geo = config.geo
-    else:
-        if "domain" in kwargs:
-            domain = kwargs["domain"]
-            if os.path.exists(domain):
-                with open(domain, mode="r", encoding="utf-8") as fhandler:
-                    geo = get_geo_object(json.load(fhandler))
-            else:
-                raise FileNotFoundError(domain)
-        else:
-            geo = None
-
-        if "config" in kwargs:
-            config = kwargs["config"]
-            if os.path.exists(config):
-                config = ConfigurationFromTomlFile(config)
-            else:
-                raise FileNotFoundError("File not found: " + config)
-        else:
-            config = None
-    return config, geo
-
-
-def run_first_guess_for_oi(**kwargs):
-    """Run first guess for oi."""
-    config, geo = get_geo_and_config_from_cmd(**kwargs)
-
-    config_file = kwargs["input_config"]
-    if not os.path.exists(config_file):
-        raise FileNotFoundError(config_file)
-
-    if "output" in kwargs:
-        output = kwargs["output"]
-    else:
-        raise RuntimeError("No output file provided")
-
-    dtg = kwargs["dtg"]
-    validtime = as_datetime(dtg)
-    variables = kwargs["variables"]
-    variables = variables + ["altitude", "land_area_fraction"]
-
-    cache = Cache(3600)
-    f_g = None
-    for var in variables:
-        inputfile = kwargs.get("inputfile")
-        fileformat = kwargs.get("inputformat")
-        logging.debug("inputfile: %s", inputfile)
-        logging.debug("fileformat: %s", fileformat)
-
-        converter = "none"
-        if var == "air_temperature_2m":
-            if "t2m_file" in kwargs and kwargs["t2m_file"] is not None:
-                inputfile = kwargs["t2m_file"]
-            if "t2m_format" in kwargs and kwargs["t2m_format"] is not None:
-                fileformat = kwargs["t2m_format"]
-            if "t2m_converter" in kwargs and kwargs["t2m_converter"] is not None:
-                converter = kwargs["t2m_converter"]
-        elif var == "relative_humidity_2m":
-            if "rh2m_file" in kwargs and kwargs["rh2m_file"] is not None:
-                inputfile = kwargs["rh2m_file"]
-            if "rh2m_format" in kwargs and kwargs["rh2m_format"] is not None:
-                fileformat = kwargs["rh2m_format"]
-            if "rh2m_converter" in kwargs and kwargs["rh2m_converter"] is not None:
-                converter = kwargs["rh2m_converter"]
-        elif var == "surface_snow_thickness":
-            if "sd_file" in kwargs and kwargs["sd_file"] is not None:
-                inputfile = kwargs["sd_file"]
-            if "sd_format" in kwargs and kwargs["sd_format"] is not None:
-                fileformat = kwargs["sd_format"]
-            if "sd_converter" in kwargs and kwargs["sd_converter"] is not None:
-                converter = kwargs["sd_converter"]
-        elif var == "sea_ice_thickness":
-            if "icetk_file" in kwargs and kwargs["icetk_file"] is not None:
-                inputfile = kwargs["icetk_file"]
-            if "icetk_format" in kwargs and kwargs["icetk_format"] is not None:
-                fileformat = kwargs["icetk_format"]
-            if "icetk_converter" in kwargs and kwargs["icetk_converter"] is not None:
-                converter = kwargs["icetk_converter"]
-        elif var == "cloud_base":
-            if "cb_file" in kwargs and kwargs["cb_file"] is not None:
-                inputfile = kwargs["cb_file"]
-            if "cb_format" in kwargs and kwargs["cb_format"] is not None:
-                fileformat = kwargs["cb_format"]
-            if "cb_converter" in kwargs and kwargs["cb_converter"] is not None:
-                converter = kwargs["cb_converter"]
-        elif var == "surface_soil_moisture":
-            if "sm_file" in kwargs and kwargs["sm_file"] is not None:
-                inputfile = kwargs["sm_file"]
-            if "sm_format" in kwargs and kwargs["sm_format"] is not None:
-                fileformat = kwargs["sm_format"]
-            if "sm_converter" in kwargs and kwargs["sm_converter"] is not None:
-                converter = kwargs["sm_converter"]
-        elif var == "altitude":
-            if "altitude_file" in kwargs and kwargs["altitude_file"] is not None:
-                inputfile = kwargs["altitude_file"]
-            if "altitude_format" in kwargs and kwargs["altitude_format"] is not None:
-                fileformat = kwargs["altitude_format"]
-            if (
-                "altitude_converter" in kwargs
-                and kwargs["altitude_converter"] is not None
-            ):
-                converter = kwargs["altitude_converter"]
-        elif var == "land_area_fraction":
-            if "laf_file" in kwargs and kwargs["laf_file"] is not None:
-                inputfile = kwargs["laf_file"]
-            if "laf_format" in kwargs and kwargs["laf_format"] is not None:
-                fileformat = kwargs["laf_format"]
-            if "laf_converter" in kwargs and kwargs["laf_converter"] is not None:
-                converter = kwargs["laf_converter"]
-        else:
-            raise NotImplementedError("Variable not implemented " + var)
-
-        if inputfile is None:
-            raise RuntimeError("You must set input file")
-
-        if fileformat is None:
-            raise RuntimeError("You must set file format")
-
-        logging.debug(inputfile)
-        logging.debug(fileformat)
-        logging.debug(converter)
-        config = yaml.safe_load(open(config_file, "r", encoding="utf-8"))
-        defs = config[fileformat]
-        defs.update({"filepattern": inputfile})
-
-        logging.debug("Variable: %s", var)
-        logging.debug("Fileformat: %s", fileformat)
-        converter_conf = config[var][fileformat]["converter"]
-        if converter not in config[var][fileformat]["converter"]:
-            logging.debug("config_file: %s", config_file)
-            logging.debug("config: %s", config)
-            raise RuntimeError(f"No converter {converter} definition found in {config}!")
-
-        initial_basetime = validtime - as_timedelta(seconds=10800)
-        converter = Converter(
-            converter, initial_basetime, defs, converter_conf, fileformat
-        )
-        field = ConvertedInput(geo, var, converter).read_time_step(validtime, cache)
-        field = np.reshape(field, [geo.nlons, geo.nlats])
-
-        # Create file
-        if f_g is None:
-            n_x = geo.nlons
-            n_y = geo.nlats
-            f_g = create_netcdf_first_guess_template(variables, n_x, n_y, output, geo=geo)
-            epoch = float(
-                (validtime - as_datetime_args(year=1970, month=1, day=1)).total_seconds()
-            )
-            f_g.variables["time"][:] = epoch
-            f_g.variables["longitude"][:] = np.transpose(geo.lons)
-            f_g.variables["latitude"][:] = np.transpose(geo.lats)
-            f_g.variables["x"][:] = list(range(0, n_x))
-            f_g.variables["y"][:] = list(range(0, n_y))
-
-        if var == "altitude":
-            field[field < 0] = 0
-
-        if np.isnan(np.sum(field)):
-            fill_nan_value = f_g.variables[var].getncattr("_FillValue")
-            logging.info("Field %s got Nan. Fill with: %s", var, str(fill_nan_value))
-            field[np.where(np.isnan(field))] = fill_nan_value
-
-        f_g.variables[var][:] = np.transpose(field)
-
-    if f_g is not None:
-        f_g.close()
-
-
-def run_masterodb(**kwargs):
-    """Run masterodb."""
-    logging.debug("ARGS: %s", kwargs)
-    config, geo = get_geo_and_config_from_cmd(**kwargs)
-
-    if "config" in kwargs:
-        del kwargs["config"]
-
-    system_file_paths = kwargs["system_file_paths"]
-    if os.path.exists(system_file_paths):
-        system_file_paths = SystemFilePathsFromFile(system_file_paths)
-    else:
-        raise FileNotFoundError("File not found: " + system_file_paths)
-    del kwargs["system_file_paths"]
-
-    binary = kwargs["binary"]
-    rte = kwargs["rte"]
-    wrapper = kwargs["wrapper"]
-    namelist_path = kwargs["namelist_path"]
-    force = kwargs["force"]
-    mode = kwargs["mode"]
-    output = kwargs["output"]
-    archive = kwargs["archive"]
-    only_archive = kwargs["only_archive"]
-    print_namelist = kwargs["print_namelist"]
-    try:
-        consistency = kwargs["no_consistency"]
-        if consistency:
-            consistency = False
-    except KeyError:
-        consistency = True
-    try:
-        assemble = kwargs["assemble_file"]
-    except KeyError:
-        assemble = None
-
-    check_existence = True
-    if "tolerate_missing" in kwargs:
-        if kwargs["tolerate_missing"]:
-            check_existence = False
-
-    dtg = None
-    if "dtg" in kwargs:
-        if kwargs["dtg"] is not None and isinstance(kwargs["dtg"], str):
-            dtg = as_datetime(kwargs["dtg"])
-            kwargs.update({"dtg": dtg})
-        if dtg is not None:
-            config.update_setting("SURFEX#SODA#HH", f"{dtg.hour:02d}")
-    try:
-        basetime = kwargs["basetime"]
-        if isinstance(basetime, str):
-            basetime = as_datetime(basetime)
-    except KeyError:
-        basetime = None
-
-    try:
-        input_binary_data = kwargs["input_binary_data"]
-    except KeyError:
-        input_binary_data = None
-
-    # TODO
-    perturbed_file_pattern = None
-    if perturbed_file_pattern in kwargs:
-        perturbed_file_pattern = kwargs["perturbed_file_pattern"]
-
-    pgd_file_path = kwargs["pgd"]
-    prep_file_path = kwargs["prep"]
-
-    if os.path.exists(rte):
-        with open(rte, mode="r", encoding="utf-8") as file_handler:
-            rte = json.load(file_handler)
-        my_batch = BatchJob(rte, wrapper=wrapper)
-    else:
-        raise FileNotFoundError
-
-    my_archive = None
-    if archive is not None:
-        if os.path.exists(archive):
-            my_archive = JsonOutputDataFromFile(archive)
-        else:
-            raise FileNotFoundError
-
-    if mode == "forecast":
-        mode = "offline"
-    elif mode == "canari":
-        mode = "soda"
-    else:
-        raise NotImplementedError(mode + " is not implemented!")
-
-    if os.path.isfile(namelist_path):
-        with open(namelist_path, mode="r", encoding="utf-8") as file_handler:
-            nam_defs = yaml.safe_load(file_handler)
-        if assemble is not None:
-            with open(assemble, mode="r", encoding="utf8") as fh:
-                assemble = json.load(fh)
-        nam_gen = NamelistGenerator(
-            mode, config, nam_defs, assemble=assemble, consistency=consistency
-        )
-        my_settings = nam_gen.nml
-        if input_binary_data is None:
-            raise RuntimeError("input_binary_data not set")
-        with open(input_binary_data, mode="r", encoding="utf-8") as file_handler:
-            input_binary_data = json.load(file_handler)
-        input_data = nam_gen.input_data_from_namelist(
-            input_binary_data, system_file_paths, validtime=dtg, basetime=basetime
-        )
-    elif os.path.isdir(namelist_path):
-        if mode == "offline":
-            input_data = InlineForecastInputData(
-                config, system_file_paths, check_existence=check_existence
-            )
-        elif mode == "soda":
-            input_data = SodaInputData(
-                config,
-                system_file_paths,
-                check_existence=check_existence,
-                perturbed_file_pattern=perturbed_file_pattern,
-                dtg=dtg,
-            )
-        else:
-            raise NotImplementedError(mode + " is not implemented!")
-
-        blocks = False
-        if blocks:
-            my_settings = Namelist(
-                mode, config, namelist_path, dtg=dtg, fcint=3
-            ).get_namelist()
-        else:
-            my_settings = BaseNamelist(
-                mode, config, namelist_path, dtg=dtg, fcint=3
-            ).get_namelist()
-        geo.update_namelist(my_settings)
-    else:
-        raise NotImplementedError
-
-    # Create input
-    my_format = my_settings["nam_io_offline"]["csurf_filetype"]
-    my_pgdfile = my_settings["nam_io_offline"]["cpgdfile"]
-    my_prepfile = my_settings["nam_io_offline"]["cprepfile"]
-    my_surffile = my_settings["nam_io_offline"]["csurffile"]
-    lfagmap = False
-    if "lfagmap" in my_settings["nam_io_offline"]:
-        lfagmap = my_settings["nam_io_offline"]["lfagmap"]
-
-    logging.debug("%s %s", my_pgdfile, lfagmap)
-    # Not run binary
-    masterodb = None
-    if not only_archive:
-        # Normal dry or wet run
-        exists = False
-        if output is not None:
-            exists = os.path.exists(output)
-        if not exists or force:
-            if binary is None:
-                my_batch = None
-
-            my_pgdfile = PGDFile(
-                my_format,
-                my_pgdfile,
-                input_file=pgd_file_path,
-                lfagmap=lfagmap,
-                masterodb=True,
-            )
-            my_prepfile = PREPFile(
-                my_format,
-                my_prepfile,
-                input_file=prep_file_path,
-                lfagmap=lfagmap,
-                masterodb=True,
-            )
-            surffile = SURFFile(
-                my_format,
-                my_surffile,
-                archive_file=output,
-                lfagmap=lfagmap,
-                masterodb=True,
-            )
-
-            masterodb = Masterodb(
-                my_pgdfile,
-                my_prepfile,
-                surffile,
-                my_settings,
-                input_data,
-                binary=binary,
-                print_namelist=print_namelist,
-                batch=my_batch,
-                archive_data=my_archive,
-            )
-
-        else:
-            logging.info("%s already exists!", output)
-
-    if archive is not None:
-        if masterodb is not None:
-            masterodb.archive_output()
-        else:
-            logging.info("Masterodb is None")
-
-
 def run_surfex_binary(mode, **kwargs):
     """Run a surfex binary."""
     logging.debug("ARGS: %s", kwargs)
-    config, geo = get_geo_and_config_from_cmd(**kwargs)
+
+    try:
+        masterodb = kwargs["masterodb"]
+    except KeyError:
+        masterodb = False
+
+    domain = kwargs.get("domain")
+    geo = None
+    if domain is not None:
+        with open(domain, mode="r", encoding="utf-8") as fhandler:
+            geo = get_geo_object(json.load(fhandler))
 
     system_file_paths = kwargs["system_file_paths"]
     if os.path.exists(system_file_paths):
@@ -477,58 +91,77 @@ def run_surfex_binary(mode, **kwargs):
     if "forcing_dir" in kwargs:
         system_file_paths.add_system_file_path("forcing_dir", kwargs["forcing_dir"])
 
-    pgd = False
-    prep = False
-    perturbed = False
+    do_pgd = False
+    do_prep = False
+    do_perturbed = False
     need_pgd = True
     need_prep = True
+    try:
+        one_decade = kwargs["one_decade"]
+    except KeyError:
+        one_decade = False
     check_existence = True
-    if "tolerate_missing" in kwargs:
-        if kwargs["tolerate_missing"]:
-            check_existence = False
+    if kwargs.get("tolerate_missing"):
+        check_existence = False
+
+    try:
+        nml_macros = kwargs["macros"]
+        if isinstance(nml_macros, str):
+            with open(nml_macros, mode="r", encoding="utf8") as fhandler:
+                nml_macros = json.load(fhandler)
+    except KeyError:
+        nml_macros = {}
 
     prep_input_file = None
     if "prep_file" in kwargs:
         prep_input_file = kwargs["prep_file"]
-    config.update_setting("SURFEX#PREP#FILE_WITH_PATH", prep_input_file)
-    basename = prep_input_file
-    if basename is not None:
-        basename = os.path.basename(basename)
-    config.update_setting("SURFEX#PREP#FILE", basename)
     prep_input_pgdfile = None
     if "prep_pgdfile" in kwargs:
         prep_input_pgdfile = kwargs["prep_pgdfile"]
-    config.update_setting("SURFEX#PREP#PGDFILE_WITH_PATH", prep_input_pgdfile)
-    basename = prep_input_pgdfile
-    if basename is not None:
-        basename = os.path.basename(basename)
-    config.update_setting("SURFEX#PREP#FILEPGD", basename)
-    prep_input_filetype = None
-    if "prep_filetype" in kwargs:
-        prep_input_filetype = kwargs["prep_filetype"]
-    config.update_setting("SURFEX#PREP#FILETYPE", prep_input_filetype)
-    prep_input_pgdfiletype = None
-    if "prep_pgdfiletype" in kwargs:
-        prep_input_pgdfiletype = kwargs["prep_pgdfiletype"]
-    config.update_setting("SURFEX#PREP#FILEPGDTYPE", prep_input_pgdfiletype)
+
+    nml_macros.update(
+        {
+            "PREP_INPUT_FILE_WITH_PATH": prep_input_file,
+            "PREP_PGD_INPUT_FILE_WITH_PATH": prep_input_pgdfile,
+        }
+    )
 
     # TODO
     perturbed_file_pattern = None
     if perturbed_file_pattern in kwargs:
         perturbed_file_pattern = kwargs["perturbed_file_pattern"]
 
-    dtg = None
-    if "dtg" in kwargs:
-        if kwargs["dtg"] is not None and isinstance(kwargs["dtg"], str):
-            dtg = as_datetime(kwargs["dtg"])
-            kwargs.update({"dtg": dtg})
-    if dtg is not None:
-        config.update_setting("SURFEX#PREP#NYEAR", dtg.year)
-        config.update_setting("SURFEX#PREP#NMONTH", dtg.month)
-        config.update_setting("SURFEX#PREP#NDAY", dtg.day)
-        xtime = (dtg - dtg.replace(hour=0, second=0, microsecond=0)).total_seconds()
-        config.update_setting("SURFEX#PREP#XTIME", xtime)
-        config.update_setting("SURFEX#SODA#HH", f"{dtg.hour:02d}")
+    basetime = None
+    if "basetime" in kwargs and kwargs["basetime"] is not None:
+        if isinstance(kwargs["basetime"], str):
+            basetime = as_datetime(kwargs["basetime"])
+            kwargs.update({"basetime": basetime})
+        else:
+            basetime = kwargs["basetime"]
+    try:
+        validtime = kwargs["validtime"]
+    except KeyError:
+        validtime = basetime
+    if basetime is not None:
+        xtime = (
+            basetime - basetime.replace(hour=0, second=0, microsecond=0)
+        ).total_seconds()
+        nml_macros.update(
+            {
+                "PREP_NYEAR": basetime.year,
+                "PREP_NMONTH": basetime.month,
+                "PREP_NDAY": basetime.day,
+                "PREP_XTIME": xtime,
+                "SODA_HH": f"{basetime.hour:02d}",
+            }
+        )
+        if one_decade:
+            nml_macros.update({"DECADE": get_decade(basetime)})
+    else:
+        if one_decade:
+            raise RuntimeError("You must set basetime with option one_decade")
+        if mode in ("prep", "soda"):
+            raise RuntimeError(f"You must set basetime when using mode {mode}")
 
     logging.debug("kwargs: %s", str(kwargs))
     binary = kwargs["binary"]
@@ -537,38 +170,30 @@ def run_surfex_binary(mode, **kwargs):
     namelist_path = kwargs["namelist_path"]
     force = kwargs["force"]
     output = kwargs["output"]
-    archive = kwargs["archive"]
-    print_namelist = kwargs["print_namelist"]
     masterodb = kwargs["masterodb"]
+    archive = kwargs["archive"]
+    only_archive = kwargs.get("only_archive", False)
+    print_namelist = kwargs["print_namelist"]
     logging.debug("masterodb %s", masterodb)
-    forc_zs = False
-    if "forc_zs" in kwargs:
-        forc_zs = kwargs["forc_zs"]
 
+    forc_zs = kwargs.get("forc_zs", False)
     try:
-        consistency = kwargs["no_consistency"]
-        if consistency:
-            consistency = False
+        assemble_file = kwargs["assemble_file"]
     except KeyError:
-        consistency = True
-    try:
-        assemble = kwargs["assemble_file"]
-    except KeyError:
-        assemble = None
+        assemble_file = None
 
     if mode == "pgd":
-        pgd = True
+        do_pgd = True
         need_pgd = False
         need_prep = False
     elif mode == "prep":
-        prep = True
+        do_prep = True
         need_prep = False
-    elif mode == "offline":
-        pass
-    elif mode == "soda":
+    elif mode in ("offline", "soda"):
         pass
     elif mode == "perturbed":
-        perturbed = True
+        do_perturbed = True
+        mode = "offline"
     else:
         raise NotImplementedError(mode + " is not implemented!")
 
@@ -599,12 +224,16 @@ def run_surfex_binary(mode, **kwargs):
     except KeyError:
         input_binary_data = None
 
-    if os.path.exists(rte):
-        with open(rte, mode="r", encoding="utf-8") as file_handler:
-            rte = json.load(file_handler)
+    # Create run time enviroment from local unless given
+    if rte is None:
+        rte = "rte.json"
+    if not os.path.exists(rte):
+        with open(rte, mode="w", encoding="utf-8") as fhandler:
+            json.dump(os.environ.copy(), fhandler)
+
+    with open(rte, mode="r", encoding="utf-8") as file_handler:
+        rte = json.load(file_handler)
         my_batch = BatchJob(rte, wrapper=wrapper)
-    else:
-        raise FileNotFoundError("File not found: " + rte)
 
     my_archive = None
     if archive is not None:
@@ -613,97 +242,77 @@ def run_surfex_binary(mode, **kwargs):
         else:
             raise FileNotFoundError("File not found: " + archive)
 
+    logging.info("nml_macros: %s", nml_macros)
     if not (output is not None and os.path.exists(output)) or force:
-        if os.path.isfile(namelist_path):
+        if assemble_file is None:
+            nam_gen = NamelistGeneratorFromNamelistFile(
+                mode, namelist_path, macros=nml_macros
+            )
+        else:
             with open(namelist_path, mode="r", encoding="utf-8") as file_handler:
                 nam_defs = yaml.safe_load(file_handler)
-            if assemble is not None:
-                with open(assemble, mode="r", encoding="utf8") as fh:
-                    assemble = json.load(fh)
-            nam_gen = NamelistGenerator(
-                mode, config, nam_defs, assemble=assemble, consistency=consistency
+            with open(assemble_file, mode="r", encoding="utf8") as file_handler:
+                assemble = yaml.safe_load(file_handler)
+            nam_gen = NamelistGeneratorAssemble(
+                mode, nam_defs, assemble, macros=nml_macros
             )
 
-            my_settings = nam_gen.nml
-            if mode == "pgd":
-                my_settings = geo.update_namelist(my_settings)
-            if input_binary_data is None:
-                raise RuntimeError("input_binary_data not set")
-            with open(input_binary_data, mode="r", encoding="utf-8") as file_handler:
-                input_binary_data = json.load(file_handler)
+        if mode == "pgd":
+            nam_gen = geo.update_namelist(nam_gen)
+        my_settings = nam_gen.get_namelist()
+        if mode == "pgd" and one_decade:
+            try:
+                ntime = my_settings["nam_data_isba"]["ntime"]
+                if ntime != 1:
+                    logging.warning(
+                        "Overriding value %s nam_data_isba#ntime and setting it 1",
+                        "because of one_decade=True",
+                    )
+                    my_settings["nam_data_isba"]["ntime"] = 1
+            except KeyError:
+                raise RuntimeError from KeyError
+        if forc_zs:
+            try:
+                val = my_settings["nam_io_offline"]["lset_forc_zs"]
+            except KeyError:
+                val = False
+            if not val:
+                logging.warning("Override lset_forc_zs with value True")
+            my_settings["nam_io_offline"]["lset_forc_zs"] = True
+        with contextlib.suppress(KeyError):
+            my_settings["nam_io_offline"]["xtstep_output"] = kwargs["output_frequency"]
 
-            input_data = nam_gen.input_data_from_namelist(
-                input_binary_data, system_file_paths, validtime=dtg, basetime=basetime
-            )
-        elif os.path.isdir(namelist_path):
-            if mode == "pgd":
-                pgd = True
-                need_pgd = False
-                need_prep = False
-                input_data = PgdInputData(
-                    config, system_file_paths, check_existence=check_existence
-                )
-            elif mode == "prep":
-                prep = True
-                need_prep = False
-                input_data = PrepInputData(
-                    config,
-                    system_file_paths,
-                    check_existence=check_existence,
-                    prep_file=prep_input_file,
-                    prep_pgdfile=prep_input_pgdfile,
-                )
-            elif mode == "offline":
-                input_data = OfflineInputData(
-                    config, system_file_paths, check_existence=check_existence
-                )
-            elif mode == "soda":
-                input_data = SodaInputData(
-                    config,
-                    system_file_paths,
-                    check_existence=check_existence,
-                    masterodb=kwargs["masterodb"],
-                    perturbed_file_pattern=perturbed_file_pattern,
-                    dtg=dtg,
-                )
-            elif mode == "perturbed":
-                perturbed = True
-                input_data = OfflineInputData(
-                    config, system_file_paths, check_existence=check_existence
-                )
-            else:
-                raise NotImplementedError(mode + " is not implemented!")
+        with contextlib.suppress(KeyError):
+            my_settings["nam_var"]["nvar"] = sum(my_settings["nam_var"]["nncv"])
 
-            blocks = False
-            if blocks:
-                my_settings = Namelist(
-                    mode,
-                    config,
-                    namelist_path,
-                    forc_zs=forc_zs,
-                    prep_file=prep_input_file,
-                    prep_filetype=prep_input_filetype,
-                    prep_pgdfile=prep_input_pgdfile,
-                    prep_pgdfiletype=prep_input_pgdfiletype,
-                    dtg=dtg,
-                    fcint=3,
-                ).get_namelist()
-            else:
-                my_settings = BaseNamelist(
-                    mode,
-                    config,
-                    namelist_path,
-                    forc_zs=forc_zs,
-                    prep_file=prep_input_file,
-                    prep_filetype=prep_input_filetype,
-                    prep_pgdfile=prep_input_pgdfile,
-                    prep_pgdfiletype=prep_input_pgdfiletype,
-                    dtg=dtg,
-                    fcint=3,
-                ).get_namelist()
-            geo.update_namelist(my_settings)
-        else:
-            raise NotImplementedError
+        try:
+            nnco = my_settings["nam_obs"]["nnco"]
+        except KeyError:
+            nnco = None
+        if nnco is not None:
+            nobstype = nnco if isinstance(nnco, int) else int(sum(nnco))
+            try:
+                nobstype_old = my_settings["nam_obs"]["nobstype"]
+            except KeyError:
+                nobstype_old = None
+            if nobstype_old is not None and nobstype_old != nobstype:
+                logging.warning(
+                    "Mismatch in nobstype. Override %s with: %s", nobstype_old, nobstype
+                )
+            my_settings["nam_obs"]["nobstype"] = nobstype
+
+        if input_binary_data is None:
+            raise RuntimeError("input_binary_data not set")
+        with open(input_binary_data, mode="r", encoding="utf-8") as file_handler:
+            input_binary_data = json.load(file_handler)
+
+        input_data = nam_gen.input_data_from_namelist(
+            input_binary_data,
+            system_file_paths,
+            validtime=validtime,
+            basetime=basetime,
+            check_existence=check_existence,
+        )
 
         # Create input
         my_format = my_settings["nam_io_offline"]["csurf_filetype"]
@@ -716,100 +325,101 @@ def run_surfex_binary(mode, **kwargs):
 
         logging.debug("pgdfile=%s lfagmap=%s %s", my_pgdfile, lfagmap, pgd_file_path)
         logging.debug("nam_io_offline=%s", my_settings["nam_io_offline"])
-        if need_pgd:
-            logging.debug("Need pgd")
-            my_pgdfile = PGDFile(
-                my_format,
-                my_pgdfile,
-                input_file=pgd_file_path,
-                lfagmap=lfagmap,
-                masterodb=masterodb,
-            )
 
-        if need_prep:
-            logging.debug("Need prep")
-            my_prepfile = PREPFile(
-                my_format,
-                my_prepfile,
-                input_file=prep_file_path,
-                lfagmap=lfagmap,
-                masterodb=masterodb,
-            )
+        if not only_archive:
+            if need_pgd:
+                logging.debug("Need pgd")
+                my_pgdfile = PGDFile(
+                    my_format,
+                    my_pgdfile,
+                    input_file=pgd_file_path,
+                    lfagmap=lfagmap,
+                    masterodb=masterodb,
+                )
 
-        surffile = None
-        if need_prep and need_pgd:
-            logging.debug("Need pgd and prep")
-            surffile = SURFFile(
-                my_format,
-                my_surffile,
-                archive_file=output,
-                lfagmap=lfagmap,
-                masterodb=masterodb,
-            )
+            if need_prep:
+                logging.debug("Need prep")
+                my_prepfile = PREPFile(
+                    my_format,
+                    my_prepfile,
+                    input_file=prep_file_path,
+                    lfagmap=lfagmap,
+                    masterodb=masterodb,
+                )
 
-        if perturbed:
-            PerturbedOffline(
-                binary,
-                my_batch,
-                my_prepfile,
-                pert,
-                my_settings,
-                input_data,
-                pgdfile=my_pgdfile,
-                surfout=surffile,
-                archive_data=my_archive,
-                print_namelist=print_namelist,
-                negpert=negpert,
-            )
-        elif pgd:
-            my_pgdfile = PGDFile(
-                my_format,
-                my_pgdfile,
-                input_file=pgd_file_path,
-                archive_file=output,
-                lfagmap=lfagmap,
-                masterodb=masterodb,
-            )
-            SURFEXBinary(
-                binary,
-                my_batch,
-                my_pgdfile,
-                my_settings,
-                input_data,
-                archive_data=my_archive,
-                print_namelist=print_namelist,
-            )
-        elif prep:
-            my_prepfile = PREPFile(
-                my_format,
-                my_prepfile,
-                archive_file=output,
-                lfagmap=lfagmap,
-                masterodb=masterodb,
-            )
-            SURFEXBinary(
-                binary,
-                my_batch,
-                my_prepfile,
-                my_settings,
-                input_data,
-                pgdfile=my_pgdfile,
-                archive_data=my_archive,
-                print_namelist=print_namelist,
-            )
-        else:
-            SURFEXBinary(
-                binary,
-                my_batch,
-                my_prepfile,
-                my_settings,
-                input_data,
-                pgdfile=my_pgdfile,
-                surfout=surffile,
-                archive_data=my_archive,
-                print_namelist=print_namelist,
-            )
+            surffile = None
+            if need_prep and need_pgd:
+                logging.debug("Need pgd and prep")
+                surffile = SURFFile(
+                    my_format,
+                    my_surffile,
+                    archive_file=output,
+                    lfagmap=lfagmap,
+                    masterodb=masterodb,
+                )
 
+            if do_perturbed:
+                PerturbedOffline(
+                    binary,
+                    my_batch,
+                    my_prepfile,
+                    pert,
+                    my_settings,
+                    input_data,
+                    pgdfile=my_pgdfile,
+                    surfout=surffile,
+                    archive_data=my_archive,
+                    print_namelist=print_namelist,
+                    negpert=negpert,
+                )
+            elif do_pgd:
+                my_pgdfile = PGDFile(
+                    my_format,
+                    my_pgdfile,
+                    input_file=pgd_file_path,
+                    archive_file=output,
+                    lfagmap=lfagmap,
+                    masterodb=masterodb,
+                )
+                SURFEXBinary(
+                    binary,
+                    my_batch,
+                    my_pgdfile,
+                    my_settings,
+                    input_data,
+                    archive_data=my_archive,
+                    print_namelist=print_namelist,
+                )
+            elif do_prep:
+                my_prepfile = PREPFile(
+                    my_format,
+                    my_prepfile,
+                    archive_file=output,
+                    lfagmap=lfagmap,
+                    masterodb=masterodb,
+                )
+                SURFEXBinary(
+                    binary,
+                    my_batch,
+                    my_prepfile,
+                    my_settings,
+                    input_data,
+                    pgdfile=my_pgdfile,
+                    archive_data=my_archive,
+                    print_namelist=print_namelist,
+                )
+            else:
+                SURFEXBinary(
+                    binary,
+                    my_batch,
+                    my_prepfile,
+                    my_settings,
+                    input_data,
+                    pgdfile=my_pgdfile,
+                    surfout=surffile,
+                    archive_data=my_archive,
+                    print_namelist=print_namelist,
+                )
     else:
         logging.info("%s already exists!", output)
 
@@ -834,7 +444,7 @@ def run_gridpp(**kwargs):
     elev_gradient = 0
     if "elev_gradient" in kwargs:
         elev_gradient = kwargs["elev_gradient"]
-    if elev_gradient != -0.0065 and elev_gradient != 0:
+    if elev_gradient not in (-0.0065, 0):
         raise RuntimeError("Not a valid elevation gradient")
     epsilon = None
     if "epsilon" in kwargs:
@@ -885,31 +495,30 @@ def run_gridpp(**kwargs):
 
 def run_titan(**kwargs):
     """Titan."""
-    __, domain_geo = get_geo_and_config_from_cmd(**kwargs)
-    if "domain_geo" in kwargs:
-        if domain_geo is not None:
-            logging.info("Override domain with domain_geo")
-        with open(kwargs["domain_geo"], mode="r", encoding="utf-8") as fhandler:
-            domain_geo = json.load(fhandler)
+    domain = kwargs.get("domain")
+    domain_geo = None
+    if domain is not None:
+        with open(domain, mode="r", encoding="utf-8") as fhandler:
+            domain_geo = get_geo_object(json.load(fhandler))
 
     blacklist = None
     if "blacklist" in kwargs:
         blacklist = kwargs["blacklist"]
-    elif "blacklist_file" in kwargs:
-        if kwargs["blacklist_file"] is not None:
-            blacklist = json.load(open(kwargs["blacklist_file"], "r", encoding="utf-8"))
+    elif "blacklist_file" in kwargs and kwargs["blacklist_file"] is not None:
+        with open(kwargs["blacklist_file"], mode="r", encoding="utf-8") as fhandler:
+            blacklist = json.load(fhandler)
 
     if "input_file" in kwargs:
         input_file = kwargs["input_file"]
         if os.path.exists(input_file):
-            settings = json.load(open(input_file, "r", encoding="utf-8"))
+            with open(input_file, "r", encoding="utf-8") as fhandler:
+                settings = json.load(fhandler)
         else:
             raise FileNotFoundError("Could not find input file " + input_file)
+    elif "input_data" in kwargs:
+        settings = kwargs["input_data"]
     else:
-        if "input_data" in kwargs:
-            settings = kwargs["input_data"]
-        else:
-            raise RuntimeError("You must specify input_file or input_data")
+        raise RuntimeError("You must specify input_file or input_data")
 
     tests = kwargs["tests"]
     output_file = None
@@ -919,7 +528,7 @@ def run_titan(**kwargs):
     if "indent" in kwargs:
         indent = kwargs["indent"]
 
-    an_time = kwargs["dtg"]
+    an_time = kwargs["validtime"]
     if isinstance(an_time, str):
         an_time = as_datetime(an_time)
     var = kwargs["variable"]
@@ -957,31 +566,8 @@ def run_oi2soda(**kwargs):
     if sm_file is not None:
         s_m = {"file": sm_file, "var": kwargs["sm_var"]}
 
-    dtg = as_datetime(kwargs["dtg"])
-    oi2soda(dtg, t2m=t2m, rh2m=rh2m, s_d=s_d, s_m=s_m, output=output)
-
-
-def run_hm2pysurfex(**kwargs):
-    """Harmonie to pysurfex."""
-    pysurfex_config = kwargs["config"]
-
-    output = None
-    if "output" in kwargs:
-        output = kwargs["output"]
-
-    environment = os.environ
-    if "environment" in kwargs:
-        environment_file = kwargs["environment"]
-        environment.update(json.load(open(environment_file, "r", encoding="utf-8")))
-
-    # Create configuration
-    config = ConfigurationFromHarmonieAndConfigFile(environment, pysurfex_config)
-
-    if output is None:
-        logging.info("Config settings %s", config.settings)
-    else:
-        with open(output, "w", encoding="utf-8") as fhandler:
-            toml.dump(config.settings, fhandler)
+    basetime = as_datetime(kwargs["basetime"])
+    oi2soda(basetime, t2m=t2m, rh2m=rh2m, s_d=s_d, s_m=s_m, output=output)
 
 
 def set_geo_from_stationlist(**kwargs):
@@ -1000,13 +586,11 @@ def set_geo_from_stationlist(**kwargs):
 
     lons = []
     lats = []
-    if os.path.exists(stationlist):
-        stids = json.load(open(stationlist, "r", encoding="utf-8"))
-    else:
-        raise FileNotFoundError("Station list does not exist!")
+    stationlist = StationList(stationlist)
+    stids = stationlist.stids
 
     for stid in stids:
-        lon, lat = Observation.get_pos_from_stid(stationlist, [stid])
+        lon, lat, __ = stationlist.get_pos_from_stid([stid])
         lon = lon[0]
         lat = lat[0]
         if lonrange[0] <= lon <= lonrange[1] and latrange[0] <= lat <= latrange[1]:
@@ -1034,6 +618,8 @@ def sentinel_obs(argv=None):
     kwargs = parse_sentinel_obs(argv)
     debug = kwargs.get("debug")
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -1067,6 +653,8 @@ def qc2obsmon(argv=None):
     kwargs = parse_args_qc2obsmon(argv)
     debug = kwargs.get("debug")
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -1091,6 +679,8 @@ def prep(argv=None):
     kwargs = parse_args_surfex_binary(argv, "prep")
     debug = kwargs.get("debug")
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -1119,9 +709,11 @@ def plot_points(argv=None):
     """
     if argv is None:
         argv = sys.argv[1:]
-    kwargs = parse_args_plot_points(argv)
+    parser, kwargs = parse_args_plot_points(argv)
     debug = kwargs.get("debug")
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -1132,9 +724,8 @@ def plot_points(argv=None):
             format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
         )
     logging.info("************ plot_points ******************")
-    validtime = None
-    if kwargs["variable"]["validtime"] is not None:
-        validtime = as_datetime(kwargs["variable"]["validtime"])
+
+    validtime = as_datetime(kwargs["validtime"])
     output = kwargs["output"]
 
     geo_file = None
@@ -1143,7 +734,8 @@ def plot_points(argv=None):
 
     geo = None
     if geo_file is not None:
-        domain_json = json.load(open(geo_file, "r", encoding="utf-8"))
+        with open(geo_file, mode="r", encoding="utf-8") as fhandler:
+            domain_json = json.load(fhandler)
         geo = get_geo_object(domain_json)
 
     contour = True
@@ -1152,48 +744,20 @@ def plot_points(argv=None):
         if no_contour:
             contour = False
 
-    var_dict = kwargs["variable"]
-    inputtype = kwargs["variable"]["inputtype"]
-    defs = {"var": {inputtype: {"converter": {"none": var_dict}}}}
-    converter_conf = defs["var"][inputtype]["converter"]
-
-    inputtype = kwargs["variable"]["inputtype"]
-    var = Variable(inputtype, kwargs["variable"], validtime)
-
     cache = Cache(-1)
-    converter = "none"
-    if inputtype == "obs":
-        if geo is None:
-            obs_input_type = kwargs["variable"]["filetype"]
-            variable = kwargs["variable"]["variable"]
-            obs_time = as_datetime(kwargs["variable"]["validtime"])
-            inputfile = kwargs["variable"]["inputfile"]
-            geo = set_geo_from_obs_set(
-                obs_time,
-                obs_input_type,
-                variable,
-                inputfile,
-                lonrange=None,
-                latrange=None,
-            )
-    converter = Converter(converter, validtime, defs, converter_conf, inputtype)
+    converter = get_multi_converters(parser, [], argv)
     field = ConvertedInput(geo, "var", converter).read_time_step(validtime, cache)
 
     if field is None:
         raise RuntimeError("No field read")
 
-    if inputtype == "grib1" or inputtype == "grib2":
-        title = f"{inputtype}: {var.file_var.generate_grib_id()} {validtime.strftime('%Y%m%d%H')}"
-    elif inputtype == "netcdf":
-        title = "netcdf: " + var.file_var.name + " " + validtime.strftime("%Y%m%d%H")
-    elif inputtype == "surfex":
-        title = inputtype + ": " + var.file_var.print_var()
-    elif inputtype == "obs":
-        obs_input_type = kwargs["variable"]["filetype"]
-        variable = kwargs["variable"]["variable"]
-        title = inputtype + ": var=" + variable + " type=" + obs_input_type
-    else:
-        raise NotImplementedError("Inputype is not implemented")
+    converter_name = converter.name
+    try:
+        title = kwargs["title"]
+    except KeyError:
+        title = None
+    if title is None:
+        title = f"converter={converter_name}"
 
     if geo is None:
         raise RuntimeError("No geo is set")
@@ -1209,111 +773,7 @@ def plot_points(argv=None):
         contour,
         field.shape,
     )
-    if geo.npoints != geo.nlons and geo.npoints != geo.nlats:
-        if contour:
-            field = np.reshape(field, [geo.nlons, geo.nlats])
-    else:
-        contour = False
-
-    if plt is None:
-        raise ModuleNotFoundError("Matplotlib is needed to plot")
-    logging.debug(
-        "lons.shape=%s lats.shape=%s field.shape=%s",
-        geo.lons.shape,
-        geo.lats.shape,
-        field.shape,
-    )
-    if contour:
-        plt.contourf(geo.lons, geo.lats, field)
-    else:
-        plt.scatter(geo.lonlist, geo.latlist, c=field)
-
-    plt.title(title)
-    plt.colorbar()
-    if output is None:
-        plt.show()
-    else:
-        logging.info("Saving figure in %s", output)
-        plt.savefig(output)
-
-
-def plot_field(argv=None):
-    """Command line interface.
-
-    Args:
-        argv(list, optional): Arguments. Defaults to None.
-
-    Raises:
-        NotImplementedError: "Inputype is not implemented"
-        RuntimeError: "No geo is set"
-        RuntimeError: "No field read"
-        ModuleNotFoundError: "Matplotlib is needed to plot"
-
-    """
-    if argv is None:
-        argv = sys.argv[1:]
-    kwargs = parse_args_plot_field(argv)
-    debug = kwargs.get("debug")
-
-    if debug:
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
-            level=logging.DEBUG,
-        )
-    else:
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
-        )
-    logging.info("************ plot_field ******************")
-
-    validtime = None
-    if kwargs["validtime"] is not None:
-        validtime = as_datetime(kwargs["validtime"])
-    output = kwargs["output"]
-
-    geo_file = None
-    if "geo" in kwargs:
-        geo_file = kwargs["geo"]
-
-    geo = None
-    if geo_file is not None:
-        domain_json = json.load(open(geo_file, "r", encoding="utf-8"))
-        geo = get_geo_object(domain_json)
-
-    contour = True
-    if "no_contour" in kwargs:
-        no_contour = kwargs["no_contour"]
-        if no_contour:
-            contour = False
-
-    inputtype = kwargs["variable"]["inputtype"]
-    var = Variable(inputtype, kwargs["variable"], validtime)
-    field, geo = var.read_var_field(validtime)
-
-    if inputtype == "grib1" or inputtype == "grib2":
-        title = f"{inputtype}: {var.file_var.generate_grib_id()} {validtime.strftime('%Y%m%d%H')}"
-    elif inputtype == "netcdf":
-        title = "netcdf: " + var.file_var.var_name + " " + validtime.strftime("%Y%m%d%H")
-    elif inputtype == "surfex":
-        title = inputtype + ": " + var.file_var.print_var()
-    else:
-        raise NotImplementedError("Inputype is not implemented")
-
-    if geo is None:
-        raise RuntimeError("No geo is set")
-
-    if field is None:
-        raise RuntimeError("No field read")
-
-    logging.debug(
-        "npoints=%s nlons=%s nlats=%s contour=%s field.shape=%s",
-        geo.npoints,
-        geo.nlons,
-        geo.nlats,
-        contour,
-        field.shape,
-    )
-    if geo.npoints != geo.nlons and geo.npoints != geo.nlats:
+    if geo.npoints not in (geo.nlons, geo.nlats):
         if contour:
             field = np.reshape(field, [geo.nlons, geo.nlats])
     else:
@@ -1352,6 +812,8 @@ def pgd(argv=None):
     kwargs = parse_args_surfex_binary(argv, "pgd")
     debug = kwargs.get("debug")
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -1376,6 +838,8 @@ def perturbed_offline(argv=None):
     kwargs = parse_args_surfex_binary(argv, "perturbed")
     debug = kwargs.get("debug")
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -1385,7 +849,7 @@ def perturbed_offline(argv=None):
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
         )
-    logging.info("************ offline ******************")
+    logging.info("************ perturbed ******************")
     run_surfex_binary("perturbed", **kwargs)
 
 
@@ -1400,6 +864,8 @@ def offline(argv=None):
     kwargs = parse_args_surfex_binary(argv, "offline")
     debug = kwargs.get("debug")
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -1424,6 +890,8 @@ def cli_oi2soda(argv=None):
     kwargs = parse_args_oi2soda(argv)
     debug = kwargs.get("debug")
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -1448,6 +916,8 @@ def cli_modify_forcing(argv=None):
     kwargs = parse_args_modify_forcing(argv)
     debug = kwargs.get("debug")
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -1472,6 +942,8 @@ def cli_merge_qc_data(argv=None):
     kwargs = parse_args_merge_qc_data(argv)
     debug = kwargs.get("debug")
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -1487,54 +959,6 @@ def cli_merge_qc_data(argv=None):
     qc_data.write_output(kwargs.get("output"), indent=kwargs.get("indent"))
 
 
-def masterodb(argv=None):
-    """Command line interface.
-
-    Args:
-        argv(list, optional): Arguments. Defaults to None.
-    """
-    if argv is None:
-        argv = sys.argv[1:]
-    kwargs = parse_args_masterodb(argv)
-    debug = kwargs.get("debug")
-
-    if debug:
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
-            level=logging.DEBUG,
-        )
-    else:
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
-        )
-    logging.info("************ masterodb ******************")
-    run_masterodb(**kwargs)
-
-
-def hm2pysurfex(argv=None):
-    """Command line interface.
-
-    Args:
-        argv(list, optional): Arguments. Defaults to None.
-    """
-    if argv is None:
-        argv = sys.argv[1:]
-    kwargs = parse_args_hm2pysurfex(argv)
-    debug = kwargs.get("debug")
-
-    if debug:
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
-            level=logging.DEBUG,
-        )
-    else:
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
-        )
-    logging.info("************ hm2pysurfex ******************")
-    run_hm2pysurfex(**kwargs)
-
-
 def gridpp(argv=None):
     """Command line interface.
 
@@ -1546,6 +970,8 @@ def gridpp(argv=None):
     kwargs = parse_args_gridpp(argv)
     debug = kwargs.get("debug")
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -1574,17 +1000,19 @@ def dump_environ(argv=None):
 
 
 def first_guess_for_oi(argv=None):
-    """Command line interface.
+    """First guess for OI.
 
     Args:
-        argv(list, optional): Arguments. Defaults to None.
+        argv (list): Arguments
+
     """
     if argv is None:
         argv = sys.argv[1:]
 
-    kwargs = parse_args_first_guess_for_oi(argv)
+    parser, kwargs = parse_args_first_guess_for_oi(argv)
     debug = kwargs.get("debug")
-
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -1594,8 +1022,64 @@ def first_guess_for_oi(argv=None):
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
         )
-    logging.info("************ FirstGuess4gridpp ******************")
-    run_first_guess_for_oi(**kwargs)
+
+    domain = kwargs["domain"]
+    with open(domain, mode="r", encoding="utf-8") as fhandler:
+        geo = get_geo_object(json.load(fhandler))
+
+    validtime = kwargs["validtime"]
+    output = kwargs["output"]
+    fg_variables = kwargs["fg_variables"]
+
+    fvariables = []
+    for fg_var in fg_variables:
+        try:
+            outvar = kwargs[f"{fg_var}_outfile_var"]
+        except KeyError:
+            logging.warning("Set output var equal to fg_var %s", fg_var)
+            outvar = fg_var
+        fvariables.append(outvar)
+    validtime = as_datetime(validtime)
+
+    converters = get_multi_converters(parser, fg_variables, argv)
+    cache = Cache(3600)
+
+    f_g = None
+    for fg_var in fg_variables:
+        var = kwargs[f"{fg_var}_outfile_var"]
+        converter = converters[fg_var]
+
+        field = ConvertedInput(geo, fg_var, converter).read_time_step(validtime, cache)
+        field = np.reshape(field, [geo.nlons, geo.nlats])
+
+        # Create file
+        if f_g is None:
+            n_x = geo.nlons
+            n_y = geo.nlats
+            f_g = create_netcdf_first_guess_template(
+                fvariables, n_x, n_y, output, geo=geo
+            )
+            epoch = float(
+                (validtime - as_datetime_args(year=1970, month=1, day=1)).total_seconds()
+            )
+            f_g.variables["time"][:] = epoch
+            f_g.variables["longitude"][:] = np.transpose(geo.lons)
+            f_g.variables["latitude"][:] = np.transpose(geo.lats)
+            f_g.variables["x"][:] = list(range(n_x))
+            f_g.variables["y"][:] = list(range(n_y))
+
+        if var == "altitude":
+            field[field < 0] = 0
+
+        if np.isnan(np.sum(field)):
+            fill_nan_value = f_g.variables[var].getncattr("_FillValue")
+            logging.info("Field %s got Nan. Fill with: %s", var, str(fill_nan_value))
+            field[np.where(np.isnan(field))] = fill_nan_value
+
+        f_g.variables[var][:] = np.transpose(field)
+
+    if f_g is not None:
+        f_g.close()
 
 
 def cryoclim_pseudoobs(argv=None):
@@ -1609,6 +1093,8 @@ def cryoclim_pseudoobs(argv=None):
     kwargs = parse_cryoclim_pseudoobs(argv)
     debug = kwargs.get("debug")
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -1620,11 +1106,12 @@ def cryoclim_pseudoobs(argv=None):
         )
     logging.info("************ cryoclim_pseudoobs ******************")
 
-    fg_file = kwargs["fg"]["inputfile"]
+    fg_file = kwargs["fg"]["filepattern"]
+    varname = kwargs["fg"]["varname"]
     infiles = kwargs["infiles"]
     step = kwargs["thinning"]
     output = kwargs["output"]
-    varname = kwargs["fg"]["varname"]
+    validtime = as_datetime(kwargs["validtime"], offset=True)
     indent = kwargs["indent"]
     laf_threshold = kwargs["laf_threshold"]
     cryo_varname = kwargs["cryo_varname"]
@@ -1634,31 +1121,23 @@ def cryoclim_pseudoobs(argv=None):
 
     grid_perm_snow = None
     grid_perm_snow_geo = None
-    if "perm_snow" in kwargs:
-        fileformat = kwargs["perm_snow"].get("inputtype")
+    if "perm_snow" in kwargs and kwargs["perm_snow"]["filepattern"] is not None:
+        fileformat = kwargs["perm_snow"]["inputtype"]
+        basetime = as_datetime(kwargs["perm_snow"]["basetime"], offset=True)
         if fileformat is not None:
-            lvalidtime = kwargs["perm_snow"].get("validtime")
-            if lvalidtime is None:
-                lvalidtime = validtime
-            else:
-                lvalidtime = as_datetime(lvalidtime)
             grid_perm_snow, grid_perm_snow_geo = Variable(
-                fileformat, kwargs["perm_snow"], lvalidtime
-            ).read_var_field(lvalidtime)
+                fileformat, kwargs["perm_snow"], basetime
+            ).read_var_field(validtime)
 
     grid_slope = None
     grid_slope_geo = None
-    if "slope" in kwargs:
-        fileformat = kwargs["slope"].get("inputtype")
+    if "slope" in kwargs and kwargs["slope"]["filepattern"] is not None:
+        fileformat = kwargs["slope"]["inputtype"]
+        basetime = as_datetime(kwargs["slope"]["basetime"], offset=True)
         if fileformat is not None:
-            lvalidtime = kwargs["slope"].get("validtime")
-            if lvalidtime is None:
-                lvalidtime = validtime
-            else:
-                lvalidtime = as_datetime(lvalidtime)
             grid_slope, grid_slope_geo = Variable(
-                fileformat, kwargs["slope"], lvalidtime
-            ).read_var_field(lvalidtime)
+                fileformat, kwargs["slope"], basetime
+            ).read_var_field(validtime)
 
     obs_set = CryoclimObservationSet(
         infiles,
@@ -1686,6 +1165,7 @@ def create_namelist(argv=None):
 
     Raises:
         FileNotFoundError: "File not found:"
+        RuntimeError: "Geo is needed for PGD"
 
     """
     if argv is None:
@@ -1693,6 +1173,9 @@ def create_namelist(argv=None):
     kwargs = parse_args_create_namelist(argv)
     debug = kwargs.get("debug")
     mode = kwargs.get("mode")
+
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -1705,32 +1188,43 @@ def create_namelist(argv=None):
     logging.info("************ %s ******************", mode)
 
     logging.debug("ARGS: %s", kwargs)
-    config, __ = get_geo_and_config_from_cmd(**kwargs)
     mode = kwargs.get("mode")
 
-    system_file_paths = kwargs["system_file_paths"]
-    if os.path.exists(system_file_paths):
-        system_file_paths = SystemFilePathsFromFile(system_file_paths)
+    domain = kwargs.get("domain", None)
+    if domain is not None:
+        with open(domain, mode="r", encoding="utf-8") as fhandler:
+            geo = get_geo_object(json.load(fhandler))
+    if mode == "pgd" and geo is None:
+        raise RuntimeError("Geo is needed for PGD")
+    uppercase = kwargs.get("uppercase")
+    true_repr = kwargs.get("true_repr")
+    false_repr = kwargs.get("false_repr")
+    if uppercase:
+        false_repr = false_repr.upper()
+        true_repr = true_repr.upper()
     else:
-        raise FileNotFoundError("File not found: " + system_file_paths)
-
+        false_repr = false_repr.lower()
+        true_repr = true_repr.lower()
+    namelist_defs_file = kwargs.get("namelist_defs")
+    assemble_file = kwargs["assemble_file"]
     output = kwargs.get("output")
     if output is None:
         output = "OPTIONS.nam"
 
-    namelist_path = kwargs.get("namelist_path")
+    if assemble_file is None:
+        nam_gen = NamelistGeneratorFromNamelistFile(mode, namelist_defs_file)
+    else:
+        with open(namelist_defs_file, mode="r", encoding="utf-8") as file_handler:
+            nam_defs = yaml.safe_load(file_handler)
+        with open(assemble_file, mode="r", encoding="utf-8") as file_handler:
+            assemble = yaml.safe_load(file_handler)
+        nam_gen = NamelistGeneratorAssemble(mode, nam_defs, assemble)
 
-    with open(namelist_path, mode="r", encoding="utf-8") as file_handler:
-        nam_defs = yaml.safe_load(file_handler)
-
-    config.update_setting("SURFEX#PREP#FILE", None)
-    config.update_setting("SURFEX#PREP#FILEPGD", None)
-    config.update_setting("SURFEX#SODA#HH", "00")
-
-    my_settings = NamelistGenerator(mode, config, nam_defs)
+    if geo is not None:
+        nam_gen = geo.update_namelist(nam_gen)
     if os.path.exists(output):
         os.remove(output)
-    my_settings.write(output)
+    nam_gen.write(output, uppercase=uppercase, true_repr=true_repr, false_repr=false_repr)
 
 
 def create_lsm_file_assim(argv=None):
@@ -1748,6 +1242,8 @@ def create_lsm_file_assim(argv=None):
     kwargs = parse_args_lsm_file_assim(argv)
     debug = kwargs.get("debug")
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -1762,11 +1258,12 @@ def create_lsm_file_assim(argv=None):
     domain = kwargs["domain"]
     logging.debug("domain=%s", domain)
     if os.path.exists(domain):
-        domain_json = json.load(open(domain, "r", encoding="utf-8"))
+        with open(domain, "r", encoding="utf-8") as fhandler:
+            domain_json = json.load(fhandler)
         geo = get_geo_object(domain_json)
     else:
         raise FileNotFoundError(domain)
-    validtime = as_datetime(kwargs["dtg"])
+    validtime = as_datetime(kwargs["basetime"])
 
     # TODO Move to a method outside cli
     cache = Cache(3600)
@@ -1796,8 +1293,8 @@ def create_lsm_file_assim(argv=None):
     field = np.transpose(field)
 
     with open(output, mode="w", encoding="utf-8") as file_handler:
-        for lat in range(0, geo.nlats):
-            for lon in range(0, geo.nlons):
+        for lat in range(geo.nlats):
+            for lon in range(geo.nlons):
                 file_handler.write(str(field[lat, lon]) + "\n")
 
 
@@ -1812,6 +1309,8 @@ def create_forcing(argv=None):
     kwargs = parse_args_create_forcing(argv)
     debug = kwargs.get("debug")
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -1837,6 +1336,8 @@ def bufr2json(argv=None):
     kwargs = parse_args_bufr2json(argv)
     debug = kwargs.get("debug")
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -1851,7 +1352,7 @@ def bufr2json(argv=None):
     variables = kwargs.get("vars")
     bufrfile = kwargs.get("bufr")
     output = kwargs.get("output")
-    valid_dtg = as_datetime(kwargs.get("dtg"))
+    valid_dtg = as_datetime(kwargs.get("obs_time"))
     valid_range = as_timedelta(seconds=kwargs.get("valid_range"))
     sigmao = kwargs.get("sigmao")
     label = kwargs.get("label")
@@ -1885,6 +1386,8 @@ def obs2json(argv=None):
     kwargs = parse_args_obs2json(argv)
     debug = kwargs.get("debug")
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -1936,7 +1439,7 @@ def obs2json(argv=None):
     )
 
 
-def cli_set_domain(argv=None):
+def cli_set_domain_from_harmonie(argv=None):
     """Command line interface.
 
     Args:
@@ -1953,6 +1456,8 @@ def cli_set_domain(argv=None):
     args = parse_set_domain(argv)
     debug = args.debug
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -1962,23 +1467,14 @@ def cli_set_domain(argv=None):
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
         )
-    logging.info("************ set_domain ******************")
-    domain = args.domain
-    domains = args.domains
+    logging.info("************ set_domain_from_harmonie ******************")
+
     output = args.output
     indent = args.indent
-    harmonie_mode = args.harmonie
-    if os.path.exists(domains):
-        with open(domains, mode="r", encoding="utf-8") as file_handler:
-            domains = json.load(file_handler)
-        domain_json = set_domain(domains, domain, hm_mode=harmonie_mode)
-        if domain_json is not None:
-            with open(output, mode="w", encoding="utf-8") as file_handler:
-                json.dump(domain_json, file_handler, indent=indent)
-        else:
-            raise RuntimeError("Domain not provided")
-    else:
-        raise FileNotFoundError
+    geo = ConfProjFromHarmonie()
+    domain_json = geo.json
+    with open(output, mode="w", encoding="utf-8") as file_handler:
+        json.dump(domain_json, file_handler, indent=indent)
 
 
 def cli_set_geo_from_obs_set(argv=None):
@@ -1993,6 +1489,8 @@ def cli_set_geo_from_obs_set(argv=None):
     kwargs = parse_args_set_geo_from_obs_set(argv)
     debug = kwargs.get("debug")
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -2030,6 +1528,8 @@ def cli_set_geo_from_stationlist(argv=None):
     kwargs = parse_args_set_geo_from_stationlist(argv)
     debug = kwargs.get("debug")
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -2058,6 +1558,8 @@ def cli_shape2ign(argv=None):
     kwargs = parse_args_shape2ign(argv)
     debug = kwargs.get("debug")
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -2089,6 +1591,8 @@ def soda(argv=None):
     kwargs = parse_args_surfex_binary(argv, "soda")
     debug = kwargs.get("debug")
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
@@ -2110,9 +1614,12 @@ def titan(argv=None):
     """
     if argv is None:
         argv = sys.argv[1:]
+
     kwargs = parse_args_titan(argv)
     debug = kwargs.get("debug")
 
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     if debug:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",

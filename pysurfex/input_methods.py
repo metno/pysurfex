@@ -6,7 +6,12 @@ import os
 from .bufr import BufrObservationSet
 from .datetime_utils import as_timedelta
 from .geo import LonLatVal
-from .obs import JsonObservationSet, MetFrostObservations, NetatmoObservationSet
+from .obs import (
+    JsonObservationSet,
+    MetFrostObservations,
+    NetatmoObservationSet,
+    ObsSetFromVobs,
+)
 from .obsoul import ObservationDataSetFromObsoulFile
 from .util import parse_filepattern
 
@@ -14,7 +19,8 @@ from .util import parse_filepattern
 def get_datasources(obs_time, settings):
     """Get data sources.
 
-    Main data source interface setting data ObservationSet objects based on settings dictionary
+    Main data source interface setting data ObservationSet objects based on settings
+    dictionary
 
     Args:
         obs_time (datetime.datetime): Observation time
@@ -60,11 +66,7 @@ def get_datasources(obs_time, settings):
                     kwargs.update({"latrange": settings[obs_set]["latrange"]})
                 if "sigmao" in settings[obs_set]:
                     kwargs.update({"sigmao": settings[obs_set]["sigmao"]})
-                if "dt" in settings[obs_set]:
-                    deltat = settings[obs_set]["dt"]
-                else:
-                    deltat = 1800
-
+                deltat = settings[obs_set].get("dt", 1800)
                 valid_range = as_timedelta(seconds=deltat)
                 if os.path.exists(filename):
                     datasources.append(
@@ -184,7 +186,30 @@ def get_datasources(obs_time, settings):
                         )
                     )
                 else:
-                    print("WARNING: filename " + filename + " not existing. Not added.")
+                    logging.warning(
+                        "WARNING: filename %s not existing. Not added.", filename
+                    )
+            elif filetype.lower() == "vobs":
+                if isinstance(filepattern, list):
+                    if len(filepattern) > 1:
+                        raise NotImplementedError("Only one file reading implemented")
+                    filepattern = filepattern[0]
+                filename = parse_filepattern(filepattern, obs_time, validtime)
+                varname = None
+                if "varname" in settings[obs_set]:
+                    varname = settings[obs_set]["varname"]
+                if isinstance(varname, list):
+                    varname = varname[0]
+
+                kwargs.update({"var": varname})
+                if os.path.exists(filename):
+                    datasources.append(
+                        ObsSetFromVobs(filename, validtime, varname=varname, label="vobs")
+                    )
+                else:
+                    logging.warning(
+                        "WARNING: filename %s not existing. Not added.", filename
+                    )
             elif filetype.lower() == "json":
                 if isinstance(filepattern, list):
                     if len(filepattern) > 1:
@@ -194,6 +219,8 @@ def get_datasources(obs_time, settings):
                 varname = None
                 if "varname" in settings[obs_set]:
                     varname = settings[obs_set]["varname"]
+                if isinstance(varname, list):
+                    varname = varname[0]
 
                 kwargs.update({"var": varname})
                 if "sigmao" in settings[obs_set]:
@@ -247,9 +274,9 @@ def set_geo_from_obs_set(
 
     selected_lons = []
     selected_lats = []
-    for i, lon in enumerate(lons):
+    for i, lon_val in enumerate(lons):
         lat = lats[i]
-
+        lon = lon_val
         if lonrange[0] <= lon <= lonrange[1] and latrange[0] <= lat <= latrange[1]:
             lon = round(lon, 5)
             lat = round(lat, 5)
@@ -297,12 +324,14 @@ def get_obsset(
         neg_t_range (int, optional): Time window duration after obs_time in seconds
         lonrange (tuple, optional): Longitude range (min, max). Defaults to None.
         latrange (tuple, optional): Latitude range (min, max). Defaults to None.
-        label (str, optional): Obs set label. Default to None which means it will be the same as obs_type
+        label (str, optional): Obs set label. Default to None which means it will be
+                                              the same as obs_type
         unit (str, optional): Unit (FROST)
         level (str, optional): Level (FROST)
         obtypes (list, optional): Obstypes (obsoul)
         subtypes (list, optional): Subtypes (obsoul)
-        sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
+        sigmao (float, optional): Observation error relative to normal background error.
+                                  Defaults to None.
 
     Returns:
         obsset (ObservationSet): Observation set
@@ -387,13 +416,15 @@ def create_obsset_file(
         neg_t_range (int, optional): Time window duration after obs_time in seconds
         lonrange (tuple, optional): Longitude range (min, max). Defaults to None.
         latrange (tuple, optional): Latitude range (min, max). Defaults to None.
-        label (str, optional): Obs set label. Default to None which means it will be the same as obs_type
+        label (str, optional): Obs set label. Default to None which means it will be
+                               the same as obs_type
         indent (int, optional): File indentation. Defaults to None.
         unit (str, optional): Unit (FROST)
         level (str, optional): Level (FROST)
         obtypes (list, optional): Obstypes (obsoul)
         subtypes (list, optional): Subtypes (obsoul)
-        sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
+        sigmao (float, optional): Observation error relative to normal background error.
+                                  Defaults to None.
 
     """
     logging.debug("Get data source")

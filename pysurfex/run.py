@@ -42,9 +42,9 @@ class BatchJob(object):
             logging.info("BATCH: %s", self.rte["OMP_NUM_THREADS"])
         logging.info("Batch running %s", cmd)
 
-        process = Popen(  # noqaS602
+        process = Popen(  # noqa S602
             cmd,
-            shell=True,  # noqaS602
+            shell=True,
             env=self.rte,
             stdout=PIPE,
             stderr=STDOUT,
@@ -139,7 +139,7 @@ class SURFEXBinary(object):
         logging.info("Running %s with settings OPTIONS.nam", cmd)
         try:
             self.batch.run(cmd)
-        except Exception as exc:
+        except Exception as exc:  # noqa BLE001
             raise RuntimeError(repr(exc)) from Exception
 
         listings = [
@@ -203,9 +203,10 @@ class PerturbedOffline(SURFEXBinary):
         if negpert:
             nncv = settings["nam_var"]["nncv"]
 
-            for nvi, _nval in enumerate(nncv):
+            for nvi, __ in enumerate(nncv):
                 val = settings["nam_var"]["xtprt_m"][nvi]
                 settings["nam_var"]["xtprt_m"][nvi] = -val
+        settings["nam_var"]["nvar"] = sum(settings["nam_var"]["nncv"])
 
         SURFEXBinary.__init__(
             self,
@@ -305,13 +306,6 @@ class Masterodb(object):
         if self.binary is not None:
             logging.info("Run binary with namelist EXSEG1.nam: %s", self.binary)
             self.batch.run(self.binary)
-
-    def archive_output(self):
-        """Archive output."""
-        # Archive output
-        self.surfout.archive_output_file()
-        if self.archive is not None:
-            self.archive.archive_files()
 
 
 # TODO is it used?

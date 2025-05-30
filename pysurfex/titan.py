@@ -115,7 +115,7 @@ class Plausibility(QualityControl):
 
         minvals = []
         maxvals = []
-        for __ in range(0, size):
+        for __ in range(size):
             minvals.append(used_min)
             maxvals.append(used_max)
 
@@ -231,7 +231,7 @@ class FirstGuess(QualityControl):
 
         minvals = []
         maxvals = []
-        for __ in range(0, size):
+        for __ in range(size):
             minvals.append(used_negdiff)
             maxvals.append(used_posdiff)
 
@@ -278,7 +278,7 @@ class FirstGuess(QualityControl):
 
         global_flags = dataset.flags
         for i, mask_ind in enumerate(mask):
-            if fg_operator.is_in_grid(mask[i]):
+            if fg_operator.is_in_grid(mask_ind):
                 if int(global_flags[mask_ind]) == 0 and int(flags[i]) == 1:
                     global_flags[mask_ind] = code
             else:
@@ -365,7 +365,7 @@ class Fraction(QualityControl):
 
         minvals = []
         maxvals = []
-        for __ in range(0, size):
+        for __ in range(size):
             minvals.append(used_min)
             maxvals.append(used_max)
 
@@ -486,7 +486,8 @@ class Sct(QualityControl):
             eps2 (float, optional): eps2. Defaults to 0.5.
             cmin (float, optional): cmin. Defaults to 0.9.
             cmax (float, optional): cmax. Defaults to 1.1.
-            missing_elev_to_zero (bool, optional): Set missing elevtions to zero. Defaults to False.
+            missing_elev_to_zero (bool, optional): Set missing elevtions to zero.
+                                                   Defaults to False.
 
         """
         self.num_min = int(num_min)
@@ -538,7 +539,7 @@ class Sct(QualityControl):
         pos = []
         neg = []
         eps2 = []
-        for __ in range(0, size):
+        for __ in range(size):
             pos.append(used_pos)
             neg.append(used_neg)
             eps2.append(used_eps2)
@@ -758,7 +759,7 @@ class Buddy(QualityControl):
         if obs_to_check is not None:
             used_distance_lim = obs_to_check
 
-        for __ in range(0, size):
+        for __ in range(size):
             distance_lim.append(used_distance_lim)
             priorities.append(used_priorities)
             buddies_min.append(used_buddies_min)
@@ -804,7 +805,7 @@ class Buddy(QualityControl):
         lats = []
         elevs = []
         values = []
-        for i in range(0, len(mask)):
+        for i in range(len(mask)):
             lons.append(dataset.lons[i])
             lats.append(dataset.lats[i])
             elevs.append(dataset.elevs[i])
@@ -895,7 +896,7 @@ class Climatology(QualityControl):
         minvals = []
         maxvals = []
         offset = []
-        for __ in range(0, size):
+        for __ in range(size):
             minvals.append(used_min)
             maxvals.append(used_max)
             offset.append(used_offset)
@@ -1051,7 +1052,7 @@ class Blacklist(QualityControl):
         blacklist_pos = {}
         blacklist_stid = {}
         if "lons" in blacklist and "lats" in blacklist:
-            for i in range(0, len(blacklist["lons"])):
+            for i in range(len(blacklist["lons"])):
                 if len(blacklist["lons"]) != len(blacklist["lats"]):
                     raise RuntimeError(
                         "Blacklist must have the same length for both lons and lats"
@@ -1063,7 +1064,7 @@ class Blacklist(QualityControl):
                 blacklist_pos.update({pos: 1})
 
         if "stids" in blacklist:
-            for i in range(0, len(blacklist["stids"])):
+            for i in range(len(blacklist["stids"])):
                 stid = str(blacklist["stids"][i])
 
                 if stid != "NA":
@@ -1127,7 +1128,8 @@ class DomainCheck(QualityControl):
 
         Args:
             domain_geo (surfex.Geo): Surfex geometry
-            max_distance (int, optional): Maximum distance to grid border. Defaults to 5000.
+            max_distance (int, optional): Maximum distance to grid border.
+                                          Defaults to 5000.
 
         Raises:
              RuntimeError: Domain geo was not set!
@@ -1282,9 +1284,8 @@ def define_quality_control(test_list, settings, an_time, domain_geo=None, blackl
                 fg_geo, __, fg_field, __, __ = read_first_guess_netcdf_file(
                     fg_file, fg_var
                 )
-            else:
-                if fg_geo is None or fg_field is None:
-                    raise RuntimeError("You must set both fg_field and fg_geo")
+            elif fg_geo is None or fg_field is None:
+                raise RuntimeError("You must set both fg_field and fg_geo")
             tests.append(FirstGuess(fg_geo, fg_field, **kwargs))
 
         elif qct.lower() == "fraction":
@@ -1316,11 +1317,8 @@ def define_quality_control(test_list, settings, an_time, domain_geo=None, blackl
                 fraction_geo, __, fraction_field, __, __ = read_first_guess_netcdf_file(
                     fraction_file, fraction_var
                 )
-            else:
-                if fraction_field is None or fraction_geo is None:
-                    raise RuntimeError(
-                        "You must set both fraction_field and fraction_geo"
-                    )
+            elif fraction_field is None or fraction_geo is None:
+                raise RuntimeError("You must set both fraction_field and fraction_geo")
             tests.append(Fraction(fraction_geo, fraction_field, **kwargs))
 
         elif qct.lower() == "buddy":
@@ -1378,6 +1376,10 @@ def define_quality_control(test_list, settings, an_time, domain_geo=None, blackl
             tests.append(Redundancy(an_time, **kwargs))
 
         elif qct.lower() == "blacklist":
+            if blacklist is None:
+                raise RuntimeError(
+                    "You must set a blacklist if you want to use it for QC"
+                )
             if test_options is not None:
                 opts = []
                 for opt in opts:
@@ -1433,7 +1435,8 @@ class QCDataSet(object):
             passed_tests (list, optional): Tests which have been passed. Defaults to None.
             fg_dep (list, optional): First guess departures. Defaults to None.
             an_dep (list, optional): Analysis depatures. Defaults to None.
-            remove_invalid_elevs (bool, optional): Remove invalid elevations. Defaults to False.
+            remove_invalid_elevs (bool, optional): Remove invalid elevations.
+                                                   Defaults to False.
 
         """
         self.analysis_time = analysis_time
@@ -1478,7 +1481,7 @@ class QCDataSet(object):
         self.flags = flags
 
         metadata = 0
-        for i in range(0, len(flags)):
+        for i in range(len(flags)):
             if remove_invalid_elevs and np.isnan(elevs[i]):
                 self.flags[i] = 101
                 metadata = metadata + 1
@@ -1487,19 +1490,19 @@ class QCDataSet(object):
         self.providers = providers
         if passed_tests is None:
             passed_tests = []
-            for __ in range(0, len(observations)):
+            for __ in range(len(observations)):
                 passed_tests.append([])
             self.passed_tests = passed_tests
         else:
             self.passed_tests = passed_tests
         if fg_dep is None:
             fg_dep = []
-            for __ in range(0, len(observations)):
+            for __ in range(len(observations)):
                 fg_dep.append(np.nan)
         self.fg_dep = fg_dep
         if an_dep is None:
             an_dep = []
-            for __ in range(0, len(observations)):
+            for __ in range(len(observations)):
                 an_dep.append(np.nan)
         self.an_dep = an_dep
 
@@ -1572,7 +1575,8 @@ class QCDataSet(object):
                     }
                 }
             )
-        json.dump(data, open(filename, mode="w", encoding="utf-8"), indent=indent)
+        with open(filename, mode="w", encoding="utf-8") as fhandler:
+            json.dump(data, fhandler, indent=indent)
 
 
 class TitanDataSet(QCDataSet):
@@ -1587,7 +1591,8 @@ class TitanDataSet(QCDataSet):
             tests (list): Tests to perform in order.
             datasources (list): List of observations sets.
             an_time (datetime.datetime): Analysis time
-            test_flags (dict, optional): Dictionary to set custom test flags. Defaults to None.
+            test_flags (dict, optional): Dictionary to set custom test flags.
+                                         Defaults to None.
 
         Raises:
             ModuleNotFoundError: itanlib was not loaded properly
@@ -1632,10 +1637,10 @@ class TitanDataSet(QCDataSet):
             values = values + lvalues
             varnames = varnames + lvarnames
             sigmaos = sigmaos + lsigmaos
-            for __ in range(0, len(llons)):
+            for __ in range(len(llons)):
                 providers.append(obs_set.label)
 
-        for __ in range(0, len(lons)):
+        for __ in range(len(lons)):
             passed_tests.append([])
         flags = np.zeros(len(lons))
         lafs = np.ones(len(lons))
@@ -1658,7 +1663,7 @@ class TitanDataSet(QCDataSet):
         self.titan_dataset = tit.Dataset(points, values)
         if passed_tests is None:
             passed_tests = []
-            for __ in range(0, len(lons)):
+            for __ in range(len(lons)):
                 passed_tests.append([])
             self.passed_tests = passed_tests
         else:
@@ -1679,7 +1684,7 @@ class TitanDataSet(QCDataSet):
         """Perform the tests."""
         summary = {}
         for test in self.tests:
-            print("Test: ", test.name)
+            logging.info("Test: %s", test.name)
             mask = []
             findex = 0
             for obs_set in self.datasources:
@@ -1689,26 +1694,25 @@ class TitanDataSet(QCDataSet):
                         "assumed to have a label"
                     )
 
-                print("obs_set", obs_set.label)
+                logging.info("obs_set: %s", obs_set.label)
                 size = obs_set.size
 
                 do_test = False
                 if "do_test" in self.settings:
                     do_test = self.settings["do_test"]
-                if test.name in self.settings:
-                    if "do_test" in self.settings[test.name]:
-                        do_test = self.settings[test.name]["do_test"]
+                if test.name in self.settings and "do_test" in self.settings[test.name]:
+                    do_test = self.settings[test.name]["do_test"]
 
                 test_settings = {"do_test": do_test}
-                if "sets" in self.settings:
-                    if obs_set.label in self.settings["sets"]:
-                        if "tests" in self.settings["sets"][obs_set.label]:
-                            if test.name in self.settings["sets"][obs_set.label]["tests"]:
-                                test_settings.update(
-                                    self.settings["sets"][obs_set.label]["tests"][
-                                        test.name
-                                    ]
-                                )
+                if (
+                    "sets" in self.settings
+                    and obs_set.label in self.settings["sets"]
+                    and "tests" in self.settings["sets"][obs_set.label]
+                    and test.name in self.settings["sets"][obs_set.label]["tests"]
+                ):
+                    test_settings.update(
+                        self.settings["sets"][obs_set.label]["tests"][test.name]
+                    )
 
                 do_test = test_settings["do_test"]
                 if do_test:
@@ -1719,8 +1723,7 @@ class TitanDataSet(QCDataSet):
                     ].tolist()
 
                     for lmask_ind in lmask:
-                        lmask_ind = lmask_ind + findex
-                        mask.append(lmask_ind)
+                        mask.append(lmask_ind + findex)
 
                     # Set input for this set
                     logging.info(
@@ -1743,9 +1746,8 @@ class TitanDataSet(QCDataSet):
             outside = 0
             if len(mask) > 0:
                 kwargs = {}
-                if self.test_flags is not None:
-                    if test.name in self.test_flags:
-                        kwargs.update({"code": self.test_flags[test.name]})
+                if self.test_flags is not None and test.name in self.test_flags:
+                    kwargs.update({"code": self.test_flags[test.name]})
 
                 self.flags = test.test(self, mask, **kwargs)
                 for mask_ind in mask:
@@ -1810,8 +1812,8 @@ class Departure(object):
             dataset (QCDataSet): QC data set.
             grid_values (np.darray): Values in the grid.
             mode (str): What kind of departure (analysis/first_guess)
-            max_distance (int, optional): Max allowed deviation in meters from grid borders.
-                                          Defaults to 5000.
+            max_distance (int, optional): Max allowed deviation in meters from grid
+                                          borders. Defaults to 5000.
 
         Raises:
             NotImplementedError: Mode not implemented
@@ -1885,7 +1887,8 @@ def dataset_from_file(
         QCDataSet: QCDataSet
 
     """
-    data = json.load(open(filename, mode="r", encoding="utf-8"))
+    with open(filename, mode="r", encoding="utf-8") as fhandler:
+        data = json.load(fhandler)
     return dataset_from_json(
         an_time,
         data,
@@ -1951,19 +1954,21 @@ def dataset_from_json(
             flags.append(flag)
             lafs.append(data[i]["laf"])
             if fg_dep is not None:
-                fg_deps.append(fg_dep[int(i)])
-            else:
-                if "fg_dep" in data[i]:
-                    fg_deps.append(data[i]["fg_dep"])
+                if isinstance(fg_dep, float):
+                    fg_deps.append(fg_dep)
                 else:
-                    fg_deps.append(np.nan)
+                    fg_deps.append(fg_dep[int(i)])
+            else:
+                fg_dep = data[i].get("fg_dep", np.nan)
+                fg_deps.append(fg_dep)
             if an_dep is not None:
-                an_deps.append(an_dep[int(i)])
-            else:
-                if "an_dep" in data[i]:
-                    an_deps.append(data[i]["an_dep"])
+                if isinstance(an_dep, float):
+                    an_deps.append(an_dep)
                 else:
-                    an_deps.append(np.nan)
+                    an_deps.append(an_dep[int(i)])
+            else:
+                an_dep = data[i].get("an_dep", np.nan)
+                an_deps.append(an_dep)
             if "passed_tests" in data[i]:
                 passed_tests.append(data[i]["passed_tests"])
 

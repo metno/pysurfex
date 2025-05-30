@@ -1,16 +1,9 @@
 """Test geometry."""
+import f90nml
 import pytest
 
-from pysurfex.geo import (
-    IGN,
-    Cartesian,
-    ConfProj,
-    LonLatReg,
-    LonLatVal,
-    get_geo_object,
-    set_domain,
-)
-from pysurfex.namelist_legacy import BaseNamelist
+from pysurfex.geo import IGN, Cartesian, ConfProj, LonLatReg, LonLatVal, get_geo_object
+from pysurfex.namelist import NamelistGenerator
 
 
 def test_geo_not_defined():
@@ -36,10 +29,9 @@ def test_geo_conf_proj(conf_proj_2x3_dict):
     my_geo = get_geo_object(conf_proj_2x3_dict)
 
     json_settings = {"nam_io_offline": {"csurf_filetype": "NC"}}
-    my_settings = BaseNamelist.ascii2nml(json_settings)
+    my_settings = NamelistGenerator("pgd", f90nml.Namelist(json_settings))
     my_geo.update_namelist(my_settings)
     assert conf_proj_2x3_dict["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
-    print(my_geo.identifier())
 
     new_domain = {
         "not_existing": {"not_existing": "some_value"},
@@ -90,10 +82,10 @@ def test_geo_lonlat_reg():
     }
     my_geo = get_geo_object(domain)
     json_settings = {"nam_io_offline": {"csurf_filetype": "NC"}}
-    my_settings = BaseNamelist.ascii2nml(json_settings)
+    my_settings = NamelistGenerator("pgd", f90nml.Namelist(json_settings))
     my_settings = my_geo.update_namelist(my_settings)
     assert domain["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
-    assert my_settings["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
+    assert my_settings.nml["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
 
     domain = {
         "nam_pgd_grid": {"cgrid": "LONLAT REG"},
@@ -131,10 +123,10 @@ def test_geo_lonlatval():
     }
     my_geo = get_geo_object(domain)
     json_settings = {"nam_io_offline": {"csurf_filetype": "NC"}}
-    my_settings = BaseNamelist.ascii2nml(json_settings)
+    my_settings = NamelistGenerator("pgd", f90nml.Namelist(json_settings))
     my_settings = my_geo.update_namelist(my_settings)
     assert domain["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
-    assert my_settings["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
+    assert my_settings.nml["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
 
     domain = {"not_existing": {"existing": "some_value"}}
     with pytest.raises(KeyError):
@@ -160,10 +152,10 @@ def test_geo_cartesian():
     }
     my_geo = get_geo_object(domain)
     json_settings = {"nam_io_offline": {"csurf_filetype": "NC"}}
-    my_settings = BaseNamelist.ascii2nml(json_settings)
+    my_settings = NamelistGenerator("pgd", f90nml.Namelist(json_settings))
     my_settings = my_geo.update_namelist(my_settings)
     assert domain["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
-    assert my_settings["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
+    assert my_settings.nml["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
 
     domain = {"not_existing": {"existing": "some_value"}}
     with pytest.raises(KeyError):
@@ -194,10 +186,10 @@ def test_geo_ign():
     }
     my_geo = IGN(domain, recreate=True)
     json_settings = {"nam_io_offline": {"csurf_filetype": "NC"}}
-    my_settings = BaseNamelist.ascii2nml(json_settings)
+    my_settings = NamelistGenerator("pgd", f90nml.Namelist(json_settings))
     my_settings = my_geo.update_namelist(my_settings)
     assert domain["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
-    assert my_settings["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
+    assert my_settings.nml["nam_pgd_grid"]["cgrid"] == my_geo.cgrid
 
     my_geo1 = IGN(domain, recreate=False)
     my_geo2 = IGN(domain, recreate=True)
@@ -229,17 +221,3 @@ def test_geo_ign():
     domain = {"nam_ign": {"not_existing": "some_value"}}
     with pytest.raises(KeyError):
         IGN(domain)
-
-
-def test_set_domain_unittest():
-    """Test set domain."""
-    domains = {"NAME": {"nam_pgd_grid": {"cgrid": "some_projection"}}}
-    domain = set_domain(domains, "NAME")
-    assert domains["NAME"]["nam_pgd_grid"]["cgrid"] == domain["nam_pgd_grid"]["cgrid"]
-
-    with pytest.raises(KeyError):
-        set_domain(domains, "not_existing")
-
-    domains = ["NAME"]
-    with pytest.raises(ValueError):  # noqa PT011
-        set_domain(domains, "NAME")

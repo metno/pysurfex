@@ -9,18 +9,11 @@ import f90nml
 import pytest
 
 from pysurfex.binary_input import InputDataFromNamelist, JsonOutputData
-from pysurfex.binary_input_legacy import SodaInputData
-from pysurfex.configuration import ConfigurationFromTomlFile
 from pysurfex.datetime_utils import as_datetime
 from pysurfex.platform_deps import SystemFilePaths
 
 
-@pytest.fixture()
-def default_config(config_exp_surfex_toml):
-    return ConfigurationFromTomlFile(config_exp_surfex_toml)
-
-
-@pytest.fixture()
+@pytest.fixture
 def climdir(tmp_path_factory):
     climdir = tmp_path_factory.getbasetemp() / "climdir"
     climdir.mkdir(exist_ok=True)
@@ -29,7 +22,7 @@ def climdir(tmp_path_factory):
     return climdir.as_posix()
 
 
-@pytest.fixture()
+@pytest.fixture
 def assim_dir(tmp_path_factory):
     assim_dir = tmp_path_factory.getbasetemp() / "assim"
     assim_dir.mkdir(exist_ok=True)
@@ -43,7 +36,7 @@ def assim_dir(tmp_path_factory):
     return assim_dir.as_posix()
 
 
-@pytest.fixture()
+@pytest.fixture
 def first_guess_dir(tmp_path_factory):
     first_guess_dir = tmp_path_factory.getbasetemp() / "first_guess"
     first_guess_dir.mkdir(exist_ok=True)
@@ -52,7 +45,7 @@ def first_guess_dir(tmp_path_factory):
     return first_guess_dir.as_posix()
 
 
-@pytest.fixture()
+@pytest.fixture
 def get_system(climdir, assim_dir, first_guess_dir):
     system = {
         "climdir": climdir,
@@ -61,31 +54,6 @@ def get_system(climdir, assim_dir, first_guess_dir):
         "first_guess_dir": first_guess_dir,
     }
     return SystemFilePaths(system)
-
-
-@pytest.fixture()
-def soda_input_data(default_config, get_system, an_time):
-    return SodaInputData(default_config, get_system, check_existence=False, dtg=an_time)
-
-
-def test_soda_oi(soda_input_data):
-    soda_input_data.set_input_vertical_soil_oi()
-
-
-def test_soda_enkf(soda_input_data):
-    soda_input_data.set_input_vertical_soil_enkf()
-
-
-def test_soda_ekf(soda_input_data):
-    soda_input_data.set_input_vertical_soil_ekf()
-
-
-def test_soda_observations(soda_input_data):
-    soda_input_data.set_input_observations()
-
-
-def test_soda_sea_assimilation(soda_input_data):
-    soda_input_data.set_input_sea_assimilation()
 
 
 @contextlib.contextmanager
@@ -114,7 +82,7 @@ def test_json_output(tmp_path_factory):
         JsonOutputData(data).archive_files()
 
 
-@pytest.fixture()
+@pytest.fixture
 def f90ml_namelist(tmp_path_factory):
     nml = tmp_path_factory.getbasetemp() / "nml"
     nml_input = """
@@ -178,7 +146,7 @@ def f90ml_namelist(tmp_path_factory):
     return nml
 
 
-@pytest.fixture()
+@pytest.fixture
 def f90ml_namelist_netcdf(tmp_path_factory):
     nml = tmp_path_factory.getbasetemp() / "nc_nml"
     nml_input = """
@@ -223,7 +191,7 @@ def f90ml_namelist_netcdf(tmp_path_factory):
     return nml
 
 
-@pytest.fixture()
+@pytest.fixture
 def f90ml_namelist_netcdf_single(tmp_path_factory):
     nml = tmp_path_factory.getbasetemp() / "nc_single_nml"
     nml_input = """

@@ -5,6 +5,7 @@ import os
 
 import numpy as np
 import requests
+import xarray as xr
 
 try:
     import cfunits
@@ -17,6 +18,7 @@ except:  # noqa
 
 
 from .datetime_utils import as_datetime, as_datetime_args, as_timedelta, utcfromtimestamp
+from .geo import LonLatVal
 from .observation import Observation
 from .titan import dataset_from_file
 
@@ -30,7 +32,8 @@ class ObservationSet(object):
         Args:
             observations (list): Observation objects.
             label (str, optional): Name of set. Defaults to "".
-            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
+            sigmao (float, optional): Observation error relative to normal background
+                                      error. Defaults to None.
 
         """
         self.size = len(observations)
@@ -59,8 +62,7 @@ class ObservationSet(object):
         stid = str(stid)
         if stid in self.index_stid:
             return self.index_stid[stid]
-        else:
-            return None
+        return None
 
     def get_pos_index(self, lon, lat):
         """Get position index.
@@ -77,8 +79,7 @@ class ObservationSet(object):
         pos = lon + ":" + lat
         if pos in self.index_pos:
             return self.index_pos[pos]
-        else:
-            return None
+        return None
 
     def get_obs(self):
         """Get observations.
@@ -94,8 +95,8 @@ class ObservationSet(object):
                 self.observations
             )
 
-            for point, lon in enumerate(lons):
-                lon = Observation.format_lon(lon)
+            for point, lonval in enumerate(lons):
+                lon = Observation.format_lon(lonval)
                 lat = Observation.format_lat(lats[point])
                 stid = str(stids[point])
 
@@ -127,7 +128,7 @@ class ObservationSet(object):
 
         """
         found = False
-        for i in range(0, len(self.observations)):
+        for i in range(len(self.observations)):
             if my_obs.obstime == self.observations.obstimes[i]:
                 lon = self.observations.obstimes[i]
                 lat = self.observations.obstimes[i]
@@ -152,7 +153,7 @@ class ObservationSet(object):
         my_stids = []
         times, lons, lats, stids, __, values, __, __ = self.get_obs()
 
-        for i in range(0, geo.nlons):
+        for i in range(geo.nlons):
             lon = geo.lonlist[i]
             lat = geo.latlist[i]
             pos = Observation.format_lon(lon) + ":" + Observation.format_lat(lat)
@@ -162,7 +163,7 @@ class ObservationSet(object):
             if pos in self.index_pos:
                 ind = self.index_pos[pos]
                 if validtime is not None:
-                    print("No time check implemented yet")
+                    logging.warning("No time check implemented yet")
                 my_times.append(times[ind])
                 my_stids.append(stids[ind])
                 my_values.append(values[ind])
@@ -206,6 +207,104 @@ class ObservationSet(object):
         with open(filename, mode="w", encoding="utf-8") as file_handler:
             json.dump(data, file_handler, indent=indent)
 
+    def get_data_set(self, varname):
+        """Get data set.
+
+        Args:
+            varname (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        data = {}
+        posids = []
+        locations = {}
+        times = []
+        ctimes = []
+        lons = {}
+        lats = {}
+        elevs = {}
+        for obs in self.observations:
+            if obs.varname == varname:
+                time = obs.obstime
+                logging.info("time: %s", time)
+                ctime = f"{time.strftime('%Y%m%d%H%M')}"
+                posid = obs.posid
+                stid = obs.stid
+                if stid != "NA":
+                    posid = stid
+
+                posid = posid.replace("SN", "")
+                posid = int(posid)
+
+                ident = f"{time.strftime('%Y%m%d%H%M')}#{posid}"
+                if ctime not in ctimes:
+                    ctimes.append(ctime)
+                    times.append(time)
+
+                if posid not in posids:
+                    posids.append(posid)
+
+                stid = obs.stid
+                if stid == "NA":
+                    stid = posid
+                locations.update({posid: stid})
+                data.update({ident: obs.value})
+                lons.update({posid: obs.lon})
+                lats.update({posid: obs.lat})
+                elevs.update({posid: obs.elev})
+
+        ntimes = len(times)
+        nlocations = len(posids)
+        values = np.nan * np.zeros(
+            [
+                ntimes,
+                nlocations,
+            ],
+            np.float32,
+        )
+
+        dtimes = np.nan * np.zeros([ntimes], np.double)
+        dlons = np.nan * np.zeros([nlocations], np.float32)
+        dlats = np.nan * np.zeros([nlocations], np.float32)
+        delevs = np.nan * np.zeros([nlocations], np.float32)
+        dtimes = np.array(times).astype("datetime64[s]").astype("int")
+        for t, time in enumerate(times):
+            ctime = time.strftime("%Y%m%d%H%M")
+            for pos, posid in enumerate(posids):
+                ident = f"{ctime}#{posid}"
+                values[t][pos] = data[ident]
+                dlons[pos] = lons[posid]
+                dlats[pos] = lats[posid]
+                delevs[pos] = elevs[posid]
+
+        logging.info("posids %s", posids)
+        coords = {}
+
+        dtimes = np.array(times)
+        coords["obstime"] = (["obstime"], [], {}, {"dtype": np.datetime64})
+        coords["location"] = (["location"], posids)
+        coords["lat"] = (
+            ["location"],
+            dlats,
+            {"units": "degrees_east"},
+        )
+        coords["lon"] = (
+            ["location"],
+            dlons,
+            {"units": "degrees_north"},
+        )
+        coords["altitude"] = (
+            ["location"],
+            delevs,
+            {"units": "m"},
+        )
+
+        ds = xr.Dataset(coords=coords)
+        ds["obstime"] = dtimes
+        ds["obs"] = (["obstime", "location"], values)
+        return ds
+
 
 class NetatmoObservationSet(ObservationSet):
     """Observation set from netatmo."""
@@ -233,7 +332,8 @@ class NetatmoObservationSet(ObservationSet):
             lonrange (_type_, optional): _description_. Defaults to None.
             latrange (_type_, optional): _description_. Defaults to None.
             label (str, optional): _description_. Defaults to "netatmo".
-            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
+            sigmao (float, optional): Observation error relative to normal background
+                                      error. Defaults to None.
 
         Raises:
             RuntimeError: Lonrange must be a list with length 2
@@ -284,7 +384,6 @@ class NetatmoObservationSet(ObservationSet):
                 text = text.replace("}]{", "}{")
                 text = text.replace("}][{", "},{")
                 text = text.replace("}{", "},{")
-                print(text)
                 text = '{"data": %s}' % text
                 raw = json.loads(text)
                 raw = raw["data"]
@@ -301,42 +400,43 @@ class NetatmoObservationSet(ObservationSet):
                     if variable in curr_data:
                         if "time_utc" in curr_data:
                             time_utc = curr_data["time_utc"]
-
-                            # Record this observation if it is closer to the target time than any
-                            # other previously parsed observation for this location. Also, only
-                            # ecord if the time difference is within acceptable limits.
-
+                            # Record this observation if it is closer to the target
+                            # time than any other previously parsed observation for
+                            # this location. Also, only record if the time difference
+                            # is within acceptable limits.
                             if "altitude" not in line:
                                 num_missing_elev += 1
 
                             if not re or "altitude" in line:
                                 lon = location[0]
                                 lat = location[1]
-                                if lonrange[0] <= lon <= lonrange[1]:
-                                    if latrange[0] <= lat <= latrange[1]:
-                                        if my_id not in data:
-                                            data[my_id] = list()
-                                            times[my_id] = list()
+                                if (
+                                    lonrange[0] <= lon <= lonrange[1]
+                                    and latrange[0] <= lat <= latrange[1]
+                                ):
+                                    if my_id not in data:
+                                        data[my_id] = []
+                                        times[my_id] = []
 
-                                            elev = np.nan
-                                            metadata[my_id] = {
-                                                "lon": lon,
-                                                "lat": lat,
-                                                "elev": elev,
-                                            }
-                                        if (
-                                            np.isnan(metadata[my_id]["elev"])
-                                            and "altitude" in line
-                                        ):
-                                            metadata[my_id]["elev"] = line["altitude"]
+                                        elev = np.nan
+                                        metadata[my_id] = {
+                                            "lon": lon,
+                                            "lat": lat,
+                                            "elev": elev,
+                                        }
+                                    if (
+                                        np.isnan(metadata[my_id]["elev"])
+                                        and "altitude" in line
+                                    ):
+                                        metadata[my_id]["elev"] = line["altitude"]
 
-                                        value = curr_data[variable]
-                                        if variable == "Temperature":
-                                            value = value + 273.15
-                                        if variable == "Humidity":
-                                            value = value * 0.01
-                                        data[my_id] += [value]
-                                        times[my_id] += [time_utc]
+                                    value = curr_data[variable]
+                                    if variable == "Temperature":
+                                        value = value + 273.15
+                                    if variable == "Humidity":
+                                        value = value * 0.01
+                                    data[my_id] += [value]
+                                    times[my_id] += [time_utc]
                         else:
                             num_missing_time += 1
                     else:
@@ -374,10 +474,7 @@ class NetatmoObservationSet(ObservationSet):
         logging.info("   %d missing metadata", num_missing_metadata)
         logging.info("   %d missing timestamp", num_missing_time)
         logging.info("   %d wrong timestamp", num_wrong_time)
-        if not re:
-            extra = " (not removed)"
-        else:
-            extra = ""
+        extra = " (not removed)" if not re else ""
         logging.debug("   %d missing elev%s", num_missing_elev, extra)
 
         ObservationSet.__init__(self, observations, label=label, sigmao=sigmao)
@@ -402,7 +499,7 @@ class MetFrostObservations(ObservationSet):
         latrange=None,
         unit=None,
         label="frost",
-        sigmao=None,
+        sigmao=None,  # noqa ARG002
     ):
         """Construct obs set from Frost.
 
@@ -421,7 +518,8 @@ class MetFrostObservations(ObservationSet):
             latrange (_type_, optional): _description_. Defaults to None.
             unit (_type_, optional): _description_. Defaults to None.
             label (str, optional): _description_. Defaults to "frost".
-            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
+            sigmao (float, optional): Observation error relative to normal
+                                      background error. Defaults to None.
 
         Raises:
             KeyError: _description_
@@ -445,7 +543,7 @@ class MetFrostObservations(ObservationSet):
         #
         ids = []
         tries = 1
-        station_dict = dict()
+        station_dict = {}
         while tries <= num_tries:
             tries += 1
             # first get all the stations within a polygon or in a country?
@@ -495,13 +593,9 @@ class MetFrostObservations(ObservationSet):
                 data = req.json()["data"]
                 ids = []
                 count_discard = 0
-                print(data)
                 for data_block in data:
                     my_id = data_block["id"]
-                    if "masl" in data_block:
-                        elev = data_block["masl"]
-                    else:
-                        elev = -999  # missing value
+                    elev = data_block.get("masl", -999)
 
                     # filter data for WMO and non WMO
                     keep_this_id = True
@@ -551,20 +645,20 @@ class MetFrostObservations(ObservationSet):
                         keep_this_id = False
                         logging.debug("throwing out blacklisted id: %s", my_id)
 
-                    if stations is not None:
-                        if my_id not in stations:
-                            keep_this_id = False
-                            logging.debug(
-                                "Throwing out station because not in station list %s",
-                                my_id,
-                            )
+                    if stations is not None and my_id not in stations:
+                        keep_this_id = False
+                        logging.debug(
+                            "Throwing out station because not in station list %s",
+                            my_id,
+                        )
 
                     logging.debug(
                         "Keep this ID: %s bool: %s", str(my_id), str(keep_this_id)
                     )
                     if keep_this_id:  # write into dict
                         ids.append(my_id)
-                        # create a dictionary for these stations to store lat,long,elev for each
+                        # create a dictionary for these stations to store
+                        # lat,long,elev for each
                         station_dict[my_id] = [
                             data_block["geometry"]["coordinates"][1],
                             data_block["geometry"]["coordinates"][0],
@@ -579,7 +673,7 @@ class MetFrostObservations(ObservationSet):
                 break
 
             if req.status_code == 404:
-                print("STATUS: No data was found for the list of query Ids.")
+                logging.warning("STATUS: No data was found for the list of query Ids.")
                 break
             if tries > num_tries:
                 raise Exception("ERROR: could not retrieve observations.")
@@ -646,8 +740,9 @@ class MetFrostObservations(ObservationSet):
                 if req.status_code == 200:
                     data = req.json()["data"]
                     for data_block in data:
-                        # Check that reference time is ok, since sometimes future observations
-                        # can be present when 'latest' is chosen for reference time
+                        # Check that reference time is ok, since sometimes
+                        # future observations can be present when 'latest' is
+                        # chosen for reference time
                         ref_str = data_block["referenceTime"]
                         ref_year = int(ref_str[0:4])
                         ref_month = int(ref_str[5:7])
@@ -672,34 +767,30 @@ class MetFrostObservations(ObservationSet):
                                 logging.debug("%s", obs)
                                 if "unit" in obs:
                                     read_unit = obs["unit"]
-                                if "level" in obs:
-                                    if level is not None:
-                                        logging.debug("level %s", obs["level"])
-                                        all_found = True
-                                        for key in level:
-                                            if key in obs["level"]:
-                                                if str(level[key]) != str(
-                                                    obs["level"][key]
-                                                ):
-                                                    logging.debug(
-                                                        "%s != %s",
-                                                        level[key],
-                                                        obs["level"][key],
-                                                    )
-                                                    all_found = False
-                                                else:
-                                                    logging.debug(
-                                                        "%s == %s",
-                                                        level[key],
-                                                        obs["level"][key],
-                                                    )
-                                        if not all_found:
-                                            levels_ok = False
+                                if "level" in obs and level is not None:
+                                    logging.debug("level %s", obs["level"])
+                                    all_found = True
+                                    for key in level:
+                                        if key in obs["level"]:
+                                            if str(level[key]) != str(obs["level"][key]):
+                                                logging.debug(
+                                                    "%s != %s",
+                                                    level[key],
+                                                    obs["level"][key],
+                                                )
+                                                all_found = False
+                                            else:
+                                                logging.debug(
+                                                    "%s == %s",
+                                                    level[key],
+                                                    obs["level"][key],
+                                                )
+                                    if not all_found:
+                                        levels_ok = False
 
                         keep_this_obs = False
-                        if levels_ok:
-                            if abs(ref_time - validtime) < dt:
-                                keep_this_obs = True
+                        if levels_ok and abs(ref_time - validtime) < dt:
+                            keep_this_obs = True
 
                         if keep_this_obs:
                             logging.debug("Keep this obs")
@@ -728,10 +819,12 @@ class MetFrostObservations(ObservationSet):
                     )
                     break
                 if req.status_code == 404:
-                    print("STATUS: No data was found for the list of query Ids.")
+                    logging.warning(
+                        "STATUS: No data was found for the list of query Ids."
+                    )
                     break
                 if tries > num_tries:
-                    raise Exception("ERROR: could not retrieve observations.")
+                    raise RuntimeError("ERROR: could not retrieve observations.")
 
             for station, station_id in ids_obs_dict.items():
                 value = float(station_id)
@@ -765,7 +858,8 @@ class JsonObservationSet(ObservationSet):
             filename (str): Filename
             label (str, optional): Label of set. Defaults to "json".
             var (str, optional): Variable name. Defaults to None.
-            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
+            sigmao (float, optional): Observation error relative to normal background
+                                      error. Defaults to None.
 
         Raises:
             RuntimeError: Varname is not found
@@ -773,8 +867,9 @@ class JsonObservationSet(ObservationSet):
         """
         with open(filename, mode="r", encoding="utf-8") as file_handler:
             obs = json.load(file_handler)
+
         observations = []
-        for i in range(0, len(obs)):
+        for i in range(len(obs)):
             ind = str(i)
             obstime = as_datetime(obs[ind]["obstime"])
             lon = obs[ind]["lon"]
@@ -823,12 +918,13 @@ class ObservationFromTitanJsonFile(ObservationSet):
             an_time (_type_): _description_
             filename (_type_): _description_
             label (str, optional): _description_. Defaults to "".
-            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
+            sigmao (float, optional): Observation error relative to normal background
+                                      error. Defaults to None.
 
         """
         qc_obs = dataset_from_file(an_time, filename)
         observations = []
-        for i in range(0, len(qc_obs)):
+        for i in range(len(qc_obs)):
             observations.append(
                 Observation(
                     qc_obs.obstimes[i],
@@ -841,3 +937,236 @@ class ObservationFromTitanJsonFile(ObservationSet):
             )
 
         ObservationSet.__init__(self, observations, label=label, sigmao=sigmao)
+
+
+class ObsSetFromVobs(ObservationSet):
+    """Create observation set from vobs files."""
+
+    def __init__(self, fname, validtime, varname=None, label="vobs", sigmao=None):
+        """Constuct obs set from vobs file.
+
+        Args:
+            fname (_type_): File name
+            validtime (_type_): Valid time
+            varname (str, optional): Variable name. Defaults to "".
+            label (str, optional): _description_. Defaults to "vobs".
+            sigmao (float, optional): Observation error relative to normal background
+                                      error. Defaults to None.
+
+        """
+        logging.info("Processing %s", fname)
+        observations = []
+        obpars, obsx = self.read_vfld(fname)
+
+        for obname in obpars:
+            for stid, odata in obsx.items():
+                lon = odata["lon"]
+                lat = odata["lat"]
+                elev = odata["hgt"]
+                obs = np.nan
+                if obname in obsx[stid]:
+                    obs = obsx[stid][obname]
+                if obs == -99:
+                    obs = np.nan
+                value = obsx[stid][obname]
+                if varname is None or varname == obname:
+                    observations.append(
+                        Observation(
+                            validtime,
+                            lon,
+                            lat,
+                            value,
+                            elev=elev,
+                            stid=stid,
+                            varname=obname,
+                        )
+                    )
+
+        ObservationSet.__init__(self, observations, label=label, sigmao=sigmao)
+
+    @staticmethod
+    def read_vfld(fnam):
+        """Read vfld file."""
+        with open(fnam, mode="r", encoding="utf-8") as f:
+            h1 = f.readline().split()
+            h2 = f.readline()
+            nst, __, __ = (int(i) for i in h1)
+            npar = int(h2)
+            pars = {}
+            for i in range(npar):
+                l = f.readline().split()  # noqa
+                pars[l[0]] = {"index": i, "val": int(l[1])}
+            extra = 3 if "FI" in pars else 4
+            x = {}
+            for i in range(nst):  # noqa
+                l = f.readline().split()  # noqa
+                lat, lon, hgt = l[1:4]
+                stnr = l[0][-5:]
+                x[stnr] = {"lat": float(lat), "lon": float(lon), "hgt": float(hgt)}
+                for par, val in pars.items():
+                    if par != "FI":
+                        x[stnr][par] = float(l[val["index"] + extra])
+
+        return pars, x
+
+
+class StationList:
+    """Station list."""
+
+    def __init__(self, fname):
+        """Construct."""
+        self.fname = fname
+        index_pos = {}
+        aliases = {}
+        try:
+            with open(fname, mode="r", encoding="utf-8") as file_handler:
+                ids_from_file = json.load(file_handler)
+        except FileNotFoundError:
+            raise FileNotFoundError("Station list does not exist!") from FileNotFoundError
+        self.stids = ids_from_file
+        ids = []
+        for stid in ids_from_file:
+            ids.append(stid)
+            lon = ids_from_file[stid]["lon"]
+            lat = ids_from_file[stid]["lat"]
+            pos = self.posid(lon, lat)
+            index_pos.update({pos: stid})
+            if "aliases" in ids_from_file[stid]:
+                aliases.update({pos: ids_from_file[stid]["aliases"]})
+        self.ids = ids
+        self.index_pos = index_pos
+        self.geo = self.get_geo()
+
+    def get_geo(self, lonrange=None, latrange=None, xdx="0.3", xdy="0.3"):
+        """Set geometry from station list."""
+        if lonrange is None:
+            lonrange = [-180, 180]
+        if latrange is None:
+            latrange = [-90, 90]
+
+        lons = []
+        lats = []
+        for stid in self.stids:
+            lon, lat, __ = self.get_pos_from_stid([stid])
+            lon = lon[0]
+            lat = lat[0]
+            if lonrange[0] <= lon <= lonrange[1] and latrange[0] <= lat <= latrange[1]:
+                lon = round(lon, 5)
+                lat = round(lat, 5)
+                lons.append(lon)
+                lats.append(lat)
+
+        d_x = [xdx] * len(lons)
+        d_y = [xdy] * len(lats)
+        geo_json = {
+            "nam_pgd_grid": {"cgrid": "LONLATVAL"},
+            "nam_lonlatval": {"xx": lons, "xy": lats, "xdx": d_x, "xdy": d_y},
+        }
+        return LonLatVal(geo_json)
+
+    def get_pos_from_stid(self, stids):
+        """Get pos from station ID.
+
+        Args:
+            stids (list): _description_
+
+        Raises:
+            RuntimeError: _description_
+
+        Returns:
+            tuple: longitudes, latitudes
+
+        """
+        lons = []
+        lats = []
+        elevs = []
+        if isinstance(stids, str):
+            stids = [stids]
+
+        found = False
+        for stid in self.stids:
+            for stid1 in stids:
+                if stid == stid1:
+                    found = True
+                    lon = float(self.stids[stid1]["lon"])
+                    lat = float(self.stids[stid1]["lat"])
+                    elev = "NA"
+                    if "elev" in self.stids[stid1]:
+                        elev = self.stids[stid1]["elev"]
+                    lons.append(lon)
+                    lats.append(lat)
+                    if elev == "NA":
+                        elev = np.nan
+                    elevs.append(elev)
+        if not found:
+            raise RuntimeError(
+                "Could not find station id " + stid + " in file " + self.fname
+            )
+        return lons, lats, elevs
+
+    def get_stid_from_stationlist(self, lons, lats):
+        """Get station ID from station list.
+
+        Args:
+            lons (list): Longitudes
+            lats (list): Latitudes
+
+        Returns:
+            list: Station IDs
+
+        """
+        stids = []
+        for i, lon in enumerate(lons):
+            lat = lats[i]
+            pos = self.posid(lon, lat)
+            if pos in self.index_pos:
+                stids.append(self.index_pos[pos])
+            else:
+                stids.append("NA")
+        return stids
+
+    @staticmethod
+    def posid(lon, lat, pos_decimals=5):
+        """Return pos id.
+
+        Args:
+            lon (_type_): _description_
+            lat (_type_): _description_
+            pos_decimals (int, optional): _description_. Defaults to 5.
+
+        Returns:
+            _type_: _description_
+        """
+        return f"{lon:.{pos_decimals}f}#{lat:.{pos_decimals}f}"
+
+    def posids(self, lons, lats, pos_decimals=5):
+        """Get posids.
+
+        Args:
+            lons (_type_): _description_
+            lats (_type_): _description_
+            pos_decimals (int, optional): _description_. Defaults to 5.
+
+        Returns:
+            _type_: _description_
+        """
+        lposids = []
+        for pind, lon in enumerate(lons):
+            lat = lats[pind]
+            pos = self.posid(lon, lat, pos_decimals=pos_decimals)
+            if pos in self.index_pos:
+                pos = self.index_pos[pos]
+            lposids.append(pos)
+        return lposids
+
+    def all_posids(self, pos_decimals=5):
+        """Get all posids in list.
+
+        Args:
+            pos_decimals (int, optional): _description_. Defaults to 5.
+
+        Returns:
+            _type_: _description_
+        """
+        lons, lats, __ = self.get_pos_from_stid(self.stids)
+        return self.posids(lons, lats, pos_decimals=pos_decimals)

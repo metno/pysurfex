@@ -1,6 +1,8 @@
 """Mockers."""
 import json
+import logging
 import os
+from contextlib import contextmanager
 
 import numpy as np
 import pytest
@@ -8,11 +10,23 @@ from netCDF4 import Dataset
 
 from pysurfex.datetime_utils import as_datetime
 from pysurfex.geo import ConfProj
+from pysurfex.platform_deps import SystemFilePaths
+
+MY_CODES_MISSING_DOUBLE = 999.0
+MY_CODES_MISSING_LONG = 999
 
 
-@pytest.fixture(scope="module")
-def config_exp_surfex_toml():
-    fname = f"{os.path.abspath(os.path.dirname(__file__))}/../pysurfex//cfg/config_exp_surfex.toml"
+@pytest.fixture(name="tmpdir", scope="module")
+def fixture_tmpdir(tmp_path_factory):
+    return f"{tmp_path_factory.getbasetemp().as_posix()}"
+
+
+@pytest.fixture(name="system_file_paths", scope="module")
+def fixture_system_file_paths(tmpdir):
+    fname = f"{tmpdir}/exp_file_paths.json"
+    paths = {"climdir": f"{tmpdir}/climate"}
+    sexps = SystemFilePaths(paths)
+    sexps.save_as(fname)
     return fname
 
 
@@ -45,6 +59,25 @@ def conf_proj_2x3_dict():
             "ilate": 1,
             "xlatcen": 60,
             "xloncen": 10,
+            "nimax": 2,
+            "njmax": 3,
+            "xdx": 10000.0,
+            "xdy": 10000.0,
+        },
+    }
+    return conf_proj_2x3_dict
+
+
+@pytest.fixture(scope="module")
+def conf_proj_2x3_dict_metcoop_b():
+    conf_proj_2x3_dict = {
+        "nam_pgd_grid": {"cgrid": "CONF PROJ"},
+        "nam_conf_proj": {"xlat0": 63.5, "xlon0": 15.0},
+        "nam_conf_proj_grid": {
+            "ilone": 1,
+            "ilate": 1,
+            "xlatcen": 63.0,
+            "xloncen": 15.0,
             "nimax": 2,
             "njmax": 3,
             "xdx": 10000.0,
@@ -194,38 +227,29 @@ def qc_dataset(obstime_str):
 
 
 @pytest.fixture(scope="module")
-def get_nam_path(tmp_path_factory):
-    nam_dir = f"{tmp_path_factory.getbasetemp().as_posix()}/nam"
-    if not os.path.exists(nam_dir):
-        os.makedirs(nam_dir, exist_ok=True)
-    files = [
-        "io",
-        "constants",
-        "rsmin",
-        "rsmin_mod",
-        "cv",
-        "sea",
-        "treedrag",
-        "flake",
-        "prep_from_namelist_values",
-        "prep",
-        "prep_snow",
-        "offline",
-        "soda",
-        "selected_output",
-        "override",
-    ]
-    for fff in files:
-        with open(f"{nam_dir}/{fff}.json", mode="w", encoding="utf-8") as nam:
-            json.dump({}, nam)
-    return nam_dir
-
-
-@pytest.fixture(scope="module")
 def get_nam_file():
     fname = (
         f"{os.path.abspath(os.path.dirname(__file__))}/../examples/surfex_namelists.yml"
     )
+    return fname
+
+
+@pytest.fixture(scope="module")
+def get_options_nam_file(tmp_path_factory):
+    fname = f"{tmp_path_factory.getbasetemp().as_posix()}/OPTIONS.nam"
+    with open(fname, mode="w", encoding="utf8") as fhandler:
+        fhandler.write("&nam_io_offline\n")
+        fhandler.write("  csurf_filetype='NC'\n")
+        fhandler.write("  cpgdfile='PGD'\n")
+        fhandler.write("  cprepfile='PREP'\n")
+        fhandler.write("  csurffile='SURFOUT'\n")
+        fhandler.write("/\n")
+    return fname
+
+
+@pytest.fixture(scope="module")
+def get_assemble_file():
+    fname = f"{os.path.abspath(os.path.dirname(__file__))}/../examples/assemble.yml"
     return fname
 
 
@@ -245,27 +269,29 @@ def input_binary_data_file_single():
 
 @pytest.fixture(scope="module")
 def rotated_ll_t2m_grib1(tmp_path_factory):
-    keys = {
-        "editionNumber": 1,
-        "gridType": "rotated_ll",
-        "Ni": 9,
-        "Nj": 19,
-        "latitudeOfFirstGridPointInDegrees": 59,
-        "longitudeOfFirstGridPointInDegrees": 9.5,
-        "latitudeOfLastGridPointInDegrees": 60.9,
-        "longitudeOfLastGridPointInDegrees": 10.4,
-        "iDirectionIncrementInDegrees": 0.1,
-        "jDirectionIncrementInDegrees": 0.1,
-        "latitudeOfSouthernPoleInDegrees": 0,
-        "longitudeOfSouthernPoleInDegrees": 0,
-        "iScansNegatively": 1,
-        "jScansPositively": 0,
-        "indicatorOfParameter": 11,
-        "levelType": 105,
-        "level": 2,
-        "timeRangeIndicator": 0,
-        "bitmapPresent": 0,
-    }
+    keys = [
+        {
+            "editionNumber": 1,
+            "gridType": "rotated_ll",
+            "Ni": 9,
+            "Nj": 19,
+            "latitudeOfFirstGridPointInDegrees": 59,
+            "longitudeOfFirstGridPointInDegrees": 9.5,
+            "latitudeOfLastGridPointInDegrees": 60.9,
+            "longitudeOfLastGridPointInDegrees": 10.4,
+            "iDirectionIncrementInDegrees": 0.1,
+            "jDirectionIncrementInDegrees": 0.1,
+            "latitudeOfSouthernPoleInDegrees": 0,
+            "longitudeOfSouthernPoleInDegrees": 0,
+            "iScansNegatively": 1,
+            "jScansPositively": 0,
+            "indicatorOfParameter": 11,
+            "levelType": 105,
+            "level": 2,
+            "timeRangeIndicator": 0,
+            "bitmapPresent": 0,
+        }
+    ]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/rotated_ll_t2m.grib1"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler)
@@ -274,29 +300,31 @@ def rotated_ll_t2m_grib1(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def rotated_ll_t1_grib2(tmp_path_factory):
-    keys = {
-        "editionNumber": 2,
-        "gridType": "rotated_ll",
-        "Ni": 9,
-        "Nj": 19,
-        "latitudeOfFirstGridPointInDegrees": 59,
-        "longitudeOfFirstGridPointInDegrees": 9.5,
-        "latitudeOfLastGridPointInDegrees": 60.9,
-        "longitudeOfLastGridPointInDegrees": 10.4,
-        "iDirectionIncrementInDegrees": 0.1,
-        "jDirectionIncrementInDegrees": 0.1,
-        "latitudeOfSouthernPoleInDegrees": 0,
-        "longitudeOfSouthernPoleInDegrees": 0,
-        "iScansNegatively": 1,
-        "jScansPositively": 0,
-        "discipline": 0,
-        "parameterCategory": 0,
-        "parameterNumber": 0,
-        "levelType": 103,
-        "typeOfStatisticalProcessing": -1,
-        "level": 2,
-        "bitmapPresent": 0,
-    }
+    keys = [
+        {
+            "editionNumber": 2,
+            "gridType": "rotated_ll",
+            "Ni": 9,
+            "Nj": 19,
+            "latitudeOfFirstGridPointInDegrees": 59,
+            "longitudeOfFirstGridPointInDegrees": 9.5,
+            "latitudeOfLastGridPointInDegrees": 60.9,
+            "longitudeOfLastGridPointInDegrees": 10.4,
+            "iDirectionIncrementInDegrees": 0.1,
+            "jDirectionIncrementInDegrees": 0.1,
+            "latitudeOfSouthernPoleInDegrees": 0,
+            "longitudeOfSouthernPoleInDegrees": 0,
+            "iScansNegatively": 1,
+            "jScansPositively": 0,
+            "discipline": 0,
+            "parameterCategory": 0,
+            "parameterNumber": 0,
+            "levelType": 103,
+            "typeOfStatisticalProcessing": -1,
+            "level": 2,
+            "bitmapPresent": 0,
+        }
+    ]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/rotated_ll_t1.grib2"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler)
@@ -305,30 +333,32 @@ def rotated_ll_t1_grib2(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def lambert_t2m_grib1(tmp_path_factory):
-    keys = {
-        "editionNumber": 1,
-        "gridType": "lambert",
-        "Nx": 9,
-        "Ny": 19,
-        "latitudeOfFirstGridPointInDegrees": 58.828,
-        "longitudeOfFirstGridPointInDegrees": 7.893,
-        "LoVInDegrees": 15,
-        "DxInMetres": 2500,
-        "DyInMetres": 2500,
-        "iScansNegatively": 0,
-        "jScansPositively": 1,
-        "jPointsAreConsecutive": 1,
-        "Latin1InDegrees": 63.3,
-        "LaDInDegrees": 63.3,
-        "Latin2InDegrees": 63.3,
-        "latitudeOfSouthernPoleInDegrees": -90,
-        "longitudeOfSouthernPoleInDegrees": 0,
-        "indicatorOfParameter": 11,
-        "levelType": 105,
-        "level": 2,
-        "timeRangeIndicator": 0,
-        "bitmapPresent": 0,
-    }
+    keys = [
+        {
+            "editionNumber": 1,
+            "gridType": "lambert",
+            "Nx": 9,
+            "Ny": 19,
+            "latitudeOfFirstGridPointInDegrees": 58.828,
+            "longitudeOfFirstGridPointInDegrees": 7.893,
+            "LoVInDegrees": 15,
+            "DxInMetres": 2500,
+            "DyInMetres": 2500,
+            "iScansNegatively": 0,
+            "jScansPositively": 1,
+            "jPointsAreConsecutive": 1,
+            "Latin1InDegrees": 63.3,
+            "LaDInDegrees": 63.3,
+            "Latin2InDegrees": 63.3,
+            "latitudeOfSouthernPoleInDegrees": -90,
+            "longitudeOfSouthernPoleInDegrees": 0,
+            "indicatorOfParameter": 11,
+            "levelType": 105,
+            "level": 2,
+            "timeRangeIndicator": 0,
+            "bitmapPresent": 0,
+        }
+    ]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/lambert_t2m.grib1"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler)
@@ -337,32 +367,34 @@ def lambert_t2m_grib1(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def lambert_t1_grib2(tmp_path_factory):
-    keys = {
-        "editionNumber": 2,
-        "gridType": "lambert",
-        "Nx": 9,
-        "Ny": 19,
-        "latitudeOfFirstGridPointInDegrees": 58.828,
-        "longitudeOfFirstGridPointInDegrees": 7.893,
-        "LoVInDegrees": 15,
-        "DxInMetres": 2500,
-        "DyInMetres": 2500,
-        "iScansNegatively": 0,
-        "jScansPositively": 1,
-        "jPointsAreConsecutive": 1,
-        "Latin1InDegrees": 63.3,
-        "LaDInDegrees": 63.3,
-        "Latin2InDegrees": 63.3,
-        "latitudeOfSouthernPoleInDegrees": -90,
-        "longitudeOfSouthernPoleInDegrees": 0,
-        "discipline": 0,
-        "parameterCategory": 0,
-        "parameterNumber": 0,
-        "levelType": 103,
-        "typeOfStatisticalProcessing": -1,
-        "level": 2,
-        "bitmapPresent": 0,
-    }
+    keys = [
+        {
+            "editionNumber": 2,
+            "gridType": "lambert",
+            "Nx": 9,
+            "Ny": 19,
+            "latitudeOfFirstGridPointInDegrees": 58.828,
+            "longitudeOfFirstGridPointInDegrees": 7.893,
+            "LoVInDegrees": 15,
+            "DxInMetres": 2500,
+            "DyInMetres": 2500,
+            "iScansNegatively": 0,
+            "jScansPositively": 1,
+            "jPointsAreConsecutive": 1,
+            "Latin1InDegrees": 63.3,
+            "LaDInDegrees": 63.3,
+            "Latin2InDegrees": 63.3,
+            "latitudeOfSouthernPoleInDegrees": -90,
+            "longitudeOfSouthernPoleInDegrees": 0,
+            "discipline": 0,
+            "parameterCategory": 0,
+            "parameterNumber": 0,
+            "levelType": 103,
+            "typeOfStatisticalProcessing": -1,
+            "level": 2,
+            "bitmapPresent": 0,
+        }
+    ]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/lambert_tl.grib2"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler)
@@ -371,23 +403,25 @@ def lambert_t1_grib2(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def regular_ll_t2m_grib1(tmp_path_factory):
-    keys = {
-        "editionNumber": 1,
-        "gridType": "regular_ll",
-        "Ni": 9,
-        "Nj": 19,
-        "latitudeOfFirstGridPointInDegrees": 59,
-        "longitudeOfFirstGridPointInDegrees": 9.5,
-        "latitudeOfLastGridPointInDegrees": 60.9,
-        "longitudeOfLastGridPointInDegrees": 10.4,
-        "iDirectionIncrementInDegrees": 0.1,
-        "jDirectionIncrementInDegrees": 0.1,
-        "indicatorOfParameter": 11,
-        "levelType": 105,
-        "level": 2,
-        "timeRangeIndicator": 0,
-        "bitmapPresent": 0,
-    }
+    keys = [
+        {
+            "editionNumber": 1,
+            "gridType": "regular_ll",
+            "Ni": 9,
+            "Nj": 19,
+            "latitudeOfFirstGridPointInDegrees": 59,
+            "longitudeOfFirstGridPointInDegrees": 9.5,
+            "latitudeOfLastGridPointInDegrees": 60.9,
+            "longitudeOfLastGridPointInDegrees": 10.4,
+            "iDirectionIncrementInDegrees": 0.1,
+            "jDirectionIncrementInDegrees": 0.1,
+            "indicatorOfParameter": 11,
+            "levelType": 105,
+            "level": 2,
+            "timeRangeIndicator": 0,
+            "bitmapPresent": 0,
+        }
+    ]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/regular_ll_t2m.grib1"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler)
@@ -396,25 +430,27 @@ def regular_ll_t2m_grib1(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def regular_ll_t1_grib2(tmp_path_factory):
-    keys = {
-        "editionNumber": 2,
-        "gridType": "regular_ll",
-        "Ni": 9,
-        "Nj": 19,
-        "latitudeOfFirstGridPointInDegrees": 59,
-        "longitudeOfFirstGridPointInDegrees": 9.5,
-        "latitudeOfLastGridPointInDegrees": 60.9,
-        "longitudeOfLastGridPointInDegrees": 10.4,
-        "iDirectionIncrementInDegrees": 0.1,
-        "jDirectionIncrementInDegrees": 0.1,
-        "discipline": 0,
-        "parameterCategory": 0,
-        "parameterNumber": 0,
-        "levelType": 103,
-        "typeOfStatisticalProcessing": -1,
-        "level": 2,
-        "bitmapPresent": 0,
-    }
+    keys = [
+        {
+            "editionNumber": 2,
+            "gridType": "regular_ll",
+            "Ni": 9,
+            "Nj": 19,
+            "latitudeOfFirstGridPointInDegrees": 59,
+            "longitudeOfFirstGridPointInDegrees": 9.5,
+            "latitudeOfLastGridPointInDegrees": 60.9,
+            "longitudeOfLastGridPointInDegrees": 10.4,
+            "iDirectionIncrementInDegrees": 0.1,
+            "jDirectionIncrementInDegrees": 0.1,
+            "discipline": 0,
+            "parameterCategory": 0,
+            "parameterNumber": 0,
+            "levelType": 103,
+            "typeOfStatisticalProcessing": -1,
+            "level": 2,
+            "bitmapPresent": 0,
+        }
+    ]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/regular_ll_t1.grib2"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler)
@@ -423,24 +459,109 @@ def regular_ll_t1_grib2(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def bufr_file(tmp_path_factory):
-    keys = {
-        "latitude": 60.0,
-        "localLatitude": 60.0,
-        "longitude": 10.0,
-        "localLongitude": 10.0,
-        "year": 2020,
-        "month": 2,
-        "day": 20,
-        "hour": 6,
-        "minute": 2,
-        "heightOfStationGroundAboveMeanSeaLevel": 230,
-        "heightOfStation": 230,
-        "stationNumber": 479,
-        "blockNumber": 10,
-        "airTemperatureAt2M": 273.15,
-        "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/airTemperature": None,
-        "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5/airTemperature": None,
-    }
+    keys = [
+        {
+            "latitude": 59.713,
+            "localLatitude": 59.713,
+            "longitude": 10.146,
+            "localLongitude": 10.146,
+            "year": 2020,
+            "month": 2,
+            "day": 20,
+            "hour": 6,
+            "minute": 2,
+            "heightOfStationGroundAboveMeanSeaLevel": 230,
+            "heightOfStation": 230,
+            "stationNumber": 477,
+            "blockNumber": 10,
+            "airTemperatureAt2M": 273.15,
+        },
+        {
+            "latitude": 59.4352,
+            "localLatitude": 59.4352,
+            "longitude": 10.578,
+            "localLongitude": 10.578,
+            "year": 2020,
+            "month": 2,
+            "day": 20,
+            "hour": 6,
+            "minute": 2,
+            "heightOfStationGroundAboveMeanSeaLevel": 100,
+            "heightOfStation": 230,
+            "stationNumber": 492,
+            "blockNumber": 10,
+            "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/airTemperature": 274.15,
+        },
+        {
+            "latitude": 59.713,
+            "localLatitude": 59.713,
+            "longitude": 10.146,
+            "localLongitude": 10.146,
+            "year": 2020,
+            "month": 2,
+            "day": 20,
+            "hour": 6,
+            "minute": 2,
+            "heightOfStationGroundAboveMeanSeaLevel": 230,
+            "heightOfStation": 230,
+            "stationNumber": 479,
+            "blockNumber": 10,
+            "relativeHumidityAt2M": 50,
+        },
+        {
+            "latitude": 59.4352,
+            "localLatitude": 59.4352,
+            "longitude": 10.578,
+            "localLongitude": 10.578,
+            "year": 2020,
+            "month": 2,
+            "day": 20,
+            "hour": 6,
+            "minute": 2,
+            "heightOfStationGroundAboveMeanSeaLevel": 230,
+            "heightOfStation": 230,
+            "stationNumber": 479,
+            "blockNumber": 10,
+            "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/relativeHumidity": MY_CODES_MISSING_DOUBLE,
+            "dewpointTemperatureAt2M": 270.0,
+            "totalSnowDepth": 75,
+            "airTemperatureAt2M": 273.15,
+        },
+        {
+            "latitude": 59.4352,
+            "localLatitude": 59.4352,
+            "longitude": 10.578,
+            "localLongitude": 10.578,
+            "year": 2020,
+            "month": 2,
+            "day": 20,
+            "hour": 6,
+            "minute": 2,
+            "heightOfStationGroundAboveMeanSeaLevel": 230,
+            "heightOfStation": 230,
+            "stationNumber": 479,
+            "blockNumber": 10,
+            "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/dewpointTemperature": 270.0,
+            "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/airTemperature": 273.15,
+            "heightOfBaseOfCloud": 3000,
+        },
+        {
+            "latitude": 59.4352,
+            "localLatitude": 59.4352,
+            "longitude": 10.578,
+            "localLongitude": 10.578,
+            "year": 2020,
+            "month": 2,
+            "day": 20,
+            "hour": 6,
+            "minute": 2,
+            "stationOrSiteName": "stationOrSiteName",
+            "heightOfStationGroundAboveMeanSeaLevel": 230,
+            "heightOfStation": 230,
+            "stationNumber": 479,
+            "blockNumber": 10,
+        },
+    ]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/obs.bufr"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler, indent=2)
@@ -449,24 +570,26 @@ def bufr_file(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def bufr_bad_file(tmp_path_factory):
-    keys = {
-        "latitude": 60.0,
-        "localLatitude": 60.0,
-        "longitude": 10.0,
-        "localLongitude": 10.0,
-        "year": 2020,
-        "month": 2,
-        "day": 20,
-        "hour": -2,
-        "minute": 2,
-        "heightOfStationGroundAboveMeanSeaLevel": 230,
-        "heightOfStation": 230,
-        "stationNumber": 479,
-        "blockNumber": 10,
-        "airTemperatureAt2M": 273.15,
-        "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/airTemperature": None,
-        "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5/airTemperature": None,
-    }
+    keys = [
+        {
+            "latitude": 60.0,
+            "localLatitude": 60.0,
+            "longitude": 10.0,
+            "localLongitude": 10.0,
+            "year": 2020,
+            "month": 2,
+            "day": 20,
+            "hour": -2,
+            "minute": 2,
+            "heightOfStationGroundAboveMeanSeaLevel": 230,
+            "heightOfStation": 230,
+            "stationNumber": 479,
+            "blockNumber": 10,
+            "airTemperatureAt2M": 273.15,
+            "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2/airTemperature": None,
+            "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5/airTemperature": None,
+        }
+    ]
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/obs.bufr"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
         json.dump(keys, fhandler, indent=2)
@@ -493,7 +616,7 @@ def obsoul_cryoclim_cy43(tmp_path_factory):
     return fname
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def data_thredds_nc_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_thredds_nc.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_thredds_nc.cdl"
@@ -597,6 +720,14 @@ air_temperature_ml =
 271.0, 272.0, 273.0, 274.0, 275.0, 276.0,
 271.0, 272.0, 273.0, 274.0, 275.0, 276.0;
 
+x_wind_10m =
+0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+
+y_wind_10m =
+-20.0, -20.0, -20.0, -20.0, -20.0, -20.0,
+-20.0, -20.0, -20.0, -20.0, -20.0, -20.0;
+
 air_temperature_2m =
 271.0, 272.0, 273.0, 274.0, 275.0, 276.0,
 272.0, 273.0, 274.0, 275.0, 276.0, 277.0;
@@ -617,7 +748,105 @@ liquid_water_content_of_surface_snow =
     return fname
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
+def data_thredds_nc_file_aa(tmp_path_factory):
+    fname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_thredds_nc.nc"
+    cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_thredds_nc.cdl"
+    with open(cdlfname, mode="w", encoding="utf-8") as fhandler:
+        fhandler.write(
+            """
+netcdf aa_thredds {
+dimensions:
+        time = UNLIMITED ;
+        height7 = 1 ;
+        x = 5 ;
+        y = 6 ;
+variables:
+        double time(time) ;
+                time:long_name = "time" ;
+                time:standard_name = "time" ;
+                time:units = "seconds since 1970-01-01 00:00:00 +00:00" ;
+        double forecast_reference_time ;
+                forecast_reference_time:units = "seconds since 1970-01-01 00:00:00 +00:00" ;
+                forecast_reference_time:standard_name = "forecast_reference_time" ;
+        int projection_lambert ;
+                projection_lambert:grid_mapping_name = "lambert_conformal_conic" ;
+                projection_lambert:standard_parallel = 77.5, 77.5 ;
+                projection_lambert:longitude_of_central_meridian = 23.0 ;
+                projection_lambert:latitude_of_projection_origin = 75.4 ;
+                projection_lambert:earth_radius = 6371000. ;
+                projection_lambert:proj4 = "+proj=lcc +lat_0=77.5 +lon_0=-25.0 +lat_1=77.5 +lat_2=77.5 +no_defs +R=6.371e+06" ;
+        float x(x) ;
+        float y(y) ;
+        double longitude(y, x) ;
+        double latitude(y, x) ;
+        float x_wind_10m(time, height7, y, x) ;
+        float y_wind_10m(time, height7, y, x) ;
+
+        float height7(height7) ;
+
+data:
+
+forecast_reference_time = 1582178400;
+
+time = 1582178400, 1582182000;
+
+height7 = 10;
+
+x = 1, 2, 3, 4, 5;
+
+y = 1, 2, 3, 4, 5, 6;
+
+longitude =
+22.71561383, 22.77678257, 22.83781655, 22.8987161 , 22.95948152,
+22.78040195, 22.84156292, 22.90258887, 22.96348013, 23.024237  ,
+22.8453254 , 22.90647829, 22.9674959 , 23.02837854, 23.08912655,
+22.91038445, 22.97152893, 23.03253788, 23.0934116 , 23.15415042,
+22.97557935, 23.03671512, 23.09771508, 23.15857956, 23.21930888,
+23.04091038, 23.1020371 , 23.16302776, 23.22388268, 23.28460218;
+
+latitude =
+75.39421006, 75.3778817 , 75.36153744, 75.34517733, 75.32880143,
+75.40964289, 75.39329735, 75.37693593, 75.36055868, 75.34416567,
+75.4250578 , 75.40869506, 75.39231647, 75.37592208, 75.35951193,
+75.44045473, 75.4240748 , 75.40767902, 75.39126746, 75.37484017,
+75.45583364, 75.43943648, 75.42302351, 75.40659477, 75.39015032,
+75.47119446, 75.45478007, 75.43834987, 75.42190394, 75.40544232;
+
+x_wind_10m =
+0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+
+y_wind_10m =
+-20.0, -20.0, -20.0, -20.0, -20.0, -20.0,-20.0, -20.0, -20.0, -20.0, -20.0, -20.0,-20.0, -20.0, -20.0, -20.0, -20.0, -20.0,
+-20.0, -20.0, -20.0, -20.0, -20.0, -20.0,-20.0, -20.0, -20.0, -20.0, -20.0, -20.0,-20.0, -20.0, -20.0, -20.0, -20.0, -20.0;
+}
+"""
+        )
+    Dataset(fname, mode="w").fromcdl(
+        cdlfname, ncfilename=fname, mode="a", format="NETCDF3_CLASSIC"
+    )
+    return fname
+
+
+"""
+longitude =
+22.71561383, 22.78040195, 22.8453254,  22.91038445, 22.97557935, 23.04091038,
+22.77678257, 22.84156292, 22.90647829, 22.97152893, 23.03671512, 23.1020371,
+22.83781655, 22.90258887, 22.9674959,  23.03253788, 23.09771508, 23.16302776,
+22.8987161,  22.96348013, 23.02837854, 23.0934116,  23.15857956, 23.22388268,
+22.95948152, 23.024237,   23.08912655, 23.15415042, 23.21930888, 23.28460218;
+
+latitude =
+75.39421006, 75.40964289, 75.4250578,  75.44045473, 75.45583364, 75.47119446,
+75.3778817,  75.39329735, 75.40869506, 75.4240748,  75.43943648, 75.45478007,
+75.36153744, 75.37693593, 75.39231647, 75.40767902, 75.42302351, 75.43834987,
+75.34517733, 75.36055868, 75.37592208, 75.39126746, 75.40659477, 75.42190394,
+75.32880143, 75.34416567, 75.35951193, 75.37484017, 75.39015032, 75.40544232;
+"""
+
+
+@pytest.fixture(scope="module")
 def data_surfex_pgd_nc_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_surfex_pgd_nc.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_surfex_pgd_nc.cdl"
@@ -786,19 +1015,19 @@ COVER006 =
     return fname
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def surfex_fa_file_sfx(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/surfex_fa_file.sfx"
     return fname
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def surfex_fa_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/surfex_fa_file.fa"
     return fname
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def firstguess4gridpp(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/FirstGuess4gridpp.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/FirstGuess4gridpp.cdl"
@@ -901,7 +1130,7 @@ land_area_fraction =
     return fname
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def data_cryoclim_nc_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/cryoclim_nc.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/cryoclim_nc.cdl"
@@ -1014,7 +1243,7 @@ class DummyFaPos:
         """Construct dummy FA position."""
         self.value = value
 
-    def get(self, mode):
+    def get(self, mode):  # noqa ARG002
         return self.value
 
 
@@ -1034,7 +1263,7 @@ class DummyFAGeometry:
         return DummyFaPos(self.center["lon"]), DummyFaPos(self.center["lat"])
 
     @staticmethod
-    def gimme_corners_ij(subzone=None):
+    def gimme_corners_ij(subzone=None):  # noqa ARG004
         return {"ll": [0, 0], "lr": [8, 0], "ur": [8, 18]}
 
 
@@ -1056,15 +1285,20 @@ class DummyFAField:
         }
         self.geometry = DummyFAGeometry(geometry)
         self.data = np.zeros_like([np.arange(2 * 3)])
+        self.spectral = False
+
+    def sp2gp(self):
+        pass
 
 
 class MyFaResource:
     def __init__(self, name, openmode=None):
         """Construct dummy FA resource."""
         self.name = name
+        self.openmode = openmode
 
     def readfield(self, name):
-        print("Read FA field ", name)
+        logging.info("Read FA field %s", name)
         return DummyFAField()
 
 
@@ -1072,56 +1306,104 @@ class MyFaResource:
 def _mockers(session_mocker):
     """Define mockers used in the tests for the tasks' `run` methods."""
 
+    class MyCodesInternalError(BaseException):
+        def __init__(self, *args):
+            super().__init__(*args)
+
+    class CodesMessage:
+        def __init__(self, fhandler):
+            messages = json.load(fhandler)
+            self.fhandler = fhandler
+            self.record = -1
+            self.messages = messages
+            self.nmessages = len(messages)
+            self.message = None
+
+        def seek(*args):  # noqa ARG002
+            return 1
+
+        def tell(*args, **kwargs):  # noqa ARG002
+            return 100
+
+        def close(self, *args, **kwargs):  # noqa ARG002
+            self.fhandler.close()
+
+        def next_record(self):
+            self.record += 1
+            if self.record >= self.nmessages:
+                return None
+            message = self.messages[self.record]
+            self.message = message
+            return self
+
+        def codes_set(self, *args):
+            pass
+
+        def codes_get(self, key):
+            av_keys = ["average", "min", "max"]
+            if key in av_keys:
+                return -1
+            if key in self.message:
+                return self.message[key]
+            raise MyCodesInternalError
+
+        def codes_get_size(self, key):  # noqa ARG002
+            try:
+                nx = self.message["Ni"]
+                ny = self.message["Nj"]
+            except KeyError:
+                nx = self.message["Nx"]
+                ny = self.message["Ny"]
+            return nx * ny
+
+        def codes_get_values(self):
+            try:
+                nx = self.message["Ni"]
+                ny = self.message["Nj"]
+            except KeyError:
+                nx = self.message["Nx"]
+                ny = self.message["Ny"]
+            logging.info("codes_get_values %s %s", nx, ny)
+            return np.zeros_like([np.arange(nx * ny)])
+
     def dummy_frost_data(*args, **kwargs):
-        print("Frost request ", args, kwargs)
+        logging.info("Frost request %s %s", args, kwargs)
         return DummyFrostRequest()
 
-    def my_codes_grib_new_from_file(file_handler):
-        print(file_handler)
-        gid = json.load(file_handler)
-        print(gid)
-        return gid
+    def my_codes_new_from_file(code_messages):
+        grib_id = code_messages.next_record()
+        return grib_id
 
-    def my_codes_bufr_new_from_file(file_handler):
-        try:
-            gid = json.load(file_handler)
-            file_handler.close()
-        except ValueError:
-            gid = None
-        return gid
+    def my_codes_set(gid, *args):
+        gid.codes_set(*args)
 
     def my_codes_get(gid, key):
-        print("codes_get", key)
-        av_keys = ["average", "min", "max"]
-        if key in av_keys:
-            return -1
-        else:
-            return gid[key]
+        return gid.codes_get(key)
 
     def my_codes_get_size(gid, key):
-        print("codes_get_size", key)
-        try:
-            nx = gid["Ni"]
-            ny = gid["Nj"]
-        except KeyError:
-            nx = gid["Nx"]
-            ny = gid["Ny"]
-        return nx * ny
+        return gid.codes_get_size(key)
 
     def my_codes_get_values(gid):
-        try:
-            nx = gid["Ni"]
-            ny = gid["Nj"]
-        except KeyError:
-            nx = gid["Nx"]
-            ny = gid["Ny"]
-        return np.zeros_like([np.arange(nx * ny)])
+        return gid.codes_get_values()
+
+    @contextmanager
+    def my_open_with_file(filename, *args, **kwargs):  # noqa ARG002
+        with open(filename, mode="r", encoding="utf8") as fhandler:
+            yield CodesMessage(fhandler)
+
+    def my_open_file(filename, *args, **kwargs):  # noqa ARG002
+        with open(filename, mode="r", encoding="utf8") as fhandler:
+            return CodesMessage(fhandler)
+
+    def codes_internal_error(*args, **kwargs):  # noqa ARG002
+        return MyCodesInternalError()
 
     # Do the actual mocking
     session_mocker.patch("pysurfex.obs.requests.get", new=dummy_frost_data)
     session_mocker.patch(
-        "pysurfex.grib.eccodes.codes_grib_new_from_file", new=my_codes_grib_new_from_file
+        "pysurfex.grib.eccodes.codes_grib_new_from_file", new=my_codes_new_from_file
     )
+    session_mocker.patch("pysurfex.grib.open", new=my_open_with_file)
     session_mocker.patch("pysurfex.grib.eccodes.codes_get", new=my_codes_get)
     session_mocker.patch("pysurfex.grib.eccodes.codes_get_long", new=my_codes_get)
     session_mocker.patch("pysurfex.grib.eccodes.codes_get_size", new=my_codes_get_size)
@@ -1129,8 +1411,23 @@ def _mockers(session_mocker):
         "pysurfex.grib.eccodes.codes_get_values", new=my_codes_get_values
     )
     session_mocker.patch("pysurfex.grib.eccodes.codes_release")
+    session_mocker.patch("pysurfex.bufr.open", new=my_open_file)
+    session_mocker.patch("pysurfex.bufr.eccodes.codes_release")
     session_mocker.patch(
-        "pysurfex.bufr.eccodes.codes_bufr_new_from_file", new=my_codes_bufr_new_from_file
+        "pysurfex.bufr.eccodes.CodesInternalError", new=MyCodesInternalError
     )
-    session_mocker.patch("pysurfex.bufr.eccodes.codes_set")
+    session_mocker.patch(
+        "pysurfex.bufr.eccodes.codes_bufr_new_from_file", new=my_codes_new_from_file
+    )
+    session_mocker.patch("pysurfex.bufr.eccodes.codes_set", new=my_codes_set)
+    session_mocker.patch("pysurfex.bufr.eccodes.codes_get", new=my_codes_get)
+    session_mocker.patch(
+        "pysurfex.bufr.eccodes.CODES_MISSING_DOUBLE", new=MY_CODES_MISSING_DOUBLE
+    )
+    session_mocker.patch(
+        "pysurfex.bufr.eccodes.CODES_MISSING_LONG", new=MY_CODES_MISSING_LONG
+    )
     session_mocker.patch("pysurfex.fa.resource", new=MyFaResource)
+    session_mocker.patch("pysurfex.verification.sqlite_name")
+    session_mocker.patch("pysurfex.verification.create_table")
+    session_mocker.patch("pysurfex.verification.write_to_sqlite")

@@ -1,6 +1,5 @@
 """Test fg + titan + gridpp + obsmon."""
 import json
-import os
 import shutil
 
 import numpy as np
@@ -16,240 +15,6 @@ from pysurfex.cli import (
 )
 
 an_time = "2020022006"
-
-
-def hm_env():
-    env = {
-        "NPATCH": "2",
-        "ARCHIVE_ROOT_FG": "/firstguess",
-        "LSPBDC": "no",
-        "COMPILE_DABYFA": "no",
-        "ANASURF": "CANARI_OI_MAIN",
-        "TSPAN": "5400",
-        "BDDIR": "/archive/ECMWF/@YYYY@/@MM@/@DD@/@HH@",
-        "MAIL_ON_ABORT": "",
-        "COMPILE_ENKF": "no",
-        "ARCH": "linuxgfortran",
-        "FESTAT": "no",
-        "SLAFDIFF": "0",
-        "NLEV": "60",
-        "LETKF_LAG": "no",
-        "NNCV": "1,1,1,1",
-        "XCH_COEFF1": "15.0",
-        "NNCO": "1,1,0,0,1",
-        "STREAM": "",
-        "HH_LIST": "00-21:3",
-        "SPPT": "no",
-        "ARCHIVE_ROOT": "/archive",
-        "LSMIXBC": "yes",
-        "ARSTRATEGY": "climate:fg:verif:odb_stuff:               [an|fc]_fa:pp_gr:fldver",
-        "TAU_SPP": "21600.",
-        "DISPLAY": ":1",
-        "XCLIP_RATIO_SDT": "5.0",
-        "ECFSGROUP": "hirald",
-        "EPERT_MODE": "after",
-        "ENS_BD_CLUSTER": "no",
-        "OBDIR": "/archive/observations/@YYYY@/@MM@/@DD@/@HH@",
-        "FCINT_FG": "03",
-        "SFXSELTIMES": "0-540:15",
-        "AD_TEST": "yes",
-        "TSTEP4D": "120,120",
-        "VLEV": "65",
-        "PERTSURF": "none",
-        "SCALE_PERT": "yes",
-        "OBSMONITOR": "obstat",
-        "LOCAL_DEFINITION_TEMPLATES": "LOCAL_DEFINITION_TEMPLATES",
-        "LUNBC": "yes",
-        "PERTDIA_BDINT": "6",
-        "GRID_TYPE": "CUSTOM",
-        "NOUTERLOOP": "2",
-        "XZ0SN": "0.003",
-        "MSG_PATH": "/CLOUDS/",
-        "INT_SINI_FILE": "//SURFXINI.fa",
-        "ALARO_VERSION": "0",
-        "CNMEXP": "HARM",
-        "ANAATMO": "3DVAR",
-        "SWRITUPTIMES": "0-540:60",
-        "CSNOW": "D95",
-        "SURFEX_OFFLINE_BINARIES": "no",
-        "JB_REF_DOMAIN": "METCOOP25B",
-        "FREQ_RESET_TEMP": "3",
-        "TOPO_SOURCE": "gmted2010",
-        "TAU_SDT": "28800",
-        "CLIMDIR": "/climate/METCOOP25D",
-        "EXP": "HM2PYSURFEX",
-        "IO_SERVER": "yes",
-        "ARCHIVE_ENSMBR": "",
-        "BUFRTAB_DIR": "",
-        "RSMIN_CONIFEROUS_FACTOR": "1.44",
-        "BDSTRATEGY": "simulate_metcoop",
-        "LSPG_SDT": ".FALSE.",
-        "DFI": "none",
-        "ENSINIPERT": "bnd",
-        "EXTRARCH": "/archive/extract",
-        "SFXWFTIMES": "0-540:60",
-        "VERT_DISC": "vfd",
-        "XCD_COEFF1": "10.0",
-        "XCD_COEFF2": "5.0",
-        "XGRASS_H_DNM": "3.0",
-        "LDB_VERSION": "3.0",
-        "DESKTOP_SESSION": "ubuntu",
-        "PWRITUPTIMES": "0-09:15",
-        "USE_MSG": "yes",
-        "DOMAIN": "METCOOP25S",
-        "CREATE_CLIMATE": "yes",
-        "HGT_QS": "yes",
-        "FP_PRECISION": "double",
-        "TAUS": "5400",
-        "MODIFY_LAKES": "T",
-        "LGRADSP": "no",
-        "ECFSLOC": "ec",
-        "RSMIN_C3_FACTOR": "1.5",
-        "CH_RES_SPEC": "yes",
-        "ILRES": "2,2",
-        "XRIMAX": "0.0",
-        "SPP": "no",
-        "MAKEODB2": "no",
-        "GRIB_API": "GRIB_API",
-        "INT_BDFILE": "//ELSCFHARMALBC@NNN@",
-        "BDINT": "1",
-        "RSMIN_DECIDUOUS_FACTOR": "1.13",
-        "BINDIR": "/bin",
-        "CV_HIGHVEG": "1.0E-5",
-        "USE_REARCHIVE_EPS_EC_OPER": "no",
-        "XDG_SESSION_TYPE": "x11",
-        "RSMIN_C4_FACTOR": "1.13",
-        "CROUGH": "NONE",
-        "SLAFLAG": "0",
-        "MULTITASK": "yes",
-        "SPGADTMIN_SDT": "0.15",
-        "MASS_FLUX_SCHEME": "edmfm",
-        "HOST_SURFEX": "no",
-        "FULLFAFTIMES": "0-540:15",
-        "TFLAG_FG": "h",
-        "CISBA": "3-L",
-        "PERTATMO": "none",
-        "XCGMAX": "2.0E-5",
-        "COMPCENTRE": "MET",
-        "SURFEX_LAKES": "FLAKE",
-        "FLDEXTR": "yes",
-        "REARCHIVE_EPS_EC_OPER": "no",
-        "NBDMAX": "4",
-        "SST_SOURCES": "IFS NEMO",
-        "CAERO": "tegen",
-        "CFORCING_FILETYPE": "NETCDF",
-        "GRIB_API_LIB": "GRIB_API_LIB",
-        "FLDEXTR_TASKS": "4",
-        "BUILD": "yes",
-        "ECOCLIMAP_VERSION": "SG",
-        "SURFEX_SEA_ICE": "sice",
-        "XLCOR_SPP": "1000000.",
-        "ENSCTL": "",
-        "PFFULLWFTIMES": "-1",
-        "LL_LIST": "03",
-        "HOST_MODEL": "ifs",
-        "XSCALE_H_TREE": "0.658",
-        "XCSMAX": "2.0E-4",
-        "SPGADTMIN_SPP": "0.15",
-        "AUXLIBS": "AUXLIBS",
-        "TEND_DIAG": "no",
-        "ODB_VERSION": "CY33R1.007",
-        "WRK": "/",
-        "EREF": "35000.",
-        "OBSEXTR": "yes",
-        "HWRITUPTIMES": "0-540:15",
-        "CONT_ON_FAILURE": "0",
-        "TSTEPTRAJ": "600",
-        "XZ0HSN": "0.0003",
-        "SFXSWFTIMES": "-1",
-        "BDLIB": "ECMWF",
-        "QT_IM_MODULE": "ibus",
-        "RUNNING_MODE": "research",
-        "SIMULATION_TYPE": "nwp",
-        "CONVERTFA": "yes",
-        "XLCOR_SDT": "2000000",
-        "TL_TEST": "yes",
-        "RCR_POSTP": "no",
-        "FLDVER": "no",
-        "ARCHIVE_ECMWF": "yes",
-        "JB_INTERPOL": "yes",
-        "SDEV_SDT": "0.20",
-        "TESTBED_CASES": "1",
-        "LISBA_CANOPY": ".FALSE.",
-        "SLAFK": "1.0",
-        "CV_LOWVEG": "2.0E-5",
-        "SOIL_TEXTURE_VERSION": "SOILGRID",
-        "MEPS_VERSION": "test",
-        "Q_IN_SP": "no",
-        "SHLVL": "1",
-        "MAKEGRIB_LISTENERS": "1",
-        "GRIB_API_INCLUDE": "GRIB_API_INCLUDE",
-        "ECFS_EPS_EC_BD_PATH": "ECFS_EPS_EC_BD_PATH",
-        "ODB_DIR": "/disk1/odb",
-        "SURFEX_LSELECT": "yes",
-        "PHYSICS": "arome",
-        "ARCHIVE_FORMAT": "GRIB2",
-        "VERITIMES": "00-540:60",
-        "HARATU": "yes",
-        "BDCLIM": "/ECMWF/climate",
-        "SINGLEOBS": "no",
-        "IO_SERVER_BD": "yes",
-        "SPGADTMAX_SDT": "3.0",
-        "FORCE2": "no",
-        "FORCE1": "no",
-        "CHKEVO": "no",
-        "SDEV_SPP": "0.2",
-        "XALLEN_TERM": "2.5",
-        "DYNAMICS": "nh",
-        "ECMWF_LOCAL_TABLE_PATH": "ECMWF_LOCAL_TABLE_PATH",
-        "TESTBED_LIST": "TESTBED_LIST",
-        "OBSMON_SYNC": "no",
-        "LETKF_3DSCREEN": "yes",
-        "TFLAG": "min",
-        "FLDVER_HOURS": "06 12 18 24 30 36 42 48 54 60 66",
-        "ANASURF_MODE": "before",
-        "AUGMENT_CV": "NO",
-        "ENSMSEL": "",
-        "HYBRID": "no",
-        "FREQ_RESET_GUST": "1",
-        "NCNAMES": "nwp",
-        "STATNW": "yes",
-        "ENSBDMBR": "",
-        "POSTP": "inline",
-        "ECOCLIMAP_PARAM_BINDIR": "/climate",
-        "SPGADTMAX_SPP": "3.0",
-        "SPGQ_SDT": "0.5",
-        "ANASURF_OI_COEFF": "POLYNOMES_ISBA_MF6",
-        "VFLDEXP": "HM2PYSURFEX",
-        "AI_ACCUMULATION_HOURS": "720",
-        "TASK_LIMIT": "-1",
-        "EZONE": "1",
-        "GSIZE": "10000.0",
-        "LAT0": "59.5",
-        "LATC": "60.0",
-        "LON0": "9.0",
-        "LONC": "10.0",
-        "NDGUXG": "19",
-        "NDLUXG": "9",
-        "NLAT": "20",
-        "NLON": "10",
-        "NMSMAX": "-1",
-        "NNOEXTZX": "0",
-        "NNOEXTZY": "0",
-        "NSMAX": "-1",
-        "SINLAT0": "-1",
-        "TSTEP": "90",
-        "FCINT": "3",
-        "TEFRCL": "3600",
-        "NXGSTPERIOD": "3600",
-        "MODEL": "MASTERODB",
-        "ENSMSELX": "-1",
-        "ENSMBR": "-1",
-        "LL": "03",
-        "METER_UNIT": "hhmm",
-    }
-    for key, value in env.items():
-        os.environ[key] = value
 
 
 def create_titan_settings(qc_fname, first_guess_file, blacklist_fname, json_obs_file):
@@ -437,17 +202,14 @@ def create_obs_data(var, obs_fname):
             ],
         },
     }
-    json.dump(qc_data, open(obs_fname, mode="w", encoding="utf-8"))
+    with open(obs_fname, mode="w", encoding="utf-8") as fhandler:
+        json.dump(qc_data, fhandler)
 
 
 @pytest.fixture(params=["t2m", "rh2m", "sd"])
 def _qc_gridpp_obsmon(
-    tmp_path_factory, request, conf_proj_domain_file, firstguess4gridpp, hm
+    tmp_path_factory, request, conf_proj_domain_file, firstguess4gridpp
 ):
-    harmonie = []
-    if hm == "harmonie":
-        hm_env()
-        harmonie = ["--harmonie"]
     var = request.param
     translation = {
         "t2m": {
@@ -486,12 +248,15 @@ def _qc_gridpp_obsmon(
     with pytest.raises(SystemExit):
         titan(argv=["fail"])
 
+    with pytest.raises(SystemExit):
+        titan()
+
     argv = [
         "-i",
         qc_settings_fname,
         "-v",
         var,
-        "-dtg",
+        "--validtime",
         an_time,
         "--blacklist",
         blacklist_fname,
@@ -511,10 +276,10 @@ def _qc_gridpp_obsmon(
         "climatology",
         "sct",
     ]
-    argv += harmonie
     titan(argv=argv)
 
-    qc_titan_obs = json.load(open(qc_fname, "r"))
+    with open(qc_fname, mode="r", encoding="utf8") as fhandler:
+        qc_titan_obs = json.load(fhandler)
     assert qc_titan_obs["0"]["epsilon"] == 0.5
     shutil.copy(qc_fname, f"{qc_fname}-1")
     shutil.copy(qc_fname, f"{qc_fname}-2")
@@ -550,7 +315,6 @@ def _qc_gridpp_obsmon(
         "--elevGradient",
         translation[var]["elevGradient"],
     ]
-    print(qc_fname)
     gridpp(argv=argv)
 
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/OBSERVATIONS_200330H06.DAT"
@@ -610,43 +374,79 @@ def obsmon_test(var, qc_fname, first_guess_file, analysis_file, db_file):
 
 
 @pytest.mark.usefixtures("_qc_gridpp_obsmon")
-@pytest.mark.parametrize("hm", ["no-harmonie", "harmonie"])
 def test_qc_gridpp_obsmon():
-    _qc_gridpp_obsmon
+    _qc_gridpp_obsmon  # noqa B018
 
 
-@pytest.mark.parametrize("hm", ["no-harmonie", "harmonie"])
-def test_first_guess(tmp_path_factory, conf_proj_2x3_file, data_thredds_nc_file, hm):
+def test_first_guess(tmp_path_factory, conf_proj_2x3_file, data_thredds_nc_file):
     output = f"{tmp_path_factory.getbasetemp().as_posix()}/FirstGuess4gridpp_output.nc"
-    harmonie = []
-    if hm == "harmonie":
-        hm_env()
-        harmonie = ["--harmonie"]
-
-    with pytest.raises(SystemExit):
-        first_guess_for_oi(argv=["fail"])
 
     argv = [
-        "-c",
-        "pysurfex/cfg/first_guess.yml",
-        "-i",
-        data_thredds_nc_file,
-        "-if",
-        "netcdf",
-        "-dtg",
-        an_time,
-        "-d",
+        "--domain",
         conf_proj_2x3_file,
-        "--laf_converter",
-        "none",
-        "--sd_converter",
-        "sweclim",
-        "--debug",
-        "-o",
+        "--validtime",
+        an_time,
+        "--output",
         output,
+        "--fg-variables",
+        "t2m",
+        "rh2m",
+        "sd",
+        "altitude",
+        "laf",
+        "--t2m-inputfile",
+        data_thredds_nc_file,
+        "--t2m-inputtype",
+        "netcdf",
+        "--t2m-variable",
         "air_temperature_2m",
+        "--t2m-basetime",
+        an_time,
+        "--rh2m-inputfile",
+        data_thredds_nc_file,
+        "--rh2m-inputtype",
+        "netcdf",
+        "--rh2m-variable",
         "relative_humidity_2m",
-        "surface_snow_thickness",
+        "--rh2m-basetime",
+        an_time,
+        "--sd-converter",
+        "sweclim",
+        "--sd-converter-variables",
+        "swe",
+        "--sd-swe-inputfile",
+        data_thredds_nc_file,
+        "--sd-swe-inputtype",
+        "netcdf",
+        "--sd-swe-variable",
+        "liquid_water_content_of_surface_snow",
+        "--sd-swe-basetime",
+        an_time,
+        "--altitude-converter",
+        "phi2m",
+        "--altitude-converter-variables",
+        "phi",
+        "--altitude-phi-inputfile",
+        data_thredds_nc_file,
+        "--altitude-phi-inputtype",
+        "netcdf",
+        "--altitude-phi-variable",
+        "surface_geopotential",
+        "--altitude-phi-basetime",
+        an_time,
+        "--laf-inputfile",
+        data_thredds_nc_file,
+        "--laf-inputtype",
+        "netcdf",
+        "--laf-variable",
+        "land_area_fraction",
+        "--laf-basetime",
+        an_time,
+        "--debug",
     ]
-    argv += harmonie
+
+    fail = [*argv, "fail"]
+    with pytest.raises(SystemExit):
+        first_guess_for_oi(argv=fail)
+
     first_guess_for_oi(argv=argv)

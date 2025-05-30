@@ -7,13 +7,13 @@ from pysurfex.datetime_utils import as_datetime
 from pysurfex.input_methods import get_datasources
 
 
-@pytest.fixture()
+@pytest.fixture
 def obs_time():
     obstime = as_datetime("2020022000")
     return obstime
 
 
-@pytest.fixture()
+@pytest.fixture
 def filepattern(tmp_path_factory):
     filename = tmp_path_factory.getbasetemp() / "obsset_file.json"
     data = {
@@ -41,7 +41,7 @@ def filepattern(tmp_path_factory):
     return filename
 
 
-@pytest.fixture()
+@pytest.fixture
 def settings(filepattern):
     settings_dict = {
         "label": {

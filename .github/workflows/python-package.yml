@@ -17,7 +17,7 @@ jobs:
       matrix:
         os: [ "ubuntu-latest" ]
         env: [ "pytest" ]
-        python-version: [ "3.9" ]
+        python-version: [ "3.12" ]
 
     name: "${{ matrix.os }}, python=${{ matrix.python-version }}"
     runs-on: ${{ matrix.os }}
@@ -57,7 +57,7 @@ jobs:
 
       - name: Install dependencies (if venv cache is not found)
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root --only main,test
+        run: poetry install --no-interaction --no-root #--only main,test
 
       - name: Install the project itself
         run: poetry install --no-interaction --only-root
@@ -67,25 +67,16 @@ jobs:
       #----------------------------------------------
       - name: Run tests
         run: |
-          poetry run pytest
-
-      - name: Coveralls
-        if: ${{ matrix.python-version == 3.9 }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          export COVERALLS_REPO_TOKEN=${{secrets.COVERALLS_REPO_TOKEN}}
-          git config --global --add safe.directory $PWD
-          poetry run coveralls
+          poetry run python -m pytest
 
       - name: Create documentation
-        if: ${{ matrix.python-version == 3.9 }}
+        if: ${{ matrix.python-version == 3.12 }}
         run: |
           cd docs
           poetry run python auto_sphinx.py
           make html
       - name: Commit documentation changes
-        if: ${{ matrix.python-version == 3.9 }}
+        if: ${{ matrix.python-version == 3.12 }}
         run: |
           git clone https://github.com/metno/pysurfex.git --branch gh-pages --single-branch gh-pages
           cp -r docs/build/html/* gh-pages/
@@ -97,7 +88,7 @@ jobs:
           # The above command will fail if no changes were present, so we ignore
           # the return code.
       - name: Push changes
-        if: ${{ matrix.python-version == 3.9 && github.event_name != 'pull_request' }}
+        if: ${{ matrix.python-version == 3.12 && github.event_name != 'pull_request' }}
         uses: ad-m/github-push-action@master
         with:
           branch: gh-pages

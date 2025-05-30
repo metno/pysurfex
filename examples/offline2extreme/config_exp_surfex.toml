@@ -8,20 +8,20 @@
 #####################################
 # SURFEX IO
 [SURFEX.IO]
-CSURF_FILETYPE = "NC"               # IO settings NC/FA/ASCII. Inline runs use FA
+CSURF_FILETYPE = "FA"               # IO settings NC/FA/ASCII. Inline runs use FA
 CTIMESERIES_FILETYPE = "NETCDF"     # Fileformat for timseries. Inline runs use FA
 CFORCING_FILETYPE = "NETCDF"        # Offline surfex forcing format (NETCDF/ASCII)
 XTSTEP = 600                        # Surfex time step (Only used in the binary OFFLINE)
 XTSTEP_OUTPUT = 21600.0             # Output interval from the binary OFFLINE
 LSPLIT_PATCH = true                 # Split patches into separate variables in output files
-LSELECT = true                      # Only write selected diagnostics
+LSELECT = false                      # Only write selected diagnostics
 
 [SURFEX.COVER]                      # Land cover information
-YCOVER = "ECOCLIMAP_2_5_p"          # Version of ECOCLIMAP for surfex (1,2,SG)
+YCOVER = "ecosg_final_map"      # Version of ECOCLIMAP for surfex (1,2,SG)
                                     # Available versions are 1.1-1.5,2.0-2.2.1,SG and 2.5_plus if you use FLake
                                     # SG represents SecondGeneration and is now availbale for test on ECMWF. However,
                                     # please note that SG is not yet compatible with any availbale lake data base.
-SG = false                          # ECOCLIMAP second generation
+SG = true                           # ECOCLIMAP second generation
 H_TREE = "new_ht_c"                 # SG tree height
 ALBNIR_SOIL = 'ALB_SAT_NI_@MM@@CDD@_c' # SG soil NIR albedo
 ALBNIR_VEG = 'ALB_SAT_NI_@MM@@CDD@_c'  # SG vegetation NIR albedo
@@ -37,7 +37,7 @@ XRIMAX = 0.2                        # Maximum allowed Richardson number in the s
 
 [SURFEX.TILES]                      # Define which tile schemes to use
 SEA = "SEAFLX"                      # Sea scheme
-INLAND_WATER = "FLAKE"              # Treatment of lakes in surfex (WATFLX|FLAKE)
+INLAND_WATER = "WATFLX"              # Treatment of lakes in surfex (WATFLX|FLAKE)
 NATURE = "ISBA"                     # Nature scheme: "ISBA"|"NONE"
 TOWN = "TEB"                        # Town scheme: "TEB"|"NONE"
 
@@ -73,21 +73,17 @@ LDB_VERSION = "3.0"
 
 # ISBA settings
 [SURFEX.ISBA]
-SCHEME = "3-L"                      # Type of ISBA scheme in SURFEX. Options: "3-L"|"2-L"|"DIF"
-NPATCH = 2                          # Number of patches over land in SURFEX (see also LISBA_CANOPY)
-MEB = false                         # Enable Multi Energy Budget (MEB) model
+SCHEME = "DIF"                      # Type of ISBA scheme in SURFEX. Options: "3-L"|"2-L"|"DIF"
+NPATCH = 3                          # Number of patches over land in SURFEX (see also LISBA_CANOPY)
+MEB = true                         # Enable Multi Energy Budget (MEB) model
 CANOPY = false                      # Activates surface boundary multi layer scheme over land in SURFEX
                                     # (must be false for NPATCH>1)
-SNOW = "D95"                        # Type of snow scheme in SURFEX. Options: "D95" and "3-L"
+SNOW = "3-L"                        # Type of snow scheme in SURFEX. Options: "D95" and "3-L"
 YSOC_TOP = "soc_top"                # Soil organic carbon data. Options: "soc_top"
 YSOC_SUB = "soc_sub"                # Soil organic carbon data. Options: "soc_sub"
-
-YSAND = 'sand_fao'                  # Soil texture input data: "sand_fao"|"SAND_HWSD_MOY_V2"|"sand_SOILGRID"
-                                    # suffix json assumes namelist values provided as a json file
-
-YCLAY = "clay_fao"                  # Soil texture input data: "clay_fao"|"CLAY_HWSD_MOY_V2"|"clay_SOILGRID"
-                                    # suffix json assumes namelist values provided as a json file
-PERTSURF = false                    # Perturb surface parameters
+YCLAY = "CLAY_SOILGRID"
+YSAND = "SAND_SOILGRID"
+ERTSURF = false                    # Perturb surface parameters
 XCGMAX = 2.0E-5                     # Maximum value for soil heat capacity; default=2.0E-5
 XCSMAX = 2.0E-4                     # Maximum value for snow heat capacity; default=2.0E-4
 

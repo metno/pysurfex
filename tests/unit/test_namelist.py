@@ -1,17 +1,14 @@
 """Test namelist settings."""
 import json
 
+import f90nml
 import pytest
-import yaml
 
-from pysurfex.configuration import ConfigurationFromTomlFile
-from pysurfex.datetime_utils import as_datetime
-from pysurfex.namelist import NamelistGenerator
-from pysurfex.namelist_legacy import BaseNamelist, Namelist
+from pysurfex.namelist import NamelistGenerator, NamelistGeneratorAssembleFromFiles
 from pysurfex.platform_deps import SystemFilePaths
 
 
-@pytest.fixture()
+@pytest.fixture
 def namelist_dict():
     dict_data = {
         "nam_block": {"key": "val"},
@@ -20,7 +17,81 @@ def namelist_dict():
     return dict_data
 
 
-@pytest.fixture()
+@pytest.fixture
+def namelist_macro_dict_one_decade():
+    dict_data = {
+        "nam_frac": {"lecosg": True},
+        "nam_data_isba": {
+            "ntime": 1,
+            "cftyp_albnir_soil": "DIRTYP",
+            "cfnam_albnir_soil": "ALB_SAT_NI_@DECADE@_c",
+        },
+        "nam_prep_surf_atm": {"nyear": "@PREP_NYEAR@"},
+        "nam_io_offline": {"cfiletype": "NC"},
+    }
+    return dict_data
+
+
+@pytest.fixture
+def namelist_macro_dict_all_decades():
+    cftyp_albnir_soil = ["DIRTYP"] * 36
+    cfnam_albnir_soil = ["ALB_SAT_NI_@DECADE@_c"] * 36
+    dict_data = {
+        "nam_frac": {"lecosg": True},
+        "nam_data_isba": {
+            "ntime": 36,
+            "cftyp_albnir_soil": cftyp_albnir_soil,
+            "cfnam_albnir_soil": cfnam_albnir_soil,
+        },
+        "nam_prep_surf_atm": {"nyear": "@PREP_NYEAR@"},
+        "nam_io_offline": {"cfiletype": "NC"},
+    }
+    return dict_data
+
+
+@pytest.fixture
+def namelist_macro_dict_all_decades_nc():
+    cftyp_albnir_soil = ["NETCDF"] * 36
+    cfnam_albnir_soil = ["ALB_SAT_NI_@DECADE@_c"] * 36
+    dict_data = {
+        "nam_frac": {"lecosg": True},
+        "nam_data_isba": {
+            "ntime": 36,
+            "cftyp_albnir_soil": cftyp_albnir_soil,
+            "cfnam_albnir_soil": cfnam_albnir_soil,
+        },
+        "nam_prep_surf_atm": {"nyear": "@PREP_NYEAR@"},
+        "nam_io_offline": {"cfiletype": "NC"},
+    }
+    return dict_data
+
+
+@pytest.fixture
+def binary_input_dict():
+    dict_data = {
+        "pgd": {
+            "NAM_FRAC#LECOSG": {
+                "True": {
+                    "macros": {
+                        "VTYPE": {"fmt": "02d"},
+                        "DECADE": {"ntime": "NAM_DATA_ISBA#NTIME"},
+                    },
+                    "NAM_DATA_ISBA#CFTYP_ALBNIR_SOIL": {
+                        "DIRTYP": {
+                            "NAM_DATA_ISBA#CFNAM_ALBNIR_SOIL": "@ecosg_data_path@/ALB/ALB_SAT/ALB_SAT_NI_@DECADE@_c.dir"
+                        },
+                        "NETCDF": {
+                            "NAM_DATA_ISBA#CFNAM_ALBNIR_SOIL": "@ecosg_data_path@/ALB/ALB_SAT/ALB_SAT_NI_@DECADE@_c.nc"
+                        },
+                    },
+                },
+            },
+        },
+    }
+    return dict_data
+
+
+@pytest.fixture
 def namelist_file(namelist_dict, tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/namelist_dict.json"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
@@ -28,70 +99,11 @@ def namelist_file(namelist_dict, tmp_path_factory):
     return fname
 
 
-def test_namelist(
-    config_exp_surfex_toml, get_nam_path, namelist_dict, namelist_file, tmp_path_factory
-):
-    nml = BaseNamelist.ascii_file2nml(namelist_file)
-    output_file = f"{tmp_path_factory.getbasetemp().as_posix()}/namelist_output_testjson"
-    prep_file = f"{tmp_path_factory.getbasetemp().as_posix()}/namelist_prep_input.json"
-    BaseNamelist.nml2ascii(nml, output_file)
-    BaseNamelist.capitalize_namelist_dict(namelist_dict)
-    BaseNamelist.lower_case_namelist_dict(namelist_dict)
-
-    programs = ["pgd", "prep", "offline", "soda"]
-    for program in programs:
-        kwargs = {
-            "geo": None,
-            "fcint": 3,
-            "dtg": None,
-            "forc_zs": False,
-            "prep_file": None,
-            "prep_filetype": None,
-            "prep_pgdfile": None,
-            "prep_pgdfiletype": None,
-        }
-        if program == "prep":
-            kwargs.update(
-                {
-                    "dtg": as_datetime("2020022000"),
-                    "prep_file": prep_file,
-                    "prep_filetype": "json",
-                }
-            )
-        if program == "offline":
-            kwargs.update({"forc_zs": True})
-        if program == "soda":
-            kwargs.update({"dtg": as_datetime("2020022000")})
-        config = ConfigurationFromTomlFile(config_exp_surfex_toml)
-        config.update_setting("SURFEX#COVER#SG", True)
-        config.update_setting("SURFEX#ISBA#SCHEME", "DIF")
-        BaseNamelist(program, config, get_nam_path, **kwargs)
-        config.update_setting("SURFEX#ASSIM#SCHEMES#ISBA", "OI")
-        BaseNamelist(program, config, get_nam_path, **kwargs)
-        config.update_setting("SURFEX#ASSIM#SCHEMES#ISBA", "ENKF")
-        BaseNamelist(program, config, get_nam_path, **kwargs)
-
-    BaseNamelist.set_direct_data_namelist(
-        "DATA_ISBA", "YSOC_TOP", "/data/db.dir", "input_path"
-    )
-    BaseNamelist.set_direct_data_namelist(
-        "DATA_ISBA", "YSOC_TOP", "/data/db.json", "input_path"
-    )
-
-    key = "@VEGTYPE@@DECADE@@VAR@"
-    value = "value"
-    Namelist.sub(namelist_dict, "TEST", key, value, vtype="1", decade="1", var="VAR")
-
-
 def test_new_namelists(
-    config_exp_surfex_toml, tmp_path_factory, input_binary_data_file, get_nam_file
+    tmp_path_factory, input_binary_data_file, get_nam_file, get_assemble_file
 ):
     program = "pgd"
-    config = ConfigurationFromTomlFile(config_exp_surfex_toml)
-
-    with open(get_nam_file, mode="r", encoding="utf-8") as fhandler:
-        definitions = yaml.safe_load(fhandler)
-    nml = NamelistGenerator(program, config, definitions)
+    nml = NamelistGeneratorAssembleFromFiles(program, get_nam_file, get_assemble_file)
     with open(input_binary_data_file, mode="r", encoding="utf-8") as fhandler:
         input_data = json.load(fhandler)
     nml_out = f"{tmp_path_factory.getbasetemp().as_posix()}/namelist.nml"
@@ -107,4 +119,156 @@ def test_new_namelists(
     }
 
     platform = SystemFilePaths(system_paths)
-    nml.input_data_from_namelist(input_data, platform)
+    nml.input_data_from_namelist(input_data, platform, check_existence=False)
+
+
+def test_macro_in_namelists_and_input_one_decade(
+    namelist_macro_dict_one_decade, binary_input_dict
+):
+    program = "pgd"
+    nml = f90nml.Namelist(namelist_macro_dict_one_decade)
+    macros = {"DECADE": "1215", "PREP_NYEAR": 2025}
+    nam_gen = NamelistGenerator(program, nml, macros=macros)
+    nml = nam_gen.get_namelist()
+    assert nml["nam_prep_surf_atm"]["nyear"] == 2025
+
+    system_paths = {"ecosg_data_path": "ecosg_data_path"}
+
+    platform = SystemFilePaths(system_paths)
+    input_data = nam_gen.input_data_from_namelist(
+        binary_input_dict, platform, check_existence=False
+    )
+    assert (
+        input_data.data["ALB_SAT_NI_1215_c.dir"]
+        == "ecosg_data_path/ALB/ALB_SAT/ALB_SAT_NI_1215_c.dir"
+    )
+    assert (
+        input_data.data["ALB_SAT_NI_1215_c.hdr"]
+        == "ecosg_data_path/ALB/ALB_SAT/ALB_SAT_NI_1215_c.hdr"
+    )
+
+
+def test_macro_in_namelists_and_input_all_decades(
+    namelist_macro_dict_all_decades, binary_input_dict
+):
+    program = "pgd"
+    nml = f90nml.Namelist(namelist_macro_dict_all_decades)
+    macros = {"PREP_NYEAR": 2025}
+    nam_gen = NamelistGenerator(program, nml, macros=macros)
+    nml = nam_gen.get_namelist()
+    assert nml["nam_prep_surf_atm"]["nyear"] == 2025
+
+    system_paths = {"ecosg_data_path": "ecosg_data_path"}
+
+    decades = [
+        "0105",
+        "0115",
+        "0125",
+        "0205",
+        "0215",
+        "0225",
+        "0305",
+        "0315",
+        "0325",
+        "0405",
+        "0415",
+        "0425",
+        "0505",
+        "0515",
+        "0525",
+        "0605",
+        "0615",
+        "0625",
+        "0705",
+        "0715",
+        "0725",
+        "0805",
+        "0815",
+        "0825",
+        "0905",
+        "0915",
+        "0925",
+        "1005",
+        "1015",
+        "1025",
+        "1105",
+        "1115",
+        "1125",
+        "1205",
+        "1215",
+        "1225",
+    ]
+    platform = SystemFilePaths(system_paths)
+    input_data = nam_gen.input_data_from_namelist(
+        binary_input_dict, platform, check_existence=False
+    )
+    for decade in decades:
+        assert (
+            input_data.data[f"ALB_SAT_NI_{decade}_c.dir"]
+            == f"ecosg_data_path/ALB/ALB_SAT/ALB_SAT_NI_{decade}_c.dir"
+        )
+        assert (
+            input_data.data[f"ALB_SAT_NI_{decade}_c.hdr"]
+            == f"ecosg_data_path/ALB/ALB_SAT/ALB_SAT_NI_{decade}_c.hdr"
+        )
+
+
+def test_macro_in_namelists_and_input_all_decades_nc(
+    namelist_macro_dict_all_decades_nc, binary_input_dict
+):
+    program = "pgd"
+    nml = f90nml.Namelist(namelist_macro_dict_all_decades_nc)
+    macros = {"PREP_NYEAR": 2025}
+    nam_gen = NamelistGenerator(program, nml, macros=macros)
+    nml = nam_gen.get_namelist()
+    assert nml["nam_prep_surf_atm"]["nyear"] == 2025
+
+    system_paths = {"ecosg_data_path": "ecosg_data_path"}
+
+    decades = [
+        "0105",
+        "0115",
+        "0125",
+        "0205",
+        "0215",
+        "0225",
+        "0305",
+        "0315",
+        "0325",
+        "0405",
+        "0415",
+        "0425",
+        "0505",
+        "0515",
+        "0525",
+        "0605",
+        "0615",
+        "0625",
+        "0705",
+        "0715",
+        "0725",
+        "0805",
+        "0815",
+        "0825",
+        "0905",
+        "0915",
+        "0925",
+        "1005",
+        "1015",
+        "1025",
+        "1105",
+        "1115",
+        "1125",
+        "1205",
+        "1215",
+        "1225",
+    ]
+    platform = SystemFilePaths(system_paths)
+    input_data = nam_gen.input_data_from_namelist(
+        binary_input_dict, platform, check_existence=False
+    )
+    for decade in decades:
+        assert (
+            input_data.data[f"ALB_SAT_NI_{decade}_c.nc"]
+            == f"ecosg_data_path/ALB/ALB_SAT/ALB_SAT_NI_{decade}_c.nc"
+        )

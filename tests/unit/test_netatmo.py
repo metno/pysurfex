@@ -5,13 +5,13 @@ from pysurfex.datetime_utils import as_datetime
 from pysurfex.input_methods import get_datasources
 
 
-@pytest.fixture()
+@pytest.fixture
 def netatmo_obs_time():
     obstime = as_datetime("2020022006")
     return obstime
 
 
-@pytest.fixture()
+@pytest.fixture
 def netatmo_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/netatmo.json"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
@@ -63,7 +63,7 @@ def netatmo_file(tmp_path_factory):
     return fname
 
 
-@pytest.fixture()
+@pytest.fixture
 def settings(netatmo_file):
     settings_dict = {
         "label": {
@@ -82,5 +82,4 @@ def settings(netatmo_file):
 def test_get_netatmo_datasource(netatmo_obs_time, settings):
     dataset = get_datasources(netatmo_obs_time, settings)
     assert len(dataset) == 1
-    print(dataset[0])
     assert len(dataset[0].observations) == 2

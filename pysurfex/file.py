@@ -99,7 +99,8 @@ class SurfexSurfIO(object):
         Args:
             surfexfile (str): Internal file name of surfex file.
             csurf_filetype (str): File type
-            input_file (str, optional): File name to be used as surfexfile. Defaults to None.
+            input_file (str, optional): File name to be used as surfexfile.
+                                        Defaults to None.
             symlink (bool, optional): Symlink input_file to surfexfile. Defaults to True.
             archive_file (str, optional): Location to store the result. Defaults to None.
 
@@ -354,15 +355,12 @@ def get_surfex_io_object(
 
     """
     logging.debug("get_surfex_io_object")
-    if filetype is not None:
-        if (
-            filetype.lower() != "surf"
-            and filetype.lower() != "ts"
-            and filetype.lower() != "forcing"
-        ):
-            raise RuntimeError(
-                "Invalid filetype: " + filetype + " Allowed: surf/ts/forcing"
-            )
+    if filetype is not None and (
+        filetype.lower() != "surf"
+        and filetype.lower() != "ts"
+        and filetype.lower() != "forcing"
+    ):
+        raise RuntimeError("Invalid filetype: " + filetype + " Allowed: surf/ts/forcing")
 
     if fileformat is None:
         fileformat, filetype = guess_file_format(fname, filetype)
@@ -460,10 +458,7 @@ def guess_file_format(fname, ftype=None):
     if ext.endswith("TXT"):
         fileformat = "texte"
     if ext.endswith("nc"):
-        if ftype == "surf":
-            fileformat = "nc"
-        else:
-            fileformat = "netcdf"
+        fileformat = "nc" if ftype == "surf" else "netcdf"
     if ext.endswith("fa"):
         fileformat = "fa"
     if ext.endswith("sfx"):
@@ -536,7 +531,7 @@ class AsciiSurfexFile(SurfexIO):
             }
             return IGN(domain)
 
-        elif grid == "LONLATVAL":
+        if grid == "LONLATVAL":
             domain = {
                 "nam_lonlatval": {
                     "xx": self.read("XX", "&FULL", "float"),
@@ -547,7 +542,7 @@ class AsciiSurfexFile(SurfexIO):
             }
             return LonLatVal(domain)
 
-        elif grid == "LONLAT REG":
+        if grid == "LONLAT REG":
             domain = {
                 "nam_lonlat_reg": {
                     "xlonmin": self.read("LONMIN", "&FULL", "float"),
@@ -560,7 +555,7 @@ class AsciiSurfexFile(SurfexIO):
             }
             return LonLatReg(domain)
 
-        elif grid == "CONF PROJ":
+        if grid == "CONF PROJ":
             lon0 = self.read("LON0", "&FULL", "float")
             lat0 = self.read("LAT0", "&FULL", "float")
             n_x = self.read("IMAX", "&FULL", "integer")
@@ -587,8 +582,8 @@ class AsciiSurfexFile(SurfexIO):
             )
             earth = 6.37122e6
             proj_string = (
-                f"+proj=lcc +lat_0={str(lat0)} +lon_0={str(lon0)} +lat_1={str(lat0)} "
-                f"+lat_2={str(lat0)} +units=m +no_defs +R={str(earth)}"
+                f"+proj=lcc +lat_0={lat0!s} +lon_0={lon0!s} +lat_1={lat0!s} "
+                f"+lat_2={lat0!s} +units=m +no_defs +R={earth!s}"
             )
 
             proj = pyproj.CRS.from_string(proj_string)
@@ -616,8 +611,7 @@ class AsciiSurfexFile(SurfexIO):
                 },
             }
             return ConfProj(domain)
-        else:
-            raise NotImplementedError("Grid " + str(grid[0]) + " not implemented!")
+        raise NotImplementedError("Grid " + str(grid[0]) + " not implemented!")
 
     def read(self, read_par, read_tile, datatype):
         """Read the file.
@@ -638,53 +632,44 @@ class AsciiSurfexFile(SurfexIO):
         # Add & if not given
         if read_tile.find("&") < 0:
             read_tile = "&" + read_tile
-        file = open(self.filename, mode="r", encoding="utf-8")
+        file = open(self.filename, mode="r", encoding="utf-8")  # noqa SIM115
         read_desc = False
         read_value = False
         values = []
         for line in file:
             words = line.split()
-            print(read_value, read_desc)
-            print(words)
-            if len(words) > 0:
-                if read_value and not read_desc:
-                    if words[0].find("&") < 0:
-                        try:
-                            if datatype.lower() == "float":
-                                for word in words:
-                                    val = float(word.replace("D", "E"))
-                                    if val == 1e20:
-                                        val = np.nan
-                                    values.append(val)
-                            elif datatype.lower() == "string":
-                                str_words = []
-                                for word in words:
-                                    str_words.append(word)
-                                values = " ".join(str_words)
-                            elif (
-                                datatype.lower() == "integer" or datatype.lower() == "int"
-                            ):
-                                for word in words:
-                                    values.append(int(word))
-                            elif (
-                                datatype.lower() == "logical"
-                                or datatype.lower() == "bool"
-                            ):
-                                for word in words:
-                                    if word.lower().strip()[0] == "t":
-                                        values = True
-                                    else:
-                                        values = False
-                            else:
-                                raise NotImplementedError(
-                                    "Type not implemented " + str(datatype)
-                                )
-                        except ValueError:
-                            raise RuntimeError(
-                                f"Conversion from {str(words)} to {str(datatype)} "
-                                "does not work! Try a different datatype!"
-                            ) from ValueError
+            logging.debug("read_value=%s, read_desc=%s", read_value, read_desc)
+            logging.debug("words=%s", words)
 
+            if len(words) > 0:
+                if read_value and not read_desc and words[0].find("&") < 0:
+                    try:
+                        if datatype.lower() == "float":
+                            for word in words:
+                                val = float(word.replace("D", "E"))
+                                if val == 1e20:
+                                    val = np.nan
+                                values.append(val)
+                        elif datatype.lower() == "string":
+                            str_words = []
+                            for word in words:
+                                str_words.append(word)  # noqa PERF402
+                            values = " ".join(str_words)
+                        elif datatype.lower() == "integer" or datatype.lower() == "int":
+                            for word in words:
+                                values.append(int(word))
+                        elif datatype.lower() == "logical" or datatype.lower() == "bool":
+                            for word in words:
+                                values = word.lower().strip()[0] == "t"
+                        else:
+                            raise NotImplementedError(
+                                "Type not implemented " + str(datatype)
+                            )
+                    except ValueError:
+                        raise RuntimeError(
+                            f"Conversion from {words!s} to {datatype!s} "
+                            "does not work! Try a different datatype!"
+                        ) from ValueError
                 if read_desc:
                     read_desc = False
                     read_value = True
@@ -701,26 +686,23 @@ class AsciiSurfexFile(SurfexIO):
                         read_desc = True
                         read_value = False
                         logging.info("Found: %s %s", str(tile), str(par))
+                    logging.info("Found: %s %s", str(read_tile), str(read_par))
 
             # Description could be empty
-            else:
-                if read_desc:
-                    read_desc = False
-                    read_value = True
+            elif read_desc:
+                read_desc = False
+                read_value = True
 
         if isinstance(values, list):
             if len(values) == 0:
                 logging.info("No values found for %s", read_par)
                 return None
 
-            if len(values) > 1:
-                values = np.asarray(values)
-            else:
-                values = values[0]
+            values = np.asarray(values) if len(values) > 1 else values[0]
         logging.info("Returning values: %s", values)
         return values
 
-    def field(self, var, validtime=None):
+    def field(self, var, validtime=None):  # noqa ARG002
         """Read a field in file.
 
         Args:
@@ -810,8 +792,8 @@ class NCSurfexFile(SurfexIO):
             ll_lat = float(f_h["LATORI"][0])
             earth = 6.37122e6
             proj_string = (
-                f"+proj=lcc +lat_0={str(lat0)} +lon_0={str(lon0)} +lat_1={str(lat0)} "
-                f"+lat_2={str(lat0)} +units=m +no_defs +R={str(earth)}"
+                f"+proj=lcc +lat_0={lat0!s} +lon_0={lon0!s} +lat_1={lat0!s} "
+                f"+lat_2={lat0!s} +units=m +no_defs +R={earth!s}"
             )
 
             proj = pyproj.CRS.from_string(proj_string)
@@ -839,7 +821,7 @@ class NCSurfexFile(SurfexIO):
                 },
             }
             return ConfProj(domain)
-        elif cgrid == "IGN":
+        if cgrid == "IGN":
             domain = {
                 "nam_ign": {
                     "clambert": f_h["CLAMBERT"][0],
@@ -851,7 +833,7 @@ class NCSurfexFile(SurfexIO):
             }
             return IGN(domain)
 
-        elif cgrid == "LONLATVAL":
+        if cgrid == "LONLATVAL":
             domain = {
                 "nam_lonlatval": {
                     "xx": f_h["XX"][:],
@@ -862,7 +844,7 @@ class NCSurfexFile(SurfexIO):
             }
             return LonLatVal(domain)
 
-        elif cgrid == "LONLAT REG":
+        if cgrid == "LONLAT REG":
             domain = {
                 "nam_lonlatval_reg": {
                     "lonmin": f_h["LONMIN"][0],
@@ -876,8 +858,7 @@ class NCSurfexFile(SurfexIO):
                 }
             }
             return LonLatReg(domain)
-        else:
-            raise NotImplementedError(cgrid + " is not implemented")
+        raise NotImplementedError(cgrid + " is not implemented")
 
     def field(self, var, validtime=None):
         """Read field.
@@ -913,16 +894,15 @@ class NCSurfexFile(SurfexIO):
             except IndexError:
                 logging.warning("Could not checking time")
 
-            if time_in_file is not None:
-                if validtime != time_in_file:
-                    logging.error(
-                        "time_in_file=%s validtime=%s %s %s",
-                        time_in_file,
-                        validtime,
-                        type(time_in_file),
-                        type(validtime),
-                    )
-                    raise RuntimeError("Mismatch in times in file and the wanted time")
+            if time_in_file is not None and validtime != time_in_file:
+                logging.error(
+                    "time_in_file=%s validtime=%s %s %s",
+                    time_in_file,
+                    validtime,
+                    type(time_in_file),
+                    type(validtime),
+                )
+                raise RuntimeError("Mismatch in times in file and the wanted time")
 
         geo_in = self.get_geo()
         field = f_h[var.varname][:]
@@ -970,7 +950,8 @@ class FaSurfexFile(SurfexIO):
         extension = SurfFileTypeExtension("FA", masterodb=masterodb, lfagmap=lfagmap)
         extension_suffix = extension.suffix
 
-        # Surfex binaries use .fa suffix for all input files no matter if they are lfagmap files
+        # Surfex binaries use .fa suffix for all input files no matter if they are
+        # lfagmap files
 
         if not filename.endswith(extension_suffix):
             filename = filename + extension_suffix
@@ -1116,29 +1097,26 @@ class NetCDFSurfexFile(SurfexIO):
                     except AttributeError:  # Attribute doesn't exist
                         t_cal = "gregorian"  # or standard
 
-                    indices = list(range(0, dimlen))
+                    indices = list(range(dimlen))
                     times_for_var = netCDF4.num2date(
                         times_for_var[indices], units=units, calendar=t_cal
                     )
                     if len(times) > 0:
-                        for t_to_find, t_to_find_val in enumerate(times):
-                            for tstep in range(0, len(indices)):
+                        for __, t_to_find_val in enumerate(times):
+                            for tstep in range(len(indices)):
                                 if times_for_var[tstep] == t_to_find_val:
                                     this_dim.append(tstep)
-                                    times_read.append(times[t_to_find])
+                                    times_read.append(t_to_find_val)
                     else:
                         times_read = times_for_var
-                        this_dim = list(range(0, dimlen))
+                        this_dim = list(range(dimlen))
 
-                elif dim == "Number_of_points":
+                elif dim in ("Number_of_points", "xx"):
                     mapping[1] = ndims
-                    this_dim = list(range(0, dimlen))
-                elif dim == "xx":
-                    mapping[1] = ndims
-                    this_dim = list(range(0, dimlen))
+                    this_dim = list(range(dimlen))
                 elif dim == "yy":
                     mapping[2] = ndims
-                    this_dim = list(range(0, dimlen))
+                    this_dim = list(range(dimlen))
                 elif dim == "Number_of_Patches":
                     mapping[3] = ndims
                     npatch = dimlen
@@ -1146,33 +1124,30 @@ class NetCDFSurfexFile(SurfexIO):
                         npatch = len(patches)
                         this_dim = patches
                     else:
-                        this_dim = list(range(0, dimlen))
+                        this_dim = list(range(dimlen))
                 elif dim == "Number_of_Layers":
                     mapping[4] = ndims
                     npatch = dimlen
-                    if len(layers) > 0:
-                        this_dim = layers
-                    else:
-                        this_dim = list(range(0, dimlen))
+                    this_dim = layers if len(layers) > 0 else list(range(dimlen))
                 elif dim == "lon":
                     mapping[1] = ndims
-                    this_dim = list(range(0, dimlen))
+                    this_dim = list(range(dimlen))
                 elif dim == "lat":
                     mapping[2] = ndims
-                    this_dim = list(range(0, dimlen))
+                    this_dim = list(range(dimlen))
                 else:
                     raise NotImplementedError("Not implemented for: " + dim)
 
                 dim_indices.append(this_dim)
                 ndims = ndims + 1
 
-            print(dim_indices)
+            logging.debug("dim_indices=%s", dim_indices)
             field = self.file_handler.variables[var.varname][dim_indices]
 
             # Add extra dimensions
             i = 0
             reverse_mapping = []
-            for dim in range(0, 5):
+            for dim in range(5):
                 if dim not in mapping:
                     logging.debug("Adding dimension %s", dim)
                     field = np.expand_dims(field, len(dim_indices) + i)
@@ -1186,10 +1161,10 @@ class NetCDFSurfexFile(SurfexIO):
             npoints = self.geo.npoints * npatch
 
             # Create 2-D array with times and points as for the other formats
-            for tstep in range(0, field.shape[0]):
+            for tstep in range(field.shape[0]):
                 field2d = np.empty(npoints)
                 i = 0
-                for (patch,) in range(0, npatch):
+                for (patch,) in range(npatch):
                     if self.geo.mask is not None:
                         iii = 0
                         j = 0
@@ -1197,19 +1172,20 @@ class NetCDFSurfexFile(SurfexIO):
                         # dimensions than the PGD dimension and mask needs x first.
                         for xxx in range(-1, field.shape[1] + 1):
                             for yyy in range(-1, field.shape[2] + 1):
-                                if xxx in range(0, field.shape[1]) and yyy in range(
-                                    0, field.shape[2]
+                                if (
+                                    xxx in range(field.shape[1])
+                                    and yyy in range(field.shape[2])
+                                    and self.geo.mask[j] == iii
                                 ):
-                                    if self.geo.mask[j] == iii:
-                                        field2d[i] = np.nan
-                                        if field[tstep, xxx, yyy, patch] != np.nan:
-                                            field2d[i] = field[tstep, xxx, yyy, patch]
-                                        i = i + 1
-                                        j = j + 1
+                                    field2d[i] = np.nan
+                                    if field[tstep, xxx, yyy, patch] != np.nan:
+                                        field2d[i] = field[tstep, xxx, yyy, patch]
+                                    i = i + 1
+                                    j = j + 1
                                 iii = iii + 1
                     else:
-                        for yyy in range(0, field.shape[2]):
-                            for xxx in range(0, field.shape[1]):
+                        for yyy in range(field.shape[2]):
+                            for xxx in range(field.shape[1]):
                                 field2d[i] = np.nan
                                 if field[tstep, xxx, yyy, patch] != np.nan:
                                     field2d[i] = field[tstep, xxx, yyy, patch]
@@ -1239,10 +1215,7 @@ class NetCDFSurfexFile(SurfexIO):
             tuple: (np.array, surfex.Geometry)
 
         """
-        if validtime is None:
-            validtime = []
-        else:
-            validtime = [validtime]
+        validtime = [] if validtime is None else [validtime]
 
         field, geo_in = self.read(var, validtime)
         # Reshape to fortran 2D style
@@ -1301,7 +1274,7 @@ class TexteSurfexFile(SurfexIO):
             tuple: (np.array, surfex.Geometry)
 
         """
-        self.file = open(self.filename, mode="r", encoding="utf-8")
+        self.file = open(self.filename, mode="r", encoding="utf-8")  # noqa SIM115
 
         base_time = variable.basetime
         interval = variable.interval
@@ -1461,7 +1434,7 @@ class ForcingFileNetCDF(SurfexIO):
                             except AttributeError:  # Attribute doesn't exist
                                 t_cal = "gregorian"  # or standard
 
-                            indices = list(range(0, dimlen))
+                            indices = list(range(dimlen))
                             times_for_var = netCDF4.num2date(
                                 times_for_var[indices], units=units, calendar=t_cal
                             )
@@ -1500,10 +1473,7 @@ class ForcingFileNetCDF(SurfexIO):
             tuple: field, geo
 
         """
-        if validtime is None:
-            validtime = []
-        else:
-            validtime = [validtime]
+        validtime = [] if validtime is None else [validtime]
 
         field, geo_in = self.read_field(var, validtime)
         # Reshape to fortran 2D style
@@ -1578,9 +1548,8 @@ def read_surfex_field(
             geo = AsciiSurfexFile(filename).geo
         elif fileformat.lower() == "nc":
             geo = NCSurfexFile(filename).geo
-        else:
-            if geo is None:
-                raise RuntimeError("Not implemented and geo is None")
+        elif geo is None:
+            raise RuntimeError("Not implemented and geo is None")
     elif geo is None:
         raise RuntimeError(
             "You need to provide a geo object. Filetype is: " + str(filetype)
@@ -1653,11 +1622,8 @@ def read_surfex_points(
             geo = AsciiSurfexFile(filename).geo
         elif fileformat.lower() == "nc":
             geo = NCSurfexFile(filename).geo
-        else:
-            if geo is None:
-                raise NotImplementedError(
-                    f"{fileformat} is not implemented and geo is None"
-                )
+        elif geo is None:
+            raise NotImplementedError(f"{fileformat} is not implemented and geo is None")
     elif geo is None:
         raise RuntimeError(
             "You need to provide a geo object. Filetype is: " + str(filetype)

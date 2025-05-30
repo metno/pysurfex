@@ -10,7 +10,9 @@ from .file import SurfexFileVariable, get_surfex_io_object
 from .geo import get_geo_object_from_json_file
 from .grib import Grib, Grib1Variable, Grib2Variable
 from .input_methods import get_datasources
+from .interpolation import Interpolation
 from .netcdf import Netcdf, NetCDFReadVariable
+from .platform_deps import SystemFilePathsFromFile
 from .util import parse_filepattern
 
 
@@ -24,7 +26,8 @@ class Variable(object):
             var_type (str): Variable type.
             var_dict (dict): Variable definitions
             initial_basetime (datetime): Initial basetime
-            prefer_forecast (bool, optional): Prefer forecasts instead of analysis. Defaults to True.
+            prefer_forecast (bool, optional): Prefer forecasts instead of analysis.
+                                              Defaults to True.
 
         Raises:
             RuntimeError: No filepattern provided
@@ -38,10 +41,8 @@ class Variable(object):
             self.interval = var_dict["timestep"]
         except KeyError:
             self.interval = 3600
-        try:
-            self.filepattern = var_dict["filepattern"]
-        except KeyError:
-            raise RuntimeError("No filepattern provided") from KeyError
+
+        self.filepattern = self.substitute_macros(var_dict["filepattern"])
         self.initial_basetime = initial_basetime
         try:
             self.fcint = int(self.var_dict["fcint"])
@@ -56,6 +57,11 @@ class Variable(object):
         except KeyError:
             self.prefer_forecast = prefer_forecast
 
+        try:
+            self.one_forecast = self.var_dict["one_forecast"]
+        except KeyError:
+            self.one_forecast = False
+
         if self.offset > self.fcint:
             raise RuntimeError(
                 "You can not have larger offset than the frequency of forecasts "
@@ -67,20 +73,47 @@ class Variable(object):
         self.file_var = file_var
         self.instant = instant
         self.accumulated = accumulated
+        self.alpha = None
         logging.debug("Constructed variable for %s", str(self.var_dict))
+
+    def substitute_macros(self, setting, micro="@"):
+        """Substitute macros.
+
+        Args:
+            setting (str): Setting
+            micro (str): Micro character
+
+        """
+        try:
+            spaths = self.var_dict["system_file_paths"]
+        except KeyError:
+            logging.info("No system file paths used")
+            spaths = None
+        if spaths is None:
+            return setting
+
+        spaths = SystemFilePathsFromFile(spaths)
+        if isinstance(setting, str):
+            for mkey, mvalue in spaths.system_file_paths.items():
+                logging.debug("mkey: %s mvalue=%s", mkey, mvalue)
+                if isinstance(mkey, str) and isinstance(mvalue, str):
+                    logging.debug("mkey: %s mvalue=%s", mkey, mvalue)
+                    setting = setting.replace(f"{micro}{mkey}{micro}", mvalue)
+        return setting
 
     def get_filename(self, validtime, previoustime=None):
         """Get the filename.
 
         Args:
             validtime (datetime.datetime): Valid time.
-            previoustime (datetime.datetime, optional): Previous valid time. Defaults to None.
+            previoustime (datetime.datetime, optional): Previous valid time.
+                                                        Defaults to None.
 
         Returns:
             str: Parsed filename
 
         """
-        logging.debug("Set basename for filename")
+        logging.debug("Set basetime for filename")
         basetime = None
         if validtime is not None:
             basetime = self.get_basetime(validtime, previoustime=previoustime)
@@ -94,7 +127,8 @@ class Variable(object):
         Args:
             validtime (datetime.datetime): Valid time.
             cache (surfex.Cache, optional): Cache. Defaults to None.
-            previoustime (datetime.datetime, optional): Previous valid time. Defaults to None.
+            previoustime (datetime.datetime, optional): Previous valid time.
+                                                        Defaults to None.
 
         Raises:
             NotImplementedError: Variable type not implemented
@@ -103,13 +137,14 @@ class Variable(object):
             tuple: Filehandler and file name
 
         """
+        logging.info("validtime, %s previoustime %s", validtime, previoustime)
         filename = self.get_filename(validtime, previoustime=previoustime)
         if cache is not None and cache.file_open(filename):
             file_handler = cache.get_file_handler(filename)
         else:
             if self.var_type == "netcdf":
                 file_handler = Netcdf(filename)
-            elif self.var_type == "grib1" or self.var_type == "grib2":
+            elif self.var_type in ("grib1", "grib2"):
                 file_handler = Grib(filename)
             elif self.var_type == "fa":
                 file_handler = Fa(filename)
@@ -135,8 +170,7 @@ class Variable(object):
             elif self.var_type == "obs":
                 var_dict = self.var_dict
                 var_dict = {"set": var_dict}
-                basetime = self.get_basetime(validtime)
-                file_handler = get_datasources(basetime, var_dict)[0]
+                file_handler = get_datasources(validtime, var_dict)[0]
             else:
                 raise NotImplementedError
 
@@ -169,14 +203,14 @@ class Variable(object):
         if cache is not None:
             id_str = cache.generate_id(self.var_type, self.file_var, filename, validtime)
 
+        geo_read = None
         if cache is not None and cache.is_saved(id_str):
             field = cache.saved_fields[id_str]
             logging.info("Using cached value for %s", id_str)
         else:
             if self.var_type == "obs":
                 raise NotImplementedError("Field not defined for point data")
-            else:
-                field, geo_read = filehandler.field(self.file_var, validtime=validtime)
+            field, geo_read = filehandler.field(self.file_var, validtime=validtime)
 
             if field is not None:
                 logging.debug("field.shape %s", field.shape)
@@ -193,8 +227,9 @@ class Variable(object):
             var (object): Variable object
             geo (surfex.Geo): Surfex geometry
             validtime (datetime.datetime): Valid time
-            previoustime (datetime.datetime, optional): Previous valid time for accumulated
-                                                        variables. Defaults to None.
+            previoustime (datetime.datetime, optional): Previous valid time for
+                                                        accumulated variables.
+                                                        Defaults to None.
             cache (surfex.Cache, optional): Cache. Defaults to None.
 
         Returns:
@@ -202,9 +237,8 @@ class Variable(object):
 
         """
         interpolation = "bilinear"
-        if self.var_type != "obs":
-            if "interpolator" in self.var_dict:
-                interpolation = self.var_dict["interpolator"]
+        if self.var_type != "obs" and "interpolator" in self.var_dict:
+            interpolation = self.var_dict["interpolator"]
 
         logging.debug("set basetime from %s", validtime)
         filehandler, filename = self.get_filehandler(
@@ -228,13 +262,15 @@ class Variable(object):
                 logging.info("Using cached value for %s", id_str)
             else:
                 if self.var_type == "obs":
+                    if geo is None:
+                        raise RuntimeError("No geo is provided!")
                     __, field, __ = filehandler.points(geo, validtime=validtime)
                 else:
                     field, interpolator = filehandler.points(
                         var, geo, interpolation=interpolation, validtime=validtime
                     )
-
-                    field = self.rotate_geographic_wind(field, interpolator)
+                    # Set alpha if requested
+                    self.rotate_geographic_wind(interpolator)
                 if field is not None:
                     logging.debug("field.shape %s", field.shape)
 
@@ -280,9 +316,8 @@ class Variable(object):
                 units = None
             try:
                 member = self.var_dict["member"]
-                if member is not None:
-                    if not isinstance(member, list):
-                        member = [member]
+                if member is not None and not isinstance(member, list):
+                    member = [member]
             except KeyError:
                 member = None
 
@@ -360,10 +395,7 @@ class Variable(object):
                 accumulated = self.var_dict["accumulated"]
 
         elif self.var_type == "obs":
-            if "varname" in self.var_dict:
-                var = self.var_dict["varname"]
-            else:
-                var = None
+            var = self.var_dict.get("varname", None)
         else:
             raise NotImplementedError
 
@@ -449,7 +481,7 @@ class Variable(object):
             instant (_type_): _description_
 
         Raises:
-            RuntimeError: "Should not be negative values"
+            ValueError: _description_
 
         Returns:
             _type_: _description_
@@ -459,34 +491,35 @@ class Variable(object):
         if field is None:
             logging.warning("Field is not read properly")
             return None
-        else:
-            field = np.subtract(field, previous_field)
-            if any(field[field < 0.0]):
-                neg = []
-                for i in range(0, field.shape[0]):
-                    if field[i] < 0.0:
-                        neg.append(field[i])
-                neg = np.asarray(neg)
-                logging.warning(
-                    "Deaccumulated field has %s negative values. lowest: %s mean: %s",
-                    str(neg.shape[0]),
-                    str(np.nanmin(neg)),
-                    str(np.nanmean(neg)),
-                )
-            field[field < 0.0] = 0
-            if any(field[field < 0.0]):
-                raise RuntimeError("Should not be negative values")
-            if float(instant) != 0.0:
-                field = np.divide(field, float(instant))
 
-            return field
+        field = np.subtract(field, previous_field)
+        if any(field[field < 0.0]):
+            neg = []
+            for i in range(field.shape[0]):
+                if field[i] < 0.0:
+                    neg.append(field[i])
+            neg = np.asarray(neg)
+            logging.warning(
+                "Deaccumulated field has %s negative values. lowest: %s mean: %s",
+                str(neg.shape[0]),
+                str(np.nanmin(neg)),
+                str(np.nanmean(neg)),
+            )
+        field[field < 0.0] = 0
+        if any(field[field < 0.0]):
+            raise ValueError("Should not be negative values")
+        if float(instant) != 0.0:
+            field = np.divide(field, float(instant))
+
+        return field
 
     def get_basetime(self, validtime, previoustime=None, allow_different_basetime=False):
         """Get the basetime of the file.
 
         Args:
             validtime (datetime.datetime): Valid time
-            previoustime (datetime.datetime, optional): Previous valid time. Defaults to None.
+            previoustime (datetime.datetime, optional): Previous valid time.
+                                                        Defaults to None.
             allow_different_basetime (bool, optional): Allow different base times.
                                                        Defaults to False.
 
@@ -500,6 +533,14 @@ class Variable(object):
         """
         if self.offset < 0:
             raise RuntimeError("Negative offset does not make sense here")
+
+        if self.one_forecast:
+            logging.debug(
+                "one_forecast is True. Valitime %s Keep initial basetime %s",
+                validtime,
+                self.initial_basetime,
+            )
+            return self.initial_basetime
 
         # Take offset into account
         first = False
@@ -536,12 +577,11 @@ class Variable(object):
         ):
             if first:
                 logging.debug("First basetime")
-            else:
-                if self.prefer_forecast:
-                    logging.debug("Prefer forecasts instead of analyis")
-                    prefer_forecast = as_timedelta(seconds=self.fcint)
-                else:
-                    logging.debug("Prefer analysis instead of forecast")
+            elif self.prefer_forecast:
+                logging.debug("Prefer forecasts instead of analyis")
+                prefer_forecast = as_timedelta(seconds=self.fcint)
+            elif not self.prefer_forecast:
+                logging.debug("Prefer analysis instead of forecast")
 
         fcint = as_timedelta(seconds=self.fcint)
         basetime = (
@@ -550,9 +590,8 @@ class Variable(object):
             - prefer_forecast
         )
 
-        if previoustime is not None:
-            if allow_different_basetime:
-                raise NotImplementedError
+        if previoustime is not None and allow_different_basetime:
+            raise NotImplementedError
 
         logging.debug("seconds_since_midnight: %s", seconds_since_midnight)
         logging.debug(
@@ -560,27 +599,25 @@ class Variable(object):
             basetime_inc * int(as_timedelta(seconds=self.fcint).seconds),
         )
         logging.debug("       prefer_forecast: %s", self.prefer_forecast)
+        logging.debug("          one_forecast: %s", self.one_forecast)
         logging.debug("   prefer_forecast_inc: %s", prefer_forecast)
         logging.debug("          basetime_inc: %s", basetime_inc)
         logging.debug("           Basetime is: %s", basetime)
         return basetime
 
-    def rotate_geographic_wind(self, field, interpolator):
+    def rotate_geographic_wind(self, interpolator):
         """Rotate wind.
 
         Args:
-            field (_type_): _description_
             interpolator (_type_): _description_
-
-        Returns:
-            _type_: _description_
 
         """
         rotate_wind = False
         if "rotate_to_geographic" in self.var_dict:
             rotate_wind = self.var_dict["rotate_to_geographic"]
         if rotate_wind:
-            field = interpolator.rotate_wind_to_geographic(field)
-            return field
-        else:
-            return field
+            alpha_grid = interpolator.alpha_grid_rot()
+            alpha_interpolation = Interpolation(
+                "nearest", interpolator.geo_in, interpolator.geo_out
+            )
+            self.alpha = alpha_interpolation.interpolate(alpha_grid)

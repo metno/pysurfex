@@ -5,7 +5,7 @@ from pysurfex.input_methods import get_datasources
 from pysurfex.obsoul import ObservationDataSetFromObsoulFile
 
 
-@pytest.fixture()
+@pytest.fixture
 def obsoul_carra1(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/carra1.obsoul"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
@@ -38,7 +38,7 @@ def obsoul_carra1(tmp_path_factory):
     return fname
 
 
-@pytest.fixture()
+@pytest.fixture
 def cryoclim_settings(obsoul_cryoclim_cy43):
     settings_dict = {
         "label": {
@@ -56,7 +56,6 @@ def cryoclim_settings(obsoul_cryoclim_cy43):
 def test_get_obsoul_cryoclim_datasource(obstime, cryoclim_settings):
     dataset = get_datasources(obstime, cryoclim_settings)
     assert len(dataset) == 1
-    print(dataset[0])
     assert len(dataset[0].observations) == 4
 
 

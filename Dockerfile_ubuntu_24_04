@@ -1,0 +1,21 @@
+FROM ubuntu:24.04
+
+WORKDIR /pysurfex
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update
+RUN apt-get install -y python3 curl libudunits2-dev libproj-dev libeccodes0 libeccodes-dev libnetcdf-dev netcdf-bin vim
+
+RUN curl -sSL https://install.python-poetry.org | python3 -
+ENV PATH="/root/.local/bin:$PATH"
+
+# Install
+COPY . .
+
+RUN poetry install --all-extras
+#RUN poetry env activate
+RUN bash -c "source /pysurfex/.venv/bin/activate"
+ENV PATH="/pysurfex/.venv/bin/:$PATH"
+
+

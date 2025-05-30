@@ -10,10 +10,10 @@ import time
 
 import netCDF4
 import numpy as np
-import toml
+import yaml
 
+from . import PACKAGE_DIRECTORY
 from .cache import Cache
-from .configuration import ConfigurationFromHarmonie
 from .datetime_utils import as_datetime, as_timedelta
 from .file import ForcingFileNetCDF
 from .geo import get_geo_object
@@ -65,9 +65,9 @@ class SurfexOutputForcing(object):
 
     def _check_sanity(self):
         if len(self.var_objs) != self.nparameters:
-            raise Exception(
-                f"Inconsistent number of parameter. {str(len(self.var_objs))} != "
-                f"{str(self.nparameters)}"
+            raise RuntimeError(
+                f"Inconsistent number of parameter. {len(self.var_objs)!s} != "
+                f"{self.nparameters!s}"
             )
 
         # Check if all parameters are present
@@ -76,7 +76,7 @@ class SurfexOutputForcing(object):
 
         for key, value in self.parameters.items():
             if value == 0:
-                raise Exception(f"Required parameter {str(key)} is missing!")
+                raise RuntimeError(f"Required parameter {key!s} is missing!")
 
     # Time dependent parameter
     nparameters = 11
@@ -174,7 +174,7 @@ class NetCDFOutput(SurfexOutputForcing):
         )
         self._define_forcing(geo, att_objs, att_time, cache)
 
-    def write_forcing(self, var_objs, this_time, cache):
+    def write_forcing(self, var_objs, this_time, cache):  # noqa ARG002
         """Write forcing.
 
         Args:
@@ -433,7 +433,7 @@ class AsciiOutput(SurfexOutputForcing):
         self.fname = fname
         self._define_forcing(geo, att_objs, att_time, cache)
 
-    def write_forcing(self, var_objs, this_time, cache):
+    def write_forcing(self, var_objs, this_time, cache):  # noqa ARG002
         """Write forcing.
 
         Args:
@@ -469,27 +469,27 @@ class AsciiOutput(SurfexOutputForcing):
         ).total_seconds()
         fmt = "%15.8f"
         cols = 50
-        file_handler = open(self.fname, "w", encoding="utf-8")
-        file_handler.write(str(geo.npoints) + "\n")
-        file_handler.write(str(self.ntimes) + "\n")
-        file_handler.write(str(self.time_step_intervall) + "\n")
-        file_handler.write(self.base_time.strftime("%Y") + "\n")
-        file_handler.write(self.base_time.strftime("%m") + "\n")
-        file_handler.write(self.base_time.strftime("%d") + "\n")
-        file_handler.write(str(second) + "\n")
-        write_formatted_array(file_handler, geo.lons, cols, fmt)
-        write_formatted_array(file_handler, geo.lats, cols, fmt)
-        write_formatted_array(file_handler, zs_oro, cols, fmt)
-        write_formatted_array(file_handler, zref, cols, fmt)
-        write_formatted_array(file_handler, uref, cols, fmt)
-        file_handler.close()
+        with open(self.fname, mode="w", encoding="utf-8") as file_handler:
+            file_handler.write(str(geo.npoints) + "\n")
+            file_handler.write(str(self.ntimes) + "\n")
+            file_handler.write(str(self.time_step_intervall) + "\n")
+            file_handler.write(self.base_time.strftime("%Y") + "\n")
+            file_handler.write(self.base_time.strftime("%m") + "\n")
+            file_handler.write(self.base_time.strftime("%d") + "\n")
+            file_handler.write(str(second) + "\n")
+            write_formatted_array(file_handler, geo.lons, cols, fmt)
+            write_formatted_array(file_handler, geo.lats, cols, fmt)
+            write_formatted_array(file_handler, zs_oro, cols, fmt)
+            write_formatted_array(file_handler, zref, cols, fmt)
+            write_formatted_array(file_handler, uref, cols, fmt)
 
         for key in self.parameters:
             nam = key
             if key == "WIND_DIR":
                 nam = "DIR"
             self.forcing_file[key] = "Forc_" + nam + ".txt"
-            self.file_handler[key] = open(self.forcing_file[key], "w", encoding="utf-8")
+            fhandler = open(self.forcing_file[key], mode="w", encoding="utf-8")  # noqa
+            self.file_handler[key] = fhandler
 
     def finalize(self):
         """Finalize forcing."""
@@ -500,16 +500,19 @@ class AsciiOutput(SurfexOutputForcing):
 
 def write_formatted_array(file, array, columns, fileformat):
     """Write a formatted array."""
-    astr = np.empty(array.size - array.size % columns, dtype="float64")
-    astr = array[0 : astr.size]
-    astr = astr.reshape((columns, astr.size / columns), order="F")
-    mlw = (len(fileformat % 0)) * (columns + 1)
-    formatter = {"float_kind": lambda x: fileformat % x}
-    astr_end = np.array2string(
-        array[astr.size :], separator="", max_line_width=mlw, formatter=formatter
-    )[1:-1]
-    np.savetxt(file, astr.T, fmt=fileformat, newline="\n", delimiter="")
-    file.write(astr_end + "\n")
+    full_lines = int(array.size / columns)
+    extra = array.size % columns
+    first = array.size - extra
+    astr = np.empty(columns * full_lines, dtype="float64")
+    array = array.flatten()
+    astr = array[0 : columns * full_lines]
+    astr1 = astr.reshape(columns, full_lines, order="F")
+    np.savetxt(file, astr1.T, fmt=fileformat, newline="\n", delimiter="")
+    if extra != 0:
+        astr2 = np.empty(extra, dtype="float64")
+        astr2 = array[first : array.size]
+        astr2 = astr2.reshape(extra, 1, order="F")
+        np.savetxt(file, astr2.T, fmt=fileformat, newline="\n", delimiter="")
 
 
 def run_time_loop(options, var_objs, att_objs):
@@ -534,7 +537,15 @@ def run_time_loop(options, var_objs, att_objs):
             ntimes = 2
             logging.info("Print single time step twice %s", 0)
         else:
-            raise Exception("Option single should be used with one time step")
+            raise RuntimeError("Option single should be used with one time step")
+
+    output_file = options["output_file"]
+    if os.path.exists(output_file) and not options["force"]:
+        logging.info("%s already exists and force in false", output_file)
+        return
+
+    if os.path.exists(output_file):
+        logging.warning("Overwrite output: %s", output_file)
 
     # Create output object
     if (
@@ -608,6 +619,7 @@ def set_input_object(
     ref_height,
     first_base_time,
     timestep,
+    system_file_paths=None,
 ):
     """Set the input parameter for a specific SURFEX forcing variable based on input.
 
@@ -620,6 +632,7 @@ def set_input_object(
         ref_height (_type_): _description_
         first_base_time (_type_): _description_
         timestep (_type_): _description_
+        system_file_paths(SystemFilePaths): System file paths
 
     Returns:
         _type_: _description_
@@ -643,6 +656,9 @@ def set_input_object(
         defs = copy.deepcopy(conf[forcingformat])
         defs.update({"timestep": timestep})
 
+    # Macros
+    defs["system_file_paths"] = system_file_paths
+
     # All objects with converters, find converter dict entry
     conf_dict = {}
     if forcingformat != "constant":
@@ -654,28 +670,23 @@ def set_input_object(
                 raise KeyError("No converter defined for " + sfx_var)
 
         # Variables with height dependency
-        else:
-            if ref_height in conf[sfx_var]:
-                if forcingformat not in conf[sfx_var][ref_height]:
-                    msg = (
-                        f"{str(conf[sfx_var])}: "
-                        + f"Missing definitions for {sfx_var} and format: {forcingformat}"
-                    )
-                    raise KeyError(msg)
-                if conf[sfx_var][ref_height][forcingformat] is None:
-                    raise KeyError(
-                        f"{str(conf[sfx_var])}: Missing definitions for {sfx_var}"
-                    )
-                if "converter" in conf[sfx_var][ref_height][forcingformat]:
-                    conf_dict = copy.deepcopy(
-                        conf[sfx_var][ref_height][forcingformat]["converter"]
-                    )
-                else:
-                    raise KeyError("No converter defined for " + sfx_var)
-            else:
-                raise KeyError(
-                    'No ref height "' + ref_height + '" defined for ' + sfx_var
+        elif ref_height in conf[sfx_var]:
+            if forcingformat not in conf[sfx_var][ref_height]:
+                msg = (
+                    f"{conf[sfx_var]!s}: "
+                    + f"Missing definitions for {sfx_var} and format: {forcingformat}"
                 )
+                raise KeyError(msg)
+            if conf[sfx_var][ref_height][forcingformat] is None:
+                raise KeyError(f"{conf[sfx_var]!s}: Missing definitions for {sfx_var}")
+            if "converter" in conf[sfx_var][ref_height][forcingformat]:
+                conf_dict = copy.deepcopy(
+                    conf[sfx_var][ref_height][forcingformat]["converter"]
+                )
+            else:
+                raise KeyError("No converter defined for " + sfx_var)
+        else:
+            raise KeyError('No ref height "' + ref_height + '" defined for ' + sfx_var)
 
     ##############################################################
     ##############################################################
@@ -687,16 +698,13 @@ def set_input_object(
                 const_dict = copy.deepcopy(conf[sfx_var]["constant"])
             else:
                 raise KeyError("No constant defined for " + sfx_var)
-        else:
-            if ref_height in conf[sfx_var]:
-                if "constant" in conf[sfx_var][ref_height]:
-                    const_dict = copy.deepcopy(conf[sfx_var][ref_height]["constant"])
-                else:
-                    raise KeyError("No constant defined for " + sfx_var)
+        elif ref_height in conf[sfx_var]:
+            if "constant" in conf[sfx_var][ref_height]:
+                const_dict = copy.deepcopy(conf[sfx_var][ref_height]["constant"])
             else:
-                raise KeyError(
-                    'No ref height "' + ref_height + '" defined for ' + sfx_var
-                )
+                raise KeyError("No constant defined for " + sfx_var)
+        else:
+            raise KeyError('No ref height "' + ref_height + '" defined for ' + sfx_var)
 
         obj = ConstantValue(geo, sfx_var, const_dict)
     else:
@@ -713,23 +721,9 @@ def set_input_object(
 def set_forcing_config(**kwargs):
     """Set the forcing config."""
     file_base = None
-    if "harmonie" in kwargs and kwargs["harmonie"]:
-        config_exp = None
-        if "config_exp_surfex" in kwargs:
-            if kwargs["config_exp_surfex"] is not None:
-                config_exp = kwargs["config_exp_surfex"]
-        if config_exp is None:
-            config_exp = (
-                f"{os.path.abspath(os.path.dirname(__file__))}/cfg/config_exp_surfex.toml"
-            )
-        logging.info("Using default config from: %s", config_exp)
-        input_data = toml.load(open(config_exp, "r", encoding="utf-8"))
-        config = ConfigurationFromHarmonie(os.environ, input_data)
-        geo_out = config.geo
-    elif "domain" in kwargs and kwargs["domain"] is not None:
-        geo_out = get_geo_object(json.load(open(kwargs["domain"], "r", encoding="utf-8")))
-    else:
-        raise Exception("No geometry is set")
+    domain_file = kwargs["domain"]
+    with open(domain_file, mode="r", encoding="utf-8") as fhandler:
+        geo_out = get_geo_object(json.load(fhandler))
 
     user_config = {}
     pattern = None
@@ -773,20 +767,28 @@ def set_forcing_config(**kwargs):
         dtg_stop = kwargs["dtg_stop"]
         input_format = kwargs["input_format"]
         output_format = kwargs["output_format"]
-        outfile = kwargs["of"]
+        outfile = kwargs["output_filename"]
         zref = kwargs["zref"]
         uref = kwargs["uref"]
         config = kwargs["config"]
+        if config is None:
+            config_file = f"{PACKAGE_DIRECTORY}/cfg/config.yml"
+            with open(config_file, mode="r", encoding="utf-8") as file_handler:
+                config = yaml.safe_load(file_handler)
+
         if "interpolation" in kwargs:
             interpolation = kwargs["interpolation"]
         if "analysis" in kwargs:
             analysis = kwargs["analysis"]
-        if "fb" in kwargs:
-            file_base = kwargs["fb"]
+        if "filebase" in kwargs:
+            file_base = kwargs["filebase"]
         if "geo_out" in kwargs:
             geo_out = kwargs["geo_out"]
         if "user_config" in kwargs:
             user_config = kwargs["user_config"]
+            if isinstance(user_config, str):
+                with open(user_config, mode="r", encoding="utf-8") as file_handler:
+                    user_config = yaml.safe_load(file_handler)
         if "pattern" in kwargs:
             pattern = kwargs["pattern"]
         if "timestep" in kwargs:
@@ -853,11 +855,11 @@ def set_forcing_config(**kwargs):
             diskless_write = kwargs["diskless_write"]
 
     except ValueError:
-        raise Exception("Needed input is missing") from ValueError
+        raise RuntimeError("Needed input is missing") from ValueError
 
     # Time information
     if (int(dtg_start) or int(dtg_stop)) < 1000010100:
-        raise Exception(
+        raise RuntimeError(
             "Invalid start and stop times! " + str(dtg_start) + " " + str(dtg_stop)
         )
 
@@ -868,11 +870,18 @@ def set_forcing_config(**kwargs):
     else:
         first_base_time = as_datetime(str.strip(str(file_base)))
 
+    logging.info("config=%s", config)
+    logging.info("user_config=%s", user_config)
     # Merge all settings with user all settings
     merged_conf = deep_update(config, user_config)
+    logging.info("merged_conf=%s", merged_conf)
+
+    logging.info("fileformat=%s, pattern=%s", input_format, pattern)
 
     # Replace global settings from
     fileformat = input_format
+    if fileformat not in merged_conf:
+        merged_conf.update({fileformat: {}})
     if pattern is not None:
         merged_conf[fileformat]["filepattern"] = pattern
 
@@ -885,21 +894,30 @@ def set_forcing_config(**kwargs):
         merged_conf[fileformat]["fcint"] = 3600.0
         merged_conf[fileformat]["offset"] = 0
 
+    geo_input = None
     if "geo_input" in kwargs:
         geo_input = kwargs["geo_input"]
-        if geo_input is not None:
-            if os.path.exists(geo_input):
-                geo_input = get_geo_object(
-                    json.load(open(geo_input, "r", encoding="utf-8"))
-                )
-                merged_conf[fileformat]["geo_input"] = geo_input
+        merged_conf[fileformat]["geo_input"] = geo_input
+    if geo_input is None and "geo_input_file" in kwargs:
+        geo_input_file = kwargs["geo_input_file"]
+        if geo_input_file is not None:
+            if os.path.exists(geo_input_file):
+                with open(geo_input_file, "r", encoding="utf-8") as fhandler:
+                    geo_input = get_geo_object(json.load(fhandler))
+                merged_conf[fileformat]["geo_input_file"] = geo_input_file
             else:
-                logging.info("Input geometry %s does not exist", geo_input)
+                logging.warning("Input geometry %s does not exist", geo_input_file)
+
+    try:
+        system_file_paths = kwargs["system_file_paths"]
+    except KeyError:
+        system_file_paths = None
 
     # Set attributes
     atts = ["ZS", "ZREF", "UREF"]
     att_objs = []
     for att_var in atts:
+        logging.info("Set variable %s", att_var)
         # Override with command line options for a given variable
         ref_height = None
         cformat = fileformat
@@ -934,6 +952,7 @@ def set_forcing_config(**kwargs):
                 ref_height,
                 first_base_time,
                 timestep,
+                system_file_paths=system_file_paths,
             )
         )
 
@@ -954,6 +973,7 @@ def set_forcing_config(**kwargs):
     var_objs = []
     # Search in config file for parameters to override
     for sfx_var in variables:
+        logging.info("Set variable %s", sfx_var)
         ref_height = None
         cformat = fileformat
         if sfx_var == "TA":
@@ -1016,11 +1036,12 @@ def set_forcing_config(**kwargs):
                 ref_height,
                 first_base_time,
                 timestep,
+                system_file_paths=system_file_paths,
             )
         )
 
     # Save options
-    options = dict()
+    options = {}
     options["output_format"] = output_format
     options["output_file"] = outfile
     options["diskless_write"] = diskless_write
@@ -1029,6 +1050,7 @@ def set_forcing_config(**kwargs):
     options["timestep"] = timestep
     options["geo_out"] = geo_out
     options["single"] = False
+    options["force"] = kwargs["force"]
     if "single" in kwargs:
         options["single"] = kwargs["single"]
     options["cache_interval"] = cache_interval
@@ -1047,11 +1069,14 @@ def modify_forcing(**kwargs):
     ofile = netCDF4.Dataset(outfile, "r+")
 
     for var in variables:
-        print("Modify variable " + var)
-        print(
-            "input", ifile[var][time_step, :], ifile[var][time_step, :].shape, time_step
+        logging.info("Modify variable %s", var)
+        logging.info(
+            "input %s %s %s",
+            ifile[var][time_step, :],
+            ifile[var][time_step, :].shape,
+            time_step,
         )
-        print("output", ofile[var][0, :], ofile[var][0, :].shape)
+        logging.info("output %s %s", ofile[var][0, :], ofile[var][0, :].shape)
         ofile[var][0, :] = ifile[var][time_step, :]
         ofile.sync()
 

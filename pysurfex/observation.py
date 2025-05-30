@@ -1,5 +1,5 @@
 """Observation."""
-import json
+import logging
 
 import numpy as np
 
@@ -20,12 +20,14 @@ class Observation(object):
             elev (float, optional): Elevation. Defaults to np.nan.
             stid (str, optional): Staation ID. Defaults to "NA".
             varname (str, optional): _description_. Defaults to None.
-            sigmao (float, optional): Observation error relative to a normalized background error (1). Defaults to 1.0
+            sigmao (float, optional): Observation error relative to a
+                                      normalized background error (1). Defaults to 1.0
 
         """
         self.obstime = obstime
         self.lon = float(lon)
         self.lat = float(lat)
+        self.posid = self.get_posid(self.lon, self.lat)
         self.stid = stid
         self.elev = float(elev)
         self.value = float(value)
@@ -34,8 +36,8 @@ class Observation(object):
 
     def print_obs(self):
         """Print observation."""
-        print(
-            "observation: ",
+        logging.info(
+            "observation: %s %s %s %s %s %s %s",
             self.obstime,
             self.lon,
             self.lat,
@@ -100,67 +102,15 @@ class Observation(object):
         return lat
 
     @staticmethod
-    def get_pos_from_stid(filename, stids):
-        """Get pos from station ID.
+    def get_posid(lon, lat, pos_decimals=5):
+        """Get pos id.
 
         Args:
-            filename (_type_): _description_
-            stids (_type_): _description_
-
-        Raises:
-            Exception: _description_
+            lon (_type_): _description_
+            lat (_type_): _description_
+            pos_decimals (int, optional): _description_. Defaults to 5.
 
         Returns:
             _type_: _description_
-
         """
-        lons = []
-        lats = []
-        with open(filename, mode="r", encoding="utf-8") as file_handler:
-            ids_from_file = json.load(file_handler)
-        for stid in stids:
-            found = False
-            for stid1 in ids_from_file:
-                if stid == stid1:
-                    found = True
-                    lon = float(ids_from_file[stid1]["lon"])
-                    lat = float(ids_from_file[stid1]["lat"])
-                    lons.append(lon)
-                    lats.append(lat)
-            if not found:
-                raise Exception(
-                    "Could not find station id " + stid + " in file " + filename
-                )
-        return lons, lats
-
-    @staticmethod
-    def get_stid_from_stationlist(stationlist, lons, lats):
-        """Get station ID from station list.
-
-        Args:
-            stationlist (str): Filename of station list
-            lons (list): Longitudes
-            lats (list): Latitudes
-
-        Returns:
-            list: Station IDs
-
-        """
-        index_pos = {}
-        with open(stationlist, mode="r", encoding="utf-8") as file_handler:
-            ids_from_file = json.load(file_handler)
-        for stid in ids_from_file:
-            lon = ids_from_file[stid]["lon"]
-            lat = ids_from_file[stid]["lat"]
-            pos = Observation.format_lon(lon) + ":" + Observation.format_lat(lat)
-            index_pos.update({pos: stid})
-
-        stids = []
-        for i, lon in enumerate(lons):
-            lat = lats[i]
-            pos = Observation.format_lon(lon) + ":" + Observation.format_lat(lat)
-            if pos in index_pos:
-                stids.append(index_pos[pos])
-            else:
-                stids.append("NA")
-        return stids
+        return f"{lon:.{pos_decimals}f}#{lat:.{pos_decimals}f}"

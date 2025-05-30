@@ -1,6 +1,4 @@
 
-.. image:: https://coveralls.io/repos/github/metno/pysurfex/badge.svg?branch=master
-
 
 Python API to SURFEX (pysurfex)
 =======================================================
@@ -38,18 +36,11 @@ Releases also trigger an update of the pysurfex container in the github containe
 
 .. code-block:: bash
 
-  podman run -it ghcr.io/metno/pysurfex:latest poetry run pgd
+  podman run -it ghcr.io/metno/pysurfex:latest pgd
 
 
 Installation on debian based Linux system
 --------------------------------------------
-
-Install the required pacakges (some might be obsolete if the pip packages contain the needed depedencies):
-
-.. code-block:: bash
-
-  sudo apt-get update
-  sudo apt-get install -y libudunits2-dev libproj-dev libeccodes0 libeccodes-dev libnetcdf-dev netcdf-bin ca-certificates
 
 The following depencies are needed. Install the non-standard ones e.g. with pip or your system installation system.
 
@@ -61,7 +52,6 @@ General dependencies (from pypi)
   numpy
   pyproj
   pyyaml
-  toml
   f90nml
 
 To read NetCDF files:
@@ -78,6 +68,13 @@ To read grib files:
   eccodes
 
 from ECMWF https://software.ecmwf.int/wiki/display/ECC/Releases installed with ENABLE_PYTHON=ON
+
+To read FA files:
+
+.. code-block:: bash
+
+  falfilfa4py
+  epygram
 
 To plot:
 
@@ -113,6 +110,26 @@ For testing:
 Install pysurfex
 -------------------------------------------
 
+An environment manager like miniconda or micromamba is recommended to ensure consistency between the packages.
+After installing this you need to set it up for the current session or permanently add it to your shell.
+Now it is easy to create a suitable environment for pysurfex. Below is a recipie for micromamba.
+
+
+.. code-block:: bash
+
+    # Install micromamba (linux, https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html)
+    "${SHELL}" <(curl -L micro.mamba.pm/install.sh)
+
+    # specify a installation location for micromamba and add it to your path afterwards. Default it will install in $HOME/.local/bin
+    export PATH=$HOME/.local/bin:$PATH  # Use your PATH
+
+    # initialize your shell (needed in all shells), e.g:
+    eval "$(micromamba shell hook --shell bash)"
+
+    micromamba create env pysurfex
+    micromamba activate pysurfex
+    micromamba install python==3.12 poetry
+
 Download the source code, then install ``pysurfex`` by executing the following inside the extracted
 folder:
 
@@ -121,7 +138,7 @@ folder:
   poetry install
 
 
-This will install ``pysurfex`` in a poetry environment and this environment can be activated interactively by:
+If not already in a conda/manba environment, this will install ``pysurfex`` in a poetry environment and this environment can be activated interactively by:
 
 .. code-block:: bash
 
@@ -138,17 +155,6 @@ Run pysurfex client applications
   # e.g.
   poetry run python # will run python inside the pysurfex poetry environment
 
-
-Run pysurfex client applications
--------------------------------------------
-.. code-block:: python
-
-  import sys
-  from pysurfex.cli import parse_args_surfex_binary, run_surfex_binary
-
-  argv = sys.argv[1:]
-  kwargs = parse_args_surfex_binary(argv, "pgd")
-  run_surfex_binary("pgd", **kwargs)
 
 
 Examples

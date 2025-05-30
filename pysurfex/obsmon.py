@@ -131,14 +131,8 @@ def populate_usage_db(conn, dtg, varname, observations):
             fg_dep = "NULL"
             an_dep = "NULL"
         else:
-            if np.isnan(fg_deps[i]):
-                fg_dep = "NULL"
-            else:
-                fg_dep = str(fg_deps[i])
-            if np.isnan(an_deps[i]):
-                an_dep = "NULL"
-            else:
-                an_dep = str(an_deps[i])
+            fg_dep = "NULL" if np.isnan(fg_deps[i]) else str(fg_deps[i])
+            an_dep = "NULL" if np.isnan(an_deps[i]) else str(an_deps[i])
 
         status = str(int(flags[i]))
         if status == "0":
@@ -194,8 +188,7 @@ def rmse(predictions, targets):
     """
     if len(predictions) > 0:
         return np.sqrt(np.nanmean(((predictions - targets) ** 2)))
-    else:
-        return "NULL"
+    return "NULL"
 
 
 def absbias(predictions):
@@ -210,8 +203,7 @@ def absbias(predictions):
     """
     if len(predictions) > 0:
         return np.nanmean(abs(predictions))
-    else:
-        return "NULL"
+    return "NULL"
 
 
 def mean(predictions):
@@ -226,8 +218,7 @@ def mean(predictions):
     """
     if len(predictions) > 0:
         return np.nanmean(predictions)
-    else:
-        return "NULL"
+    return "NULL"
 
 
 def calculate_statistics(observations, modes, stat_cols):
@@ -246,7 +237,7 @@ def calculate_statistics(observations, modes, stat_cols):
 
     """
     values = []
-    for i in range(0, len(observations.flags)):
+    for i in range(len(observations.flags)):
         values.append(observations.values[i])
 
     statistics = {}
@@ -290,9 +281,7 @@ def calculate_statistics(observations, modes, stat_cols):
                 statistics.update({tab: absbias(fg_dep)})
             elif col == "fg_rms":
                 statistics.update({tab: rmse(np.add(fg_dep, obs), obs)})
-            elif col == "fg_dep":
-                statistics.update({tab: mean(fg_dep)})
-            elif col == "fg_uncorr":
+            elif col in ("fg_dep", "fg_uncorr"):
                 statistics.update({tab: mean(fg_dep)})
             elif col == "bc":
                 statistics.update({tab: 0})
@@ -321,7 +310,7 @@ def populate_obsmon_db(conn, dtg, statistics, modes, stat_cols, varname):
         varname (_type_): _description_
 
     Raises:
-        Exception: _description_
+        RuntimeError: _description_
 
     """
     logging.info("Update obsmon table")
@@ -342,13 +331,13 @@ def populate_obsmon_db(conn, dtg, statistics, modes, stat_cols, varname):
         + varname
         + '" AND LEVEL == '
         + level
-    )  # noqa
+    )
 
     cursor.execute(cmd)
     records = len(cursor.fetchall())
     if records > 1:
         logging.info(cmd)
-        raise Exception("You should not have ", records, " in your database")
+        raise RuntimeError("You should not have ", records, " in your database")
 
     if records == 0:
         cmd = (
@@ -374,11 +363,10 @@ def populate_obsmon_db(conn, dtg, statistics, modes, stat_cols, varname):
             tab = col + "_" + mode
             if records == 0:
                 cmd = cmd + "," + str(statistics[tab]) + ""
+            elif first:
+                cmd = cmd + "" + tab + "=" + str(statistics[tab])
             else:
-                if first:
-                    cmd = cmd + "" + tab + "=" + str(statistics[tab])
-                else:
-                    cmd = cmd + "," + tab + "=" + str(statistics[tab])
+                cmd = cmd + "," + tab + "=" + str(statistics[tab])
             first = False
     if records == 0:
         cmd = cmd + ")"

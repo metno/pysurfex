@@ -9,7 +9,7 @@ from pysurfex.grib import Grib, Grib1Variable, Grib2Variable
 from pysurfex.read import ConvertedInput, Converter
 
 
-@pytest.fixture()
+@pytest.fixture
 def converter_config(lambert_t2m_grib1, lambert_t1_grib2):
     config = {
         "grib1": {"fcint": 10800, "file_inc": 3600, "offset": 0},
@@ -55,7 +55,7 @@ def get_var(edition, conf):
         tri = kwargs["tri"]
         var = Grib1Variable(parameter, typ, level, tri)
         return var
-    elif edition == 2:
+    if edition == 2:
         discipline = kwargs["discipline"]
         parameter_category = kwargs["parameterCategory"]
         parameter_number = kwargs["parameterNumber"]
@@ -71,6 +71,7 @@ def get_var(edition, conf):
             type_of_statistical_processing,
         )
         return var
+    raise NotImplementedError
 
 
 def write_json_file(fname, keys):
@@ -84,7 +85,6 @@ def test_grib1_from_converter(converter_config, conf_proj_domain):
     # Grib 1
     fileformat = "grib1"
     var = "t2m"
-    print(var, fileformat)
     defs = converter_config[fileformat]
     converter_conf = converter_config[var][fileformat]["converter"]
 
@@ -101,7 +101,6 @@ def test_grib2_from_converter(converter_config, conf_proj_domain):
     """Test grib2 from converter."""
     fileformat = "grib2"
     var = "t1"
-    print(var, fileformat)
     defs = converter_config[fileformat]
     converter_conf = converter_config[var][fileformat]["converter"]
 
@@ -119,7 +118,6 @@ def test_read_rotated_ll_grib1(converter_config, rotated_ll_t2m_grib1):
     var = get_var(1, converter_conf)
     grib_file = Grib(rotated_ll_t2m_grib1)
     assert not var.is_accumulated()
-    var.print_keys()
     validtime = as_datetime("2020111306")
     grib_file.field(var, validtime)
 
@@ -130,7 +128,6 @@ def test_read_rotated_ll_grib2(converter_config, rotated_ll_t1_grib2):
     var = get_var(2, converter_conf)
     grib_file = Grib(rotated_ll_t1_grib2)
     assert not var.is_accumulated()
-    var.print_keys()
     validtime = as_datetime("2020111306")
     grib_file.field(var, validtime)
 
@@ -142,7 +139,6 @@ def test_read_regular_ll_grib1(converter_config, regular_ll_t2m_grib1):
 
     grib_file = Grib(regular_ll_t2m_grib1)
     assert not var.is_accumulated()
-    var.print_keys()
     validtime = as_datetime("2020111306")
     grib_file.field(var, validtime)
 
@@ -154,6 +150,5 @@ def test_read_regular_ll_grib2(converter_config, regular_ll_t1_grib2):
 
     grib_file = Grib(regular_ll_t1_grib2)
     assert not var.is_accumulated()
-    var.print_keys()
     validtime = as_datetime("2020111306")
     grib_file.field(var, validtime)

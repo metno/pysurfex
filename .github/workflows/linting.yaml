@@ -29,7 +29,7 @@ jobs:
         id: setup-python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: '3.12'
 
       #----------------------------------------------
       #  --- configure poetry & install project  ----
@@ -57,13 +57,6 @@ jobs:
       #----------------------------------------------
       #         Run the linting checks
       #----------------------------------------------
-      - name: isort
+      - name: devtools lint
         run: |
-          poetry run isort --check-only .
-      - name: black
-        run: |
-          poetry run black --check .
-      - name: flakeheaven
-        run: |
-          export FLAKEHEAVEN_CACHE="${TMPDIR:-${TEMP:-${TMP:-/tmp}}}/flakeheaven_cache.$(openssl rand -hex 12)"
-          poetry run flakeheaven lint .
+          poetry run poetry devtools lint

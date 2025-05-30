@@ -95,7 +95,7 @@ class Points:
         """
         inside_grid = []
         # Check if they are in grid
-        for i in range(0, self.lons.shape[0]):
+        for i in range(self.lons.shape[0]):
             lon = self.lons[i]
             lat = self.lats[i]
             neighbours = grid.grid.get_num_neighbours(lat, lon, distance)
@@ -150,7 +150,8 @@ class Interpolation(object):
 
         Args:
             field2d (np.ndarray): Two dimensional field to interpolate
-            undefined (float, optional): Undefined value if field2d is None. Defaults to None.
+            undefined (float, optional): Undefined value if field2d is None.
+                                         Defaults to None.
 
         Raises:
             RuntimeError: Input domain and ouput domain differ.
@@ -161,55 +162,50 @@ class Interpolation(object):
             np.array: interpolated_field
 
         """
-        if field2d is None and undefined is not None:
-            return np.full((self.geo_out.nlons * self.geo_out.nlats), undefined)
-        elif field2d is None:
+        if field2d is None:
+            if undefined is not None:
+                return np.full((self.geo_out.nlons * self.geo_out.nlats), undefined)
             raise RuntimeError("You try to interpolate a missing field!")
-        else:
-            logging.debug("field2d.shape %s", field2d.shape)
-            if self.identical or self.operator == "none":
-                if self.operator == "none":
-                    if not self.identical:
-                        raise RuntimeError(
-                            "Input domain and ouput domain differ. "
-                            "You must interpolate!"
-                        )
-                    logging.info("No interpolation chosen")
-                else:
-                    logging.info(
-                        "Input and output domain are identical. "
-                        "No interpolation is needed"
-                    )
-                interpolated_field = field2d.reshape(self.npoints)
-            else:
-                sub_lons, sub_lats = self.geo_out.subset(self.geo_in)
-                if len(sub_lons) == 0 and len(sub_lats) == 0:
-                    logging.info(
-                        "Doing '%s' interpolation for %s points",
-                        self.operator,
-                        str(self.npoints),
-                    )
-                    if self.operator == "nearest" or self.operator == "bilinear":
-                        grid = Grid(self.var_lons, self.var_lats)
-                        points = Points(self.lons, self.lats)
-                        interpolated_field = grid2points(
-                            grid, points, field2d, operator=self.operator
-                        )
-                    elif self.operator == "none":
-                        interpolated_field = field2d.reshape(self.npoints)
-                    else:
-                        raise NotImplementedError(self.operator)
-                else:
-                    logging.info("Output domain is a subset of input domain")
-                    new_field = np.ndarray([len(sub_lons), len(sub_lats)])
-                    for i, sub_lon in enumerate(sub_lons):
-                        for j, sub_lat in enumerate(sub_lats):
-                            new_field[i, j] = field2d[sub_lon, sub_lat]
-                    interpolated_field = new_field.reshape(self.npoints)
-            return interpolated_field
 
-    def rotate_wind_to_geographic(self):
-        """Not implemented."""
+        logging.debug("field2d.shape %s", field2d.shape)
+        if self.identical or self.operator == "none":
+            if self.operator == "none":
+                if not self.identical:
+                    raise RuntimeError(
+                        "Input domain and ouput domain differ. " "You must interpolate!"
+                    )
+                logging.info("No interpolation chosen")
+            else:
+                logging.info(
+                    "Input and output domain are identical. " "No interpolation is needed"
+                )
+            interpolated_field = field2d.reshape(self.npoints)
+        else:
+            sub_lons, sub_lats = self.geo_out.subset(self.geo_in)
+            if len(sub_lons) == 0 and len(sub_lats) == 0:
+                logging.info(
+                    "Doing '%s' interpolation for %s points",
+                    self.operator,
+                    str(self.npoints),
+                )
+                if self.operator in ("nearest", "bilinear"):
+                    grid = Grid(self.var_lons, self.var_lats)
+                    points = Points(self.lons, self.lats)
+                    interpolated_field = grid2points(
+                        grid, points, field2d, operator=self.operator
+                    )
+                elif self.operator == "none":
+                    interpolated_field = field2d.reshape(self.npoints)
+                else:
+                    raise NotImplementedError(self.operator)
+            else:
+                logging.info("Output domain is a subset of input domain")
+                new_field = np.ndarray([len(sub_lons), len(sub_lats)])
+                for i, sub_lon in enumerate(sub_lons):
+                    for j, sub_lat in enumerate(sub_lats):
+                        new_field[i, j] = field2d[sub_lon, sub_lat]
+                interpolated_field = new_field.reshape(self.npoints)
+        return interpolated_field
 
     @staticmethod
     def distance(lon1, lat1, lon2, lat2):
@@ -248,6 +244,7 @@ class Interpolation(object):
         lon = self.var_lons
         lat = self.var_lats
         n_x = lat.shape[0]
+        n_y = lat.shape[1]
         dlon = np.zeros(lat.shape)
         dlat = np.zeros(lat.shape)
         i_1 = np.arange(n_x - 1)
@@ -266,7 +263,8 @@ class Interpolation(object):
             lon[-2, :], lat[-2, :], lon[-2, :], lat[-1, :]
         )
 
-        alpha = np.rad2deg(np.arctan2(dlon, dlat))
+        alpha = np.rad2deg(np.arctan2(dlon, dlat)) - 90
+        alpha = alpha.reshape((n_x, n_y))
         return alpha
 
 
@@ -289,8 +287,8 @@ def fill_field(field_tmp, geo, radius=1):
         raise RuntimeError("You need gridpp for fill_field")
     ovalues = gridpp.neighbourhood(field_tmp, radius, gridpp.Mean)
     nans = 0
-    for i in range(0, geo.nlons):
-        for j in range(0, geo.nlats):
+    for i in range(geo.nlons):
+        for j in range(geo.nlats):
             if np.isnan(field_tmp[i][j]):
                 nans = nans + 1
                 field_tmp[i][j] = ovalues[i][j]
@@ -398,8 +396,8 @@ class ObsOperator(object):
             geo (surfex.Geo): Surfex geometry.
             dataset (QCDataSet): QC data set.
             grid_values (np.darray): Values in the grid.
-            max_distance (int, optional): Max allowed deviation in meters from grid borders.
-                                          Defaults to 5000.
+            max_distance (int, optional): Max allowed deviation in meters from
+                                          grid borders. Defaults to 5000.
 
         """
         lons = dataset.lons
@@ -429,8 +427,7 @@ class ObsOperator(object):
         """
         if pos is None:
             return self.obs_values
-        else:
-            raise NotImplementedError("Specific position not implemented yet!")
+        raise NotImplementedError("Specific position not implemented yet!")
 
     def is_in_grid(self, index):
         """Check if index is in grid.
@@ -480,7 +477,8 @@ def horizontal_oi(
         maxvalue (_type_, optional): _description_. Defaults to None.
         interpol (str, optional): _description_. Defaults to "bilinear".
         only_diff (bool, optional): _description_. Defaults to False.
-        allow_extrapolation (bool, optional): Allow extrapolations in OI. Default to False.
+        allow_extrapolation (bool, optional): Allow extrapolations in OI.
+                                              Default to False.
 
     Raises:
         NotImplementedError: Structure function not implemented
@@ -520,7 +518,7 @@ def horizontal_oi(
 
     # Remove undefined backgrounds
     if any(np.isnan(pbackground)):
-        print("Found undefined backgrounds. Remove them")
+        logging.info("Found undefined backgrounds. Remove them")
         lons2 = []
         lats2 = []
         elevs2 = []

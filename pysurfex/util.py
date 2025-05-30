@@ -3,25 +3,7 @@ import collections
 import logging
 import os
 
-import toml
-
-
-def merge_toml_env(old_env, mods):
-    """Merge."""
-    return deep_update(old_env, mods)
-
-
-def merge_toml_env_from_files(toml_files):
-    """Merge."""
-    merged_env = {}
-    for toml_file in toml_files:
-        if os.path.exists(toml_file):
-            with open(toml_file, mode="r", encoding="utf-8") as file_handler:
-                modification = toml.load(file_handler)
-            merged_env = merge_toml_env(merged_env, modification)
-        else:
-            print("WARNING: File not found " + toml_file)
-    return merged_env
+from .platform_deps import SystemFilePaths
 
 
 def deep_update(source, overrides):
@@ -71,9 +53,8 @@ def remove_existing_file(f_in, f_out):
         if os.path.isfile(f_out):
             os.remove(f_out)
     # files have the same path. Remove if it is a symlink
-    else:
-        if os.path.islink(f_out):
-            os.unlink(f_out)
+    elif os.path.islink(f_out):
+        os.unlink(f_out)
 
 
 def parse_filepattern(file_pattern, basetime, validtime):
@@ -91,7 +72,7 @@ def parse_filepattern(file_pattern, basetime, validtime):
     if basetime is None or validtime is None:
         return file_pattern
 
-    logging.debug(
+    logging.info(
         "file_pattern=%s basetime=%s validtime=%s", file_pattern, basetime, validtime
     )
     file_name = str(file_pattern)
@@ -102,10 +83,10 @@ def parse_filepattern(file_pattern, basetime, validtime):
     hour = basetime.strftime("%H")
     mins = basetime.strftime("%M")
     d_t = validtime - basetime
-    ll_d = f"{int(d_t.seconds / 3600):d}"
-    ll_2 = f"{int(d_t.seconds / 3600):02d}"
-    ll_3 = f"{int(d_t.seconds / 3600):03d}"
-    ll_4 = f"{int(d_t.seconds / 3600):04d}"
+    ll_d = f"{int(d_t.total_seconds() / 3600):d}"
+    ll_2 = f"{int(d_t.total_seconds() / 3600):02d}"
+    ll_3 = f"{int(d_t.total_seconds() / 3600):03d}"
+    ll_4 = f"{int(d_t.total_seconds() / 3600):04d}"
     file_name = file_name.replace("@YYYY@", year)
     file_name = file_name.replace("@YY@", year2)
     file_name = file_name.replace("@MM@", month)
@@ -116,4 +97,9 @@ def parse_filepattern(file_pattern, basetime, validtime):
     file_name = file_name.replace("@LL@", ll_2)
     file_name = file_name.replace("@LLL@", ll_3)
     file_name = file_name.replace("@LLLL@", ll_4)
+
+    file_name = SystemFilePaths.parse_setting(
+        file_name, basedtg=basetime, validtime=validtime
+    )
+    logging.debug("file_name=%s basetime=%s validtime=%s", file_name, basetime, validtime)
     return file_name

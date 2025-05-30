@@ -67,16 +67,17 @@ def test_cli_set_geo_from_obs_set(obsset_fname, tmp_path_factory):
 def test_cryoclim_pseudoobs(tmp_path_factory, data_cryoclim_nc_file, firstguess4gridpp):
     out_fname = f"{tmp_path_factory.getbasetemp().as_posix()}/output_cryoclim.json"
     argv = [
-        "-step",
+        "--step",
         "1",
         "--infiles",
         data_cryoclim_nc_file,
+        "--validtime",
+        "2020022006",
         "-o",
         out_fname,
-        "fg",
-        "-if",
+        "--fg-inputfile",
         firstguess4gridpp,
-        "-v",
+        "--fg-variable",
         "surface_snow_thickness",
     ]
     cryoclim_pseudoobs(argv=argv)
@@ -87,18 +88,19 @@ def test_cryoclim_pseudoobs_iv(
 ):
     out_fname = f"{tmp_path_factory.getbasetemp().as_posix()}/output_cryoclim2.json"
     argv = [
-        "-step",
+        "--step",
         "2",
         "--infiles",
         data_cryoclim_nc_file,
+        "--validtime",
+        "2020022006",
         "-iv",
         "classed_product",
         "-o",
         out_fname,
-        "fg",
-        "-if",
+        "--fg-inputfile",
         firstguess4gridpp,
-        "-v",
+        "--fg-variable",
         "surface_snow_thickness",
     ]
     cryoclim_pseudoobs(argv=argv)
@@ -109,7 +111,7 @@ def test_cryoclim_pseudoobs_iv_slope_glacier_mask_netcdf(
 ):
     out_fname = f"{tmp_path_factory.getbasetemp().as_posix()}/output_cryoclim4.json"
     argv = [
-        "-step",
+        "--step",
         "2",
         "--infiles",
         data_cryoclim_nc_file,
@@ -117,28 +119,27 @@ def test_cryoclim_pseudoobs_iv_slope_glacier_mask_netcdf(
         "classed_product",
         "-o",
         out_fname,
-        "fg",
-        "-if",
-        firstguess4gridpp,
-        "-v",
-        "surface_snow_thickness",
-        "slope",
-        "-if",
-        data_surfex_pgd_nc_file,
-        "-v",
-        "SSO_SLOPE",
-        "-it",
-        "surfex",
-        "-t",
+        "--validtime",
         "2020022006",
-        "perm_snow",
-        "-if",
+        "--fg-inputfile",
+        firstguess4gridpp,
+        "--fg-variable",
+        "surface_snow_thickness",
+        "--slope-inputfile",
         data_surfex_pgd_nc_file,
-        "-v",
-        "COVER006",
-        "-it",
+        "--slope-variable",
+        "SSO_SLOPE",
+        "--slope-inputtype",
         "surfex",
-        "-t",
+        "--slope-basetime",
+        "2020022006",
+        "--perm-snow-inputfile",
+        data_surfex_pgd_nc_file,
+        "--perm-snow-variable",
+        "COVER006",
+        "--perm-snow-inputtype",
+        "surfex",
+        "--perm-snow-basetime",
         "2020022006",
     ]
     cryoclim_pseudoobs(argv=argv)
@@ -155,7 +156,7 @@ def test_create_lsm_file_assim(
         "netcdf",
         "--var",
         "land_area_fraction",
-        "--dtg",
+        "--basetime",
         "2020022006",
         "--domain",
         conf_proj_domain_file,
@@ -166,7 +167,7 @@ def test_create_lsm_file_assim(
     create_lsm_file_assim(argv=argv)
 
 
-@pytest.fixture()
+@pytest.fixture
 def data_sentinel_nc_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/sentinel_nc.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/sentinel_nc.cdl"
@@ -203,13 +204,13 @@ surface_soil_moisture = 0.01, 0.01, 0.01, 0.03, 0.001, 0.001;
 def test_sentinel(tmp_path_factory, data_sentinel_nc_file, firstguess4gridpp):
     out_fname = f"{tmp_path_factory.getbasetemp().as_posix()}/output_sentinel.json"
     argv = [
-        "-step",
+        "--step",
         "4",
         "-fg",
         firstguess4gridpp,
-        "-i",
+        "--infiles",
         data_sentinel_nc_file,
-        "-v",
+        "--varname",
         "surface_snow_thickness",
         "-o",
         out_fname,

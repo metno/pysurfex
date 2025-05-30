@@ -13,10 +13,9 @@ except RuntimeError:
     eccodes = None
     logging.warning("ECCODES not found. Needed for bufr reading")
 # Needed in Python 3.5
-except Exception:
+except Exception:  # noqa BLE001
     logging.warning("Could not load eccodes")
     eccodes = None
-
 
 from .datetime_utils import as_datetime_args
 from .obs import ObservationSet
@@ -48,8 +47,10 @@ class BufrObservationSet(ObservationSet):
             lonrange (list): Allowed range of longitudes [min, max]
             latrange (list): Allowed range of latitides [min, max]
             label (str): A label for the resulting observations set
-            use_first (bool): Use only the first valid observation for a point if more are found
-            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.
+            use_first (bool): Use only the first valid observation for a point if
+                              more are found
+            sigmao (float, optional): Observation error relative to normal background
+                                      error. Defaults to None.
 
         Raises:
             RuntimeError: ECCODES not found. Needed for bufr reading
@@ -66,7 +67,7 @@ class BufrObservationSet(ObservationSet):
         logging.debug(eccodes.__file__)
 
         # open bufr file
-        file_handler = open(bufrfile, mode="rb")
+        file_handler = open(bufrfile, mode="rb")  # noqa SIM115
         number_of_bytes = file_handler.seek(0, 2)
         logging.info("File size: %s", number_of_bytes)
         file_handler.seek(0)
@@ -138,7 +139,7 @@ class BufrObservationSet(ObservationSet):
         logging.info("Reading %s", bufrfile)
         logging.info("Looking for keys: %s", str(keys))
         cnt = 0
-        observations = list()
+        observations = []
 
         # loop for the messages in the file
         not_decoded = 0
@@ -188,9 +189,9 @@ class BufrObservationSet(ObservationSet):
                         logging.debug("Decode: %s", key)
                         val = eccodes.codes_get(bufr, key)
                         logging.debug("Got: %s=%s", key, val)
-                        if (
-                            val == eccodes.CODES_MISSING_DOUBLE
-                            or val == eccodes.CODES_MISSING_LONG
+                        if val in (
+                            eccodes.CODES_MISSING_DOUBLE,
+                            eccodes.CODES_MISSING_LONG,
                         ):
                             val = np.nan
                         if key == "latitude":
@@ -219,12 +220,13 @@ class BufrObservationSet(ObservationSet):
                             hour = val
                         if key == "minute":
                             minute = val
-                        if key == "heightOfStation":
-                            if not np.isnan(val):
-                                elev = val
-                        if key == "heightOfStationGroundAboveMeanSeaLevel":
-                            if not np.isnan(val):
-                                elev = val
+                        if key == "heightOfStation" and not np.isnan(val):
+                            elev = val
+                        if (
+                            key == "heightOfStationGroundAboveMeanSeaLevel"
+                            and not np.isnan(val)
+                        ):
+                            elev = val
                         if key == "stationNumber":
                             station_number = val
                         if key == "blockNumber":
@@ -233,13 +235,11 @@ class BufrObservationSet(ObservationSet):
                             site_name = str(val)
                         if key == "airTemperatureAt2M":
                             t2m = val
-                        if (
-                            key
-                            == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"
-                            "/airTemperature"
-                            or key
-                            == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5"
-                            "/airTemperature"
+                        if key in (
+                            "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"
+                            + "/airTemperature",
+                            "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5"
+                            + "/airTemperature",
                         ):
                             temp = val
                         if (
@@ -250,13 +250,11 @@ class BufrObservationSet(ObservationSet):
                             rh2m = val
                         if key == "dewpointTemperatureAt2M":
                             td2m = val
-                        if (
-                            key
-                            == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"
-                            "/dewpointTemperature"
-                            or key
-                            == "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5"
-                            "/dewpointTemperature"
+                        if key in (
+                            "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2"
+                            + "/dewpointTemperature",
+                            "/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5"
+                            + "/dewpointTemperature",
                         ):
                             t_d = val
                         if key == "totalSnowDepth":
@@ -264,7 +262,7 @@ class BufrObservationSet(ObservationSet):
                         if key == "heightOfBaseOfCloud":
                             c_b = val
 
-                    except eccodes.CodesInternalError:
+                    except eccodes.CodesInternalError:  # noqa PERF203
                         logging.debug('Report does not contain key="%s"', key)
 
                 got_pos = True
@@ -301,7 +299,7 @@ class BufrObservationSet(ObservationSet):
                                     try:
                                         value = self.td2rh(td2m, t2m)
                                         value = value * 0.01
-                                    except Exception:
+                                    except Exception:  # noqa BLE001
                                         logging.debug("Got exception for %s:", var)
                                         value = np.nan
                                 elif (
@@ -312,7 +310,7 @@ class BufrObservationSet(ObservationSet):
                                     try:
                                         value = self.td2rh(t_d, temp)
                                         value = value * 0.01
-                                    except Exception:
+                                    except Exception:  # noqa BLE001
                                         logging.debug(
                                             "Got exception for %s",
                                             var,
@@ -335,7 +333,7 @@ class BufrObservationSet(ObservationSet):
                             elif var == "heightOfBaseOfCloud":
                                 value = c_b
                             elif var == "stationOrSiteName":
-                                site_name = site_name
+                                pass
                             else:
                                 raise NotImplementedError(
                                     f"Var {var} is not coded! Please do it!"
@@ -389,7 +387,8 @@ class BufrObservationSet(ObservationSet):
                                 )
                             except ValueError:
                                 logging.warning(
-                                    "Bad observations time: year=%s month=%s day=%s hour=%s minute=%s Position is lon=%s, lat=%s",
+                                    "Bad observations time: year=%s month=%s day=%s ",
+                                    "hour=%s minute=%s Position is lon=%s, lat=%s",
                                     year,
                                     month,
                                     day,
@@ -449,7 +448,7 @@ class BufrObservationSet(ObservationSet):
                 except ValueError:
                     nbytes = number_of_bytes
 
-                processed = int(round(float(nbytes) * 100.0 / float(number_of_bytes)))
+                processed = round(float(nbytes) * 100.0 / float(number_of_bytes))
                 if processed > processed_threshold and processed % 5 == 0:
                     processed_threshold = processed
                     logging.info("Read: %s%%", processed)
@@ -540,8 +539,4 @@ class BufrObservationSet(ObservationSet):
         """
         if valid_dtg is None:
             return True
-        else:
-            if (valid_dtg - valid_range) <= obs_dtg <= (valid_dtg + valid_range):
-                return True
-            else:
-                return False
+        return (valid_dtg - valid_range) <= obs_dtg <= (valid_dtg + valid_range)
