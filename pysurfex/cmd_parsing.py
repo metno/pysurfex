@@ -130,7 +130,7 @@ def parse_args_create_forcing(argv):
         dest="output_filename",
         type=str,
         help="Output file name",
-        default=None,
+        required=True,
         nargs="?",
     )
     parser.add_argument(
@@ -644,14 +644,6 @@ def parse_args_surfex_binary(argv, mode):
 
     """
     binary_needed = True
-    if mode == "forecast":
-        mode = "offline"
-        binary_needed = False
-    elif mode == "canari":
-        mode = "soda"
-        binary_needed = False
-    masterodb = not binary_needed
-
     pert = False
     need_pgd = True
     need_prep = True
@@ -704,7 +696,7 @@ def parse_args_surfex_binary(argv, mode):
         parser.add_argument("--prep-filetype", required=False, default=None)
         parser.add_argument("--prep-pgdfile", required=False, default=None)
         parser.add_argument("--prep-pgdfiletype", required=False, default=None)
-    if mode in ("offline", "perturbed") and not masterodb:
+    if mode in ("offline", "perturbed"):
         parser.add_argument(
             "--forc-zs",
             action="store_true",

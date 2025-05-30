@@ -57,7 +57,7 @@ from .obsmon import write_obsmon_sqlite_file
 from .platform_deps import SystemFilePathsFromFile
 from .pseudoobs import CryoclimObservationSet, SentinelObservationSet
 from .read import ConvertedInput, Converter, get_multi_converters
-from .run import BatchJob, Masterodb, PerturbedOffline, SURFEXBinary
+from .run import BatchJob, PerturbedOffline, SURFEXBinary
 from .titan import (
     TitanDataSet,
     dataset_from_file,
@@ -90,14 +90,6 @@ def run_surfex_binary(mode, **kwargs):
 
     if "forcing_dir" in kwargs:
         system_file_paths.add_system_file_path("forcing_dir", kwargs["forcing_dir"])
-
-    masterodb_mode = False
-    if mode == "forecast":
-        mode = "offline"
-        masterodb_mode = True
-    elif mode == "canari":
-        mode = "soda"
-        masterodb_mode = True
 
     do_pgd = False
     do_prep = False
@@ -367,8 +359,6 @@ def run_surfex_binary(mode, **kwargs):
                 )
 
             if do_perturbed:
-                if masterodb_mode:
-                    raise NotImplementedError
                 PerturbedOffline(
                     binary,
                     my_batch,
@@ -383,8 +373,6 @@ def run_surfex_binary(mode, **kwargs):
                     negpert=negpert,
                 )
             elif do_pgd:
-                if masterodb_mode:
-                    raise NotImplementedError
                 my_pgdfile = PGDFile(
                     my_format,
                     my_pgdfile,
@@ -403,8 +391,6 @@ def run_surfex_binary(mode, **kwargs):
                     print_namelist=print_namelist,
                 )
             elif do_prep:
-                if masterodb_mode:
-                    raise NotImplementedError
                 my_prepfile = PREPFile(
                     my_format,
                     my_prepfile,
@@ -422,20 +408,6 @@ def run_surfex_binary(mode, **kwargs):
                     archive_data=my_archive,
                     print_namelist=print_namelist,
                 )
-            elif masterodb_mode:
-                if binary is None:
-                    my_batch = None
-                Masterodb(
-                    my_pgdfile,
-                    my_prepfile,
-                    surffile,
-                    my_settings,
-                    input_data,
-                    binary=binary,
-                    print_namelist=print_namelist,
-                    batch=my_batch,
-                    archive_data=my_archive,
-                )
             else:
                 SURFEXBinary(
                     binary,
@@ -450,9 +422,6 @@ def run_surfex_binary(mode, **kwargs):
                 )
     else:
         logging.info("%s already exists!", output)
-
-    if only_archive and masterodb_mode and my_archive is not None:
-        my_archive.archive_files()
 
 
 def run_gridpp(**kwargs):
@@ -988,58 +957,6 @@ def cli_merge_qc_data(argv=None):
 
     qc_data = merge_json_qc_data_sets(kwargs.get("validtime"), kwargs.get("filenames"))
     qc_data.write_output(kwargs.get("output"), indent=kwargs.get("indent"))
-
-
-def masterodb(argv=None):
-    """Command line interface.
-
-    Args:
-        argv(list, optional): Arguments. Defaults to None.
-    """
-    if argv is None:
-        argv = sys.argv[1:]
-    kwargs = parse_args_surfex_binary(argv, "forecast")
-    debug = kwargs.get("debug")
-
-    for handler in logging.root.handlers[:]:
-        logging.root.removeHandler(handler)
-    if debug:
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
-            level=logging.DEBUG,
-        )
-    else:
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
-        )
-    logging.info("************ masterodb ******************")
-    run_surfex_binary("forecast", **kwargs)
-
-
-def canari(argv=None):
-    """Command line interface.
-
-    Args:
-        argv(list, optional): Arguments. Defaults to None.
-    """
-    if argv is None:
-        argv = sys.argv[1:]
-    kwargs = parse_args_surfex_binary(argv, "canari")
-    debug = kwargs.get("debug")
-
-    for handler in logging.root.handlers[:]:
-        logging.root.removeHandler(handler)
-    if debug:
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)s %(pathname)s:%(lineno)s %(message)s",
-            level=logging.DEBUG,
-        )
-    else:
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
-        )
-    logging.info("************ canari ******************")
-    run_surfex_binary("canari", **kwargs)
 
 
 def gridpp(argv=None):

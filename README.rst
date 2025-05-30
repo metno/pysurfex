@@ -1,6 +1,4 @@
 
-.. image:: https://coveralls.io/repos/github/metno/pysurfex/badge.svg?branch=master
-
 
 Python API to SURFEX (pysurfex)
 =======================================================
@@ -74,7 +72,7 @@ from ECMWF https://software.ecmwf.int/wiki/display/ECC/Releases installed with E
 To read FA files:
 
 .. code-block:: bash
- 
+
   falfilfa4py
   epygram
 

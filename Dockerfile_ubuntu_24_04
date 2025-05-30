@@ -13,7 +13,7 @@ ENV PATH="/root/.local/bin:$PATH"
 # Install
 COPY . .
 
-RUN poetry install
+RUN poetry install --all-extras
 #RUN poetry env activate
 RUN bash -c "source /pysurfex/.venv/bin/activate"
 ENV PATH="/pysurfex/.venv/bin/:$PATH"

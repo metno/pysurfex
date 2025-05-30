@@ -10,7 +10,6 @@
 
 [tool.poetry.scripts]
   bufr2json = "pysurfex.cli:bufr2json"
-  canari = "pysurfex.cli:canari"
   create_forcing = "pysurfex.cli:create_forcing"
   create_lsm_file = "pysurfex.cli:create_lsm_file_assim"
   create_namelist = "pysurfex.cli:create_namelist"
@@ -23,7 +22,6 @@
   FirstGuess4gridpp = "pysurfex.cli:first_guess_for_oi"
   dump_environ = "pysurfex.cli:dump_environ"
   gridpp = "pysurfex.cli:gridpp"
-  masterodb = "pysurfex.cli:masterodb"
   merge_qc_data = "pysurfex.cli:cli_merge_qc_data"
   modify_forcing = "pysurfex.cli:cli_modify_forcing"
   obs2json = "pysurfex.cli:obs2json"
@@ -50,6 +48,8 @@
 
 [tool.poetry.dependencies]
   python = "^3.10"
+
+[tool.poetry.group.base.dependencies]
   dateutils = "^0.6.12"
   f90nml = "^1.4.3"
   numexpr = "^2.8.4"
@@ -58,15 +58,15 @@
   pyproj = "^3.3.0"
   pyyaml = "^6.0"
   xarray = "^2025.3.1"
-  findlibs = [{version = "<0.1.0", python = "<3.10"}, {version = ">=0.1.0", python = ">=3.10"}]
 
 [tool.poetry.group.formats.dependencies]
   netcdf4 = "^1.5.7"
   cfunits = "^3.3.5"
   eccodes = ">1.5.1"
+  findlibs = [{version = "<0.1.0", python = "<3.10"}, {version = ">=0.1.0", python = ">=3.10"}]
 
 [tool.poetry.group.points.dependencies]
-  requests = "^2.28.2"
+  requests = "^2.32.3"
   gridpp = "^0.7.0.dev7"
   titanlib = { version="^0.3.4.dev3", markers = "python_version <= '3.12'"}
   verif = "^1.2.3"
@@ -77,20 +77,15 @@
 [project.optional-dependencies]
   faformat = ["falfilfa4py>=1.0.0", "epygram>=2.0.0"]
 
-[tool.poetry.group.dev.dependencies]
-  jupyterlab = "^3.6.1"
-  nb-clean = "^2.4.0"
-  pre-commit = "^3.0.4"
-
 [tool.poetry.group.test.dependencies]
   pytest = "^7.2.2"
-  pytest-cov = "^3.0.0"
+  pytest-cov = "^4.0.0"
   pytest-mock = "^3.7.0"
   pytest-profiling = "^1.7.0"
   pytest-timeout = "^2.1.0"
   pytest-xdist = "^3.2.0"
-  coveralls = "^3.3.1"
-  sphinx = "^6.2.1"
+  sphinx = "^7.0.0"
+
 
 [tool.poetry.group.linting.dependencies]
   black = {extras = ["jupyter"], version = "^23.10.0"}

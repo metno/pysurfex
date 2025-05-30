@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from pysurfex.cli import canari, masterodb, offline, perturbed_offline, pgd, prep, soda
+from pysurfex.cli import offline, perturbed_offline, pgd, prep, soda
 
 
 @contextlib.contextmanager
@@ -385,108 +385,3 @@ def test_run_soda(
         soda(argv)
     with pytest.raises(SystemExit):
         soda()
-
-
-@pytest.mark.parametrize("debug", [False, True])
-@pytest.mark.usefixtures("_mockers")
-def test_masterodb_forecast(
-    get_system,
-    get_rte_file,
-    get_nam_file,
-    get_assemble_file,
-    conf_proj_2x3_file,
-    tmp_path_factory,
-    input_binary_data_file,
-    debug,
-):
-    """Test masterodb."""
-    pgd = tmp_path_factory.getbasetemp() / "Const.Clim.sfx"
-    pgd.touch()
-    prep = tmp_path_factory.getbasetemp() / "ICMSHHARMINIT.sfx"
-    prep.touch()
-    output = f"{tmp_path_factory.getbasetemp().as_posix()}/archive/ICMSHHARM+0003.sfx"
-    binary = "touch ICMSHHARM+0003.fa"
-
-    argv = [
-        "-w",
-        "",
-        "--domain",
-        conf_proj_2x3_file,
-        "--pgd",
-        pgd.as_posix(),
-        "--prep",
-        prep.as_posix(),
-        "-s",
-        get_system,
-        "-n",
-        get_nam_file,
-        "--assemble-file",
-        get_assemble_file,
-        "-i",
-        input_binary_data_file,
-        "-r",
-        get_rte_file,
-        "-f",
-        "--tolerate-missing",
-        "-o",
-        output,
-        "--binary",
-        binary,
-    ]
-    if debug:
-        argv += ["--debug"]
-    with working_directory(tmp_path_factory.getbasetemp()):
-        masterodb(argv=argv)
-        assert os.path.exists("ICMSHHARM+0003.fa")
-    with pytest.raises(SystemExit):
-        masterodb()
-
-
-@pytest.mark.parametrize("debug", [False, True])
-@pytest.mark.usefixtures("_mockers")
-def test_masterodb_canari(
-    get_system,
-    get_rte_file,
-    get_nam_file,
-    get_assemble_file,
-    conf_proj_2x3_file,
-    tmp_path_factory,
-    input_binary_data_file,
-    debug,
-):
-    # CANARI
-    pgd = tmp_path_factory.getbasetemp() / "Const.Clim.sfx"
-    pgd.touch(exist_ok=True)
-    prep = tmp_path_factory.getbasetemp() / "ICMSHHARMINIT.sfx"
-    prep.touch()
-    output = f"{tmp_path_factory.getbasetemp().as_posix()}/archive/ICMSHANAL+0000.sfx"
-    argv = [
-        "-w",
-        "",
-        "--domain",
-        conf_proj_2x3_file,
-        "--pgd",
-        pgd.as_posix(),
-        "--prep",
-        prep.as_posix(),
-        "-s",
-        get_system,
-        "-n",
-        get_nam_file,
-        "--assemble-file",
-        get_assemble_file,
-        "-i",
-        input_binary_data_file,
-        "-r",
-        get_rte_file,
-        "--basetime",
-        "2020022006",
-        "-f",
-        "--tolerate-missing",
-        "-o",
-        output,
-    ]
-    if debug:
-        argv += ["--debug"]
-    with working_directory(tmp_path_factory.getbasetemp()):
-        canari(argv=argv)
