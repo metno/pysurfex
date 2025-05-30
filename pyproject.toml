@@ -1,8 +1,8 @@
-[tool.poetry]
+[project]
   name = "pysurfex"
   version = "0.1.0.0"
   description = "Python API to SURFEX"
-  authors = ["Trygve Aspelien"]
+  authors = [{name = "Trygve Aspelien"}]
   license = "MIT"
   readme = "README.rst"
   repository = "https://github.com/metno/pysurfex"
@@ -74,12 +74,8 @@
 [tool.poetry.group.plot.dependencies]
   matplotlib = "^3.7.1"
 
-[tool.poetry.group.faformat]
-  optional = true
-
-[tool.poetry.group.faformat.dependencies]
-  falfilfa4py = "^1.0.0"
-  epygram = "^2.0.0"
+[project.optional-dependencies]
+  faformat = ["falfilfa4py>=1.0.0", "epygram>=2.0.0"]
 
 [tool.poetry.group.dev.dependencies]
   jupyterlab = "^3.6.1"
