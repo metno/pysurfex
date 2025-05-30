@@ -74,6 +74,9 @@
 [tool.poetry.group.plot.dependencies]
   matplotlib = "^3.7.1"
 
+[tool.poetry.group.faformat]
+  optional = true
+
 [tool.poetry.group.faformat.dependencies]
   falfilfa4py = "^1.0.0"
   epygram = "^2.0.0"
