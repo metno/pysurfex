@@ -715,7 +715,7 @@ def kwargs2converter(**kwargs):
                 "system_file_paths": system_file_paths,
             }
 
-        elif inputtype == "netcdf":
+        elif inputtype in ("netcdf", "fa"):
             if variable is None:
                 raise RuntimeError("You must provide a variable")
             if filepattern is None:
@@ -793,7 +793,6 @@ def kwargs2converter(**kwargs):
                 "offset": 0,
                 "system_file_paths": system_file_paths,
             }
-
         else:
             raise NotImplementedError
         if converter_name != "none":

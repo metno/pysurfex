@@ -168,7 +168,7 @@ def parse_args_create_forcing(argv):
         type=str,
         help="Input format",
         default="default",
-        choices=["default", "netcdf", "grib1", "grib2", "surfex"],
+        choices=["default", "netcdf", "grib1", "grib2", "surfex", "fa", "obs"],
     )
     group_ta.add_argument(
         "--ta-converter",
@@ -184,7 +184,7 @@ def parse_args_create_forcing(argv):
         type=str,
         help="Input format",
         default="default",
-        choices=["default", "netcdf", "grib1", "grib2", "surfex"],
+        choices=["default", "netcdf", "grib1", "grib2", "surfex", "fa", "obs"],
     )
     group_qa.add_argument(
         "--qa-converter",
@@ -200,7 +200,7 @@ def parse_args_create_forcing(argv):
         type=str,
         help="Surface air pressure input format",
         default="default",
-        choices=["default", "netcdf", "grib1", "grib2", "surfex", "constant"],
+        choices=["default", "netcdf", "grib1", "grib2", "surfex", "fa", "constant", "obs"],
     )
     group_ps.add_argument(
         "--ps-converter",
@@ -218,7 +218,7 @@ def parse_args_create_forcing(argv):
         type=str,
         help="Direct short wave radiation input format",
         default="default",
-        choices=["default", "netcdf", "grib1", "grib2", "surfex", "constant"],
+        choices=["default", "netcdf", "grib1", "grib2", "surfex", "fa", "constant", "obs"],
     )
     group_dir_sw.add_argument(
         "--dir-sw-converter",
@@ -236,7 +236,7 @@ def parse_args_create_forcing(argv):
         type=str,
         help="Scattered short wave radiation input format",
         default="default",
-        choices=["netcdf", "grib1", "grib2", "surfex", "constant"],
+        choices=["netcdf", "grib1", "grib2", "surfex", "fa", "constant", "obs"],
     )
     group_sca_sw.add_argument(
         "--sca-sw-converter",
@@ -252,7 +252,7 @@ def parse_args_create_forcing(argv):
         type=str,
         help="Long wave radiation input format",
         default="default",
-        choices=["netcdf", "grib1", "grib2", "surfex", "constant"],
+        choices=["netcdf", "grib1", "grib2", "surfex", "fa", "constant", "obs"],
     )
     group_lw.add_argument(
         "--lw-converter",
@@ -268,7 +268,7 @@ def parse_args_create_forcing(argv):
         type=str,
         help="Input format",
         default="default",
-        choices=["default", "netcdf", "grib1", "grib2", "surfex"],
+        choices=["default", "netcdf", "grib1", "grib2", "surfex", "fa", "obs"],
     )
     group_rain.add_argument(
         "--rain-converter",
@@ -285,7 +285,7 @@ def parse_args_create_forcing(argv):
         type=str,
         help="Input format",
         default="default",
-        choices=["default", "netcdf", "grib1", "grib2", "surfex"],
+        choices=["default", "netcdf", "grib1", "grib2", "surfex", "fa", "obs"],
     )
     group_snow.add_argument(
         "--snow-converter",
@@ -302,7 +302,7 @@ def parse_args_create_forcing(argv):
         type=str,
         help="Input format",
         default="default",
-        choices=["default", "netcdf", "grib1", "grib2", "surfex"],
+        choices=["default", "netcdf", "grib1", "grib2", "surfex", "fa", "obs"],
     )
     group_wind.add_argument(
         "--wind-converter",
@@ -320,7 +320,7 @@ def parse_args_create_forcing(argv):
         type=str,
         help="Input format",
         default="default",
-        choices=["default", "netcdf", "grib1", "grib2", "surfex"],
+        choices=["default", "netcdf", "grib1", "grib2", "surfex", "fa", "obs"],
     )
     group_wind_dir.add_argument(
         "--wind-dir-converter",
@@ -337,7 +337,7 @@ def parse_args_create_forcing(argv):
         type=str,
         help="CO2 input format",
         default="default",
-        choices=["netcdf", "grib1", "constant", "grib2", "surfex"],
+        choices=["netcdf", "grib1", "constant", "grib2", "surfex", "fa", "obs"],
     )
     group_co2.add_argument(
         "--co2-converter",
@@ -354,7 +354,7 @@ def parse_args_create_forcing(argv):
         type=str,
         help="ZS input format",
         default="default",
-        choices=["netcdf", "grib1", "grib2", "surfex", "constant"],
+        choices=["netcdf", "grib1", "grib2", "surfex", "constant", "fa"],
     )
     group_zs.add_argument(
         "--zsoro-converter",
@@ -373,7 +373,7 @@ def parse_args_create_forcing(argv):
         type=str,
         help="ZREF input format",
         default="default",
-        choices=["netcdf", "grib1", "grib2", "surfex", "constant"],
+        choices=["netcdf", "grib1", "grib2", "surfex", "constant", "fa"],
     )
     group_zval.add_argument(
         "--zval-converter",
@@ -392,7 +392,7 @@ def parse_args_create_forcing(argv):
         type=str,
         help="UREF input format",
         default="default",
-        choices=["netcdf", "grib1", "grib2", "surfex", "constant"],
+        choices=["netcdf", "grib1", "grib2", "surfex", "constant", "fa"],
     )
     group_uval.add_argument(
         "--uval-converter",
@@ -1567,7 +1567,7 @@ def parse_timeseries2json(argv):
         help="Input type (format)",
         default="surfex",
         required=False,
-        choices=["netcdf", "grib1", "grib2", "surfex", "obs"],
+        choices=["netcdf", "grib1", "grib2", "surfex", "obs", "fa"],
     )
     parser.add_argument(
         "-start", dest="start", type=str, help="Start time (YYYYMMDDHH)", required=True
@@ -1944,7 +1944,7 @@ def variable_parse_options(parser, name=None):
         help="Filetype",
         default="surfex",
         required=False,
-        choices=["netcdf", "grib1", "grib2", "surfex", "obs"],
+        choices=["netcdf", "grib1", "grib2", "surfex", "obs", "fa"],
     )
     parser.add_argument(
         f"--{name}basetime",
