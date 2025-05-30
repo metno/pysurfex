@@ -72,17 +72,18 @@ Create forcing from MET-Nordic analysis
   # Thredds example:
   $CONTAINER $POETRY create_forcing -p  https://thredds.met.no/thredds/dodsC/metpparchivev3/@YYYY@/@MM@/@DD@/met_analysis_1_0km_nordic_@YYYY@@MM@@DD@T@HH@Z.nc \
    2023013010 2023013011 -d examples/domains/drammen.json -a \
-   --rain_converter calcrain \
-   --snow_converter calcsnow \
+   --rain-converter calcrain \
+   --snow-converter calcsnow \
    --zref screen --uref screen \
-   --qa_converter rh2q_mslp \
+   --qa-converter rh2q_mslp \
    --co2 constant \
-   --dir_sw_converter analysis \
-   --sca_sw constant \
-   --lw_converter analysis \
-   --wind_converter none \
-   --wind_dir_converter none \
-   --ps_converter mslp2ps
+   --dir-sw-converter analysis \
+   --sca-sw constant \
+   --lw-converter analysis \
+   --wind-converter none \
+   --wind-dir-converter none \
+   --ps-converter mslp2ps \
+   --output-filename FORCING.nc
 
 
 Example on a Lambert conf proj domain
@@ -150,29 +151,23 @@ If you want to modify local input and run in containers you have to bind the loc
    cd tutorial
 
    # Example namelists
-   # open surfex 8.1
-   export NAM_DIR="examples/nam_open_surfex_8_1"
-   # cy43
-   export NAM_DIR="examples/nam_cy43_dev"
-   # cy46
-   export NAM_DIR="examples/nam_hm_cy46"
+  $CONTAINER $POETRY create_namelist --assemble-file ${LOCAL}examples/assemble.yml --namelist-defs ${LOCAL}examples/surfex_namelists.yml --output OPTIONS.nam_pgd pgd
+  $CONTAINER $POETRY create_namelist --assemble-file ${LOCAL}examples/assemble.yml --namelist-defs ${LOCAL}examples/surfex_namelists.yml --output OPTIONS.nam_prep prep
+  $CONTAINER $POETRY create_namelist --assemble-file ${LOCAL}examples/assemble.yml --namelist-defs ${LOCAL}examples/surfex_namelists.yml --output OPTIONS.nam_offline offline
 
    # Use only one openMP thread
    export OMP_NUM_THREADS=1
 
-   # Dump environment
-   $CONTAINER $POETRY dump_environ -o ${LOCAL}rte.json
-
    # Create PGD
-   $CONTAINER $POETRY poetry run pgd -c pysurfex/cfg/config_exp_surfex.toml -r ${LOCAL}rte.json --domain examples/domains/drammen.json -s ${LOCAL}system.json -n $NAM_DIR -o PGD.nc PGD
+   $CONTAINER $POETRY pgd --domain ${LOCAL}examples/domains/drammen.json -s ${LOCAL}system.json -n ${LOCAL}OPTIONS.nam_pgd -o PGD.nc --binary PGD
 
    # Create PREP (from namelist values)
-   $CONTAINER $POETRY prep -c pysurfex/cfg/config_exp_surfex.toml -r ${LOCAL}rte.json --domain examples/domains/drammen.json -s ${LOCAL}system.json -n $NAM_DIR --pgd PGD.nc -o PREP.nc --prep_file ${NAM_DIR}/prep_from_namelist_values.json --prep_filetype json --dtg 2021010103 PREP
+   $CONTAINER $POETRY prep -s ${LOCAL}system.json -n ${LOCAL}OPTIONS.nam_prep --pgd PGD.nc -o PREP.nc  --validtime 2021010103 --binary PREP
 
    # Use forcing created above.
 
    # Run Offline
-   $CONTAINER $POETRY offline -c pysurfex/cfg/config_exp_surfex.toml -r ${LOCAL}rte.json --domain examples/domains/drammen.json -s ${LOCAL}system.json -n $NAM_DIR --pgd PGD.nc --prep PREP.nc -o SURFOUT.nc OFFLINE --forcing $PWD
+   $CONTAINER $POETRY offline  -s ${LOCAL}system.json -n ${LOCAL}OPTIONS.nam_offline --pgd PGD.nc --prep PREP.nc -o SURFOUT.nc --binary OFFLINE --forcing $PWD
 
 
 
@@ -183,4 +178,10 @@ You can plot data interpolated to surfex points using matplotlib. It is also pos
 
 .. code-block:: bash
 
-  $CONTAINER $POETRY plot_points -v air_temperature_2m -g examples/domains/drammen.json -it netcdf -i https://thredds.met.no/thredds/dodsC/meps25epsarchive/2023/04/13/meps_det_2_5km_20230413T06Z.nc -t 2023041307
+  $CONTAINER $POETRY plot_points \
+  --variable air_temperature_2m \
+  -g examples/domains/drammen.json \
+  --inputtype netcdf \
+  --inputfile https://thredds.met.no/thredds/dodsC/meps25epsarchive/2023/04/13/meps_det_2_5km_20230413T06Z.nc \
+  --validtime 2023041307 \
+  --basetime 2023041306

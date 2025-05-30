@@ -1,22 +1,21 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pysurfex.datetime_utils &#8212; SURFEX Python API (pysurfex)  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=536c50fe" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=1654e008" />
     
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/documentation_options.js?v=9fa44488"></script>
+    <script src="../../_static/doctools.js?v=695de88e"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -40,7 +39,9 @@
 
 
 <span class="c1"># TODO use ISO times</span>
-<div class="viewcode-block" id="as_datetime"><a class="viewcode-back" href="../../index.html#pysurfex.datetime_utils.as_datetime">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">as_datetime</span><span class="p">(</span><span class="n">dtg</span><span class="p">):</span>
+<div class="viewcode-block" id="as_datetime">
+<a class="viewcode-back" href="../../index.html#pysurfex.datetime_utils.as_datetime">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">as_datetime</span><span class="p">(</span><span class="n">dtg</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert string to datetime.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dtg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
         <span class="n">fmt</span> <span class="o">=</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H&quot;</span>
@@ -50,54 +51,109 @@
         <span class="n">fmt</span> <span class="o">=</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H%M%S&quot;</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;dtg=</span><span class="si">{</span><span class="n">dtg</span><span class="si">}</span><span class="s2"> len(dtg) is </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">dtg</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">offset</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">dtg</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">dtg</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="as_datetime_string"><a class="viewcode-back" href="../../index.html#pysurfex.datetime_utils.as_datetime_string">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">as_datetime_string</span><span class="p">(</span><span class="n">dtg</span><span class="p">):</span>
+
+<div class="viewcode-block" id="as_datetime_string">
+<a class="viewcode-back" href="../../index.html#pysurfex.datetime_utils.as_datetime_string">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">as_datetime_string</span><span class="p">(</span><span class="n">dtg</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert string to datetime.&quot;&quot;&quot;</span>
     <span class="n">fmt</span> <span class="o">=</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H%M%S&quot;</span>
     <span class="k">return</span> <span class="n">dtg</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="offsetaware"><a class="viewcode-back" href="../../index.html#pysurfex.datetime_utils.offsetaware">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">offsetaware</span><span class="p">(</span><span class="n">dtg</span><span class="p">):</span>
+
+<div class="viewcode-block" id="offsetaware">
+<a class="viewcode-back" href="../../index.html#pysurfex.datetime_utils.offsetaware">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">offsetaware</span><span class="p">(</span><span class="n">dtg</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Make offset aware.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">dtg</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="as_timedelta"><a class="viewcode-back" href="../../index.html#pysurfex.datetime_utils.as_timedelta">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">as_timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+
+<div class="viewcode-block" id="as_timedelta">
+<a class="viewcode-back" href="../../index.html#pysurfex.datetime_utils.as_timedelta">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">as_timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert seconds to timedelta.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">seconds</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="fromtimestamp"><a class="viewcode-back" href="../../index.html#pysurfex.datetime_utils.fromtimestamp">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">fromtimestamp</span><span class="p">(</span><span class="n">validtime</span><span class="p">):</span>
+
+<div class="viewcode-block" id="fromtimestamp">
+<a class="viewcode-back" href="../../index.html#pysurfex.datetime_utils.fromtimestamp">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">fromtimestamp</span><span class="p">(</span><span class="n">validtime</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert timestamp to validtime.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">validtime</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="utcfromtimestamp"><a class="viewcode-back" href="../../index.html#pysurfex.datetime_utils.utcfromtimestamp">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">utcfromtimestamp</span><span class="p">(</span><span class="n">epochtime</span><span class="p">):</span>
+
+<div class="viewcode-block" id="utcfromtimestamp">
+<a class="viewcode-back" href="../../index.html#pysurfex.datetime_utils.utcfromtimestamp">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">utcfromtimestamp</span><span class="p">(</span><span class="n">epochtime</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert timestamp to validtime.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcfromtimestamp</span><span class="p">(</span><span class="n">epochtime</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="isdatetime"><a class="viewcode-back" href="../../index.html#pysurfex.datetime_utils.isdatetime">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">isdatetime</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+
+<div class="viewcode-block" id="isdatetime">
+<a class="viewcode-back" href="../../index.html#pysurfex.datetime_utils.isdatetime">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">isdatetime</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if is a datetime objects.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">date</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="as_datetime_args"><a class="viewcode-back" href="../../index.html#pysurfex.datetime_utils.as_datetime_args">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">as_datetime_args</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hour</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">minute</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">second</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+
+<div class="viewcode-block" id="as_datetime_args">
+<a class="viewcode-back" href="../../index.html#pysurfex.datetime_utils.as_datetime_args">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">as_datetime_args</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hour</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">minute</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">second</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set datetime object from args.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">datetime</span><span class="p">(</span>
         <span class="n">year</span><span class="o">=</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="o">=</span><span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="o">=</span><span class="n">minute</span><span class="p">,</span> <span class="n">second</span><span class="o">=</span><span class="n">second</span>
     <span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_decade">
+<a class="viewcode-back" href="../../index.html#pysurfex.datetime_utils.get_decade">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_decade</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the decade given a datetime object.&quot;&quot;&quot;</span>
+    <span class="c1"># Extract month and day from datetime object</span>
+    <span class="n">dtg_mm</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span><span class="p">)</span>
+    <span class="n">dtg_dd</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+
+    <span class="c1"># Determine decades_mm and decades_dd based on dtg_dd</span>
+    <span class="k">if</span> <span class="n">dtg_dd</span> <span class="o">&lt;</span> <span class="mi">9</span><span class="p">:</span>
+        <span class="n">decades_mm</span> <span class="o">=</span> <span class="n">dtg_mm</span>
+        <span class="n">decades_dd</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="k">elif</span> <span class="mi">8</span> <span class="o">&lt;</span> <span class="n">dtg_dd</span> <span class="o">&lt;</span> <span class="mi">19</span><span class="p">:</span>
+        <span class="n">decades_mm</span> <span class="o">=</span> <span class="n">dtg_mm</span>
+        <span class="n">decades_dd</span> <span class="o">=</span> <span class="mi">15</span>
+    <span class="k">elif</span> <span class="mi">18</span> <span class="o">&lt;</span> <span class="n">dtg_dd</span> <span class="o">&lt;</span> <span class="mi">29</span><span class="p">:</span>
+        <span class="n">decades_mm</span> <span class="o">=</span> <span class="n">dtg_mm</span>
+        <span class="n">decades_dd</span> <span class="o">=</span> <span class="mi">25</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">decades_mm</span> <span class="o">=</span> <span class="n">dtg_mm</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">decades_mm</span> <span class="o">==</span> <span class="mi">13</span><span class="p">:</span>
+            <span class="n">decades_mm</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">decades_dd</span> <span class="o">=</span> <span class="mi">5</span>
+
+    <span class="n">decades_mm</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">decades_mm</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">decades_dd</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">decades_dd</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">decades_mm</span><span class="si">}{</span><span class="n">decades_dd</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
 </pre></div>
 
             <div class="clearer"></div>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
@@ -105,13 +161,13 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -123,8 +179,8 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
+    &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
     </div>
   </body>
 </html>

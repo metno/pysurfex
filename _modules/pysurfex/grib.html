@@ -1,22 +1,21 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pysurfex.grib &#8212; SURFEX Python API (pysurfex)  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=536c50fe" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=1654e008" />
     
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/documentation_options.js?v=9fa44488"></script>
+    <script src="../../_static/doctools.js?v=695de88e"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -59,10 +58,14 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.interpolation</span><span class="w"> </span><span class="kn">import</span> <span class="n">Interpolation</span>
 
 
-<div class="viewcode-block" id="Grib"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Grib</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Grib">
+<a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Grib</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Grib class.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Grib.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+<div class="viewcode-block" id="Grib.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct grib object.</span>
 
 <span class="sd">        Args:</span>
@@ -77,7 +80,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Grib constructor&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Grib.field"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib.field">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gribvar</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Grib.field">
+<a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib.field">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gribvar</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read field in grib file.</span>
 
 <span class="sd">        Args:</span>
@@ -108,218 +114,222 @@
                     <span class="n">gribvar</span><span class="o">.</span><span class="n">print_keys</span><span class="p">()</span>
                     <span class="n">file_handler</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
                     <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo_out</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">gribvar</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">gid</span><span class="p">):</span>
-                        <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_field_in_message</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
-                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;read values = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
 
-                        <span class="n">grid_type</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="s2">&quot;gridType&quot;</span><span class="p">))</span>
-                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;grid_type=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="n">grid_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;rotated_ll&quot;</span><span class="p">:</span>
-                            <span class="n">geo_keys</span> <span class="o">=</span> <span class="p">[</span>
-                                <span class="s2">&quot;Ni&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;Nj&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;latitudeOfFirstGridPointInDegrees&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;longitudeOfFirstGridPointInDegrees&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;latitudeOfLastGridPointInDegrees&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;longitudeOfLastGridPointInDegrees&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;iDirectionIncrementInDegrees&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;jDirectionIncrementInDegrees&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;latitudeOfSouthernPoleInDegrees&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;longitudeOfSouthernPoleInDegrees&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;iScansNegatively&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;jScansPositively&quot;</span><span class="p">,</span>
-                            <span class="p">]</span>
-                            <span class="n">geo_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_geo_info</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="n">geo_keys</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">gribvar</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">gid</span><span class="p">):</span>
+                    <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_field_in_message</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;read values = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
 
-                            <span class="n">n_x</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;Ni&quot;</span><span class="p">]</span>
-                            <span class="n">n_y</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;Nj&quot;</span><span class="p">]</span>
+                    <span class="n">grid_type</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="s2">&quot;gridType&quot;</span><span class="p">))</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;grid_type=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">grid_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;rotated_ll&quot;</span><span class="p">:</span>
+                        <span class="n">geo_keys</span> <span class="o">=</span> <span class="p">[</span>
+                            <span class="s2">&quot;Ni&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;Nj&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;latitudeOfFirstGridPointInDegrees&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;longitudeOfFirstGridPointInDegrees&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;latitudeOfLastGridPointInDegrees&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;longitudeOfLastGridPointInDegrees&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;iDirectionIncrementInDegrees&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;jDirectionIncrementInDegrees&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;latitudeOfSouthernPoleInDegrees&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;longitudeOfSouthernPoleInDegrees&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;iScansNegatively&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;jScansPositively&quot;</span><span class="p">,</span>
+                        <span class="p">]</span>
+                        <span class="n">geo_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_geo_info</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="n">geo_keys</span><span class="p">)</span>
 
-                            <span class="n">ll_lon</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;longitudeOfFirstGridPointInDegrees&quot;</span><span class="p">]</span>
-                            <span class="n">ll_lat</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;latitudeOfFirstGridPointInDegrees&quot;</span><span class="p">]</span>
-                            <span class="n">dlon</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;iDirectionIncrementInDegrees&quot;</span><span class="p">]</span>
-                            <span class="n">dlat</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;jDirectionIncrementInDegrees&quot;</span><span class="p">]</span>
-                            <span class="n">sp_lon</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;longitudeOfSouthernPoleInDegrees&quot;</span><span class="p">]</span>
-                            <span class="n">iscan</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;iScansNegatively&quot;</span><span class="p">]</span>
-                            <span class="n">jscan</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;jScansPositively&quot;</span><span class="p">]</span>
-                            <span class="k">if</span> <span class="n">sp_lon</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">180.0</span><span class="p">:</span>
-                                <span class="n">sp_lon</span> <span class="o">=</span> <span class="n">sp_lon</span> <span class="o">+</span> <span class="mf">360.0</span>
-                            <span class="k">elif</span> <span class="n">sp_lon</span> <span class="o">&gt;</span> <span class="mf">180.0</span><span class="p">:</span>
-                                <span class="n">sp_lon</span> <span class="o">=</span> <span class="n">sp_lon</span> <span class="o">-</span> <span class="mf">360.0</span>
-                            <span class="n">sp_lat</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;latitudeOfSouthernPoleInDegrees&quot;</span><span class="p">]</span>
-                            <span class="n">earth</span> <span class="o">=</span> <span class="mf">6.371229e6</span>
+                        <span class="n">n_x</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;Ni&quot;</span><span class="p">]</span>
+                        <span class="n">n_y</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;Nj&quot;</span><span class="p">]</span>
 
-                            <span class="n">proj_string</span> <span class="o">=</span> <span class="p">(</span>
-                                <span class="sa">f</span><span class="s2">&quot;+proj=ob_tran +o_proj=longlat +o_lat_p=</span><span class="si">{</span><span class="n">sp_lat</span><span class="si">}</span><span class="s2">&quot;</span>
-                                <span class="sa">f</span><span class="s2">&quot; +R=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">earth</span><span class="p">)</span><span class="si">}</span><span class="s2"> +no_defs&quot;</span>
-                            <span class="p">)</span>
-                            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">proj_string</span><span class="p">)</span>
-                            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;ll_lon=</span><span class="si">%s</span><span class="s2"> ll_lat=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ll_lon</span><span class="p">,</span> <span class="n">ll_lat</span><span class="p">)</span>
-                            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;polon=</span><span class="si">%s</span><span class="s2"> polat=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">sp_lon</span><span class="p">,</span> <span class="n">sp_lat</span><span class="p">)</span>
-                            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;dlon=</span><span class="si">%s</span><span class="s2"> dlat=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">dlon</span><span class="p">,</span> <span class="n">dlat</span><span class="p">)</span>
-                            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;iscan=</span><span class="si">%s</span><span class="s2"> jscan=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">iscan</span><span class="p">,</span> <span class="n">jscan</span><span class="p">)</span>
-                            <span class="n">proj</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">proj_string</span><span class="p">)</span>
-                            <span class="n">wgs84</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="s2">&quot;EPSG:4326&quot;</span><span class="p">)</span>
+                        <span class="n">ll_lon</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;longitudeOfFirstGridPointInDegrees&quot;</span><span class="p">]</span>
+                        <span class="n">ll_lat</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;latitudeOfFirstGridPointInDegrees&quot;</span><span class="p">]</span>
+                        <span class="n">dlon</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;iDirectionIncrementInDegrees&quot;</span><span class="p">]</span>
+                        <span class="n">dlat</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;jDirectionIncrementInDegrees&quot;</span><span class="p">]</span>
+                        <span class="n">sp_lon</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;longitudeOfSouthernPoleInDegrees&quot;</span><span class="p">]</span>
+                        <span class="n">iscan</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;iScansNegatively&quot;</span><span class="p">]</span>
+                        <span class="n">jscan</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;jScansPositively&quot;</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">sp_lon</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">180.0</span><span class="p">:</span>
+                            <span class="n">sp_lon</span> <span class="o">=</span> <span class="n">sp_lon</span> <span class="o">+</span> <span class="mf">360.0</span>
+                        <span class="k">elif</span> <span class="n">sp_lon</span> <span class="o">&gt;</span> <span class="mf">180.0</span><span class="p">:</span>
+                            <span class="n">sp_lon</span> <span class="o">=</span> <span class="n">sp_lon</span> <span class="o">-</span> <span class="mf">360.0</span>
+                        <span class="n">sp_lat</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;latitudeOfSouthernPoleInDegrees&quot;</span><span class="p">]</span>
+                        <span class="n">earth</span> <span class="o">=</span> <span class="mf">6.371229e6</span>
 
-                            <span class="n">lons</span> <span class="o">=</span> <span class="p">[]</span>
-                            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_x</span><span class="p">):</span>
-                                <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">iscan</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                                    <span class="n">lon</span> <span class="o">=</span> <span class="n">ll_lon</span> <span class="o">-</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">dlon</span><span class="p">)</span>
-                                <span class="k">else</span><span class="p">:</span>
-                                    <span class="n">lon</span> <span class="o">=</span> <span class="n">ll_lon</span> <span class="o">+</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">dlon</span><span class="p">)</span>
-                                <span class="k">if</span> <span class="n">lon</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">180.0</span><span class="p">:</span>
-                                    <span class="n">lon</span> <span class="o">=</span> <span class="n">lon</span> <span class="o">+</span> <span class="mf">360.0</span>
-                                <span class="k">elif</span> <span class="n">lon</span> <span class="o">&gt;</span> <span class="mf">180.0</span><span class="p">:</span>
-                                    <span class="n">lon</span> <span class="o">=</span> <span class="n">lon</span> <span class="o">-</span> <span class="mf">360.0</span>
-                                <span class="n">lons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span>
-                            <span class="n">lats</span> <span class="o">=</span> <span class="p">[]</span>
-                            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_y</span><span class="p">):</span>
-                                <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">jscan</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                                    <span class="n">lat</span> <span class="o">=</span> <span class="n">ll_lat</span> <span class="o">+</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="o">*</span> <span class="n">dlat</span><span class="p">)</span>
-                                <span class="k">else</span><span class="p">:</span>
-                                    <span class="n">lat</span> <span class="o">=</span> <span class="n">ll_lat</span> <span class="o">-</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="o">*</span> <span class="n">dlat</span><span class="p">)</span>
-                                <span class="k">if</span> <span class="n">lat</span> <span class="o">&gt;</span> <span class="mf">90.0</span><span class="p">:</span>
-                                    <span class="n">lat</span> <span class="o">=</span> <span class="n">lat</span> <span class="o">-</span> <span class="mf">90.0</span>
-                                <span class="k">elif</span> <span class="n">lat</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">90.0</span><span class="p">:</span>
-                                    <span class="n">lat</span> <span class="o">=</span> <span class="n">lat</span> <span class="o">+</span> <span class="mf">90.0</span>
-                                <span class="n">lats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>
+                        <span class="n">proj_string</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;+proj=ob_tran +o_proj=longlat +o_lat_p=</span><span class="si">{</span><span class="n">sp_lat</span><span class="si">}</span><span class="s2">&quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot; +R=</span><span class="si">{</span><span class="n">earth</span><span class="si">!s}</span><span class="s2"> +no_defs&quot;</span>
+                        <span class="p">)</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">proj_string</span><span class="p">)</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;ll_lon=</span><span class="si">%s</span><span class="s2"> ll_lat=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ll_lon</span><span class="p">,</span> <span class="n">ll_lat</span><span class="p">)</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;polon=</span><span class="si">%s</span><span class="s2"> polat=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">sp_lon</span><span class="p">,</span> <span class="n">sp_lat</span><span class="p">)</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;dlon=</span><span class="si">%s</span><span class="s2"> dlat=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">dlon</span><span class="p">,</span> <span class="n">dlat</span><span class="p">)</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;iscan=</span><span class="si">%s</span><span class="s2"> jscan=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">iscan</span><span class="p">,</span> <span class="n">jscan</span><span class="p">)</span>
+                        <span class="n">proj</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">proj_string</span><span class="p">)</span>
+                        <span class="n">wgs84</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="s2">&quot;EPSG:4326&quot;</span><span class="p">)</span>
 
-                            <span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span>
-                            <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
-                            <span class="n">longitudes</span><span class="p">,</span> <span class="n">latitudes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">)</span>
-                            <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span>
-                                <span class="n">proj</span><span class="p">,</span> <span class="n">wgs84</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span>
-                            <span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">longitudes</span><span class="p">,</span> <span class="n">latitudes</span><span class="p">)</span>
-                            <span class="n">lons</span> <span class="o">=</span> <span class="n">lons</span> <span class="o">+</span> <span class="n">sp_lon</span>
+                        <span class="n">lons</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_x</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">iscan</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                                <span class="n">lon</span> <span class="o">=</span> <span class="n">ll_lon</span> <span class="o">-</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">dlon</span><span class="p">)</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">lon</span> <span class="o">=</span> <span class="n">ll_lon</span> <span class="o">+</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">dlon</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">lon</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">180.0</span><span class="p">:</span>
+                                <span class="n">lon</span> <span class="o">=</span> <span class="n">lon</span> <span class="o">+</span> <span class="mf">360.0</span>
+                            <span class="k">elif</span> <span class="n">lon</span> <span class="o">&gt;</span> <span class="mf">180.0</span><span class="p">:</span>
+                                <span class="n">lon</span> <span class="o">=</span> <span class="n">lon</span> <span class="o">-</span> <span class="mf">360.0</span>
+                            <span class="n">lons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span>
+                        <span class="n">lats</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_y</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">jscan</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                                <span class="n">lat</span> <span class="o">=</span> <span class="n">ll_lat</span> <span class="o">+</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="o">*</span> <span class="n">dlat</span><span class="p">)</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">lat</span> <span class="o">=</span> <span class="n">ll_lat</span> <span class="o">-</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="o">*</span> <span class="n">dlat</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">lat</span> <span class="o">&gt;</span> <span class="mf">90.0</span><span class="p">:</span>
+                                <span class="n">lat</span> <span class="o">=</span> <span class="n">lat</span> <span class="o">-</span> <span class="mf">90.0</span>
+                            <span class="k">elif</span> <span class="n">lat</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">90.0</span><span class="p">:</span>
+                                <span class="n">lat</span> <span class="o">=</span> <span class="n">lat</span> <span class="o">+</span> <span class="mf">90.0</span>
+                            <span class="n">lats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>
 
-                            <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="p">[</span><span class="n">n_x</span><span class="p">,</span> <span class="n">n_y</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span>
-                            <span class="k">if</span> <span class="n">geo_out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                                <span class="n">geo_out</span> <span class="o">=</span> <span class="n">Geo</span><span class="p">(</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)</span>
+                        <span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span>
+                        <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
+                        <span class="n">longitudes</span><span class="p">,</span> <span class="n">latitudes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">)</span>
+                        <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span>
+                            <span class="n">proj</span><span class="p">,</span> <span class="n">wgs84</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span>
+                        <span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">longitudes</span><span class="p">,</span> <span class="n">latitudes</span><span class="p">)</span>
+                        <span class="n">lons</span> <span class="o">=</span> <span class="n">lons</span> <span class="o">+</span> <span class="n">sp_lon</span>
 
-                        <span class="k">elif</span> <span class="n">grid_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;regular_ll&quot;</span><span class="p">:</span>
-                            <span class="n">geo_keys</span> <span class="o">=</span> <span class="p">[</span>
-                                <span class="s2">&quot;Ni&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;Nj&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;latitudeOfFirstGridPointInDegrees&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;longitudeOfFirstGridPointInDegrees&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;latitudeOfLastGridPointInDegrees&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;longitudeOfLastGridPointInDegrees&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;iDirectionIncrementInDegrees&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;jDirectionIncrementInDegrees&quot;</span><span class="p">,</span>
-                            <span class="p">]</span>
-                            <span class="n">geo_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_geo_info</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="n">geo_keys</span><span class="p">)</span>
-                            <span class="n">n_x</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;Ni&quot;</span><span class="p">]</span>
-                            <span class="n">n_y</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;Nj&quot;</span><span class="p">]</span>
-                            <span class="n">lon0</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;longitudeOfFirstGridPointInDegrees&quot;</span><span class="p">]</span>
-                            <span class="n">lat0</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;latitudeOfFirstGridPointInDegrees&quot;</span><span class="p">]</span>
-                            <span class="n">d_x</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;iDirectionIncrementInDegrees&quot;</span><span class="p">]</span>
-                            <span class="n">d_y</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;jDirectionIncrementInDegrees&quot;</span><span class="p">]</span>
-                            <span class="n">lons</span> <span class="o">=</span> <span class="p">[]</span>
-                            <span class="n">lats</span> <span class="o">=</span> <span class="p">[]</span>
-                            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_x</span><span class="p">):</span>
-                                <span class="n">lons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lon0</span> <span class="o">+</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">d_x</span><span class="p">))</span>
-                            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_y</span><span class="p">):</span>
-                                <span class="n">lats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lat0</span> <span class="o">-</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="o">*</span> <span class="n">d_y</span><span class="p">))</span>
-                            <span class="n">lon1</span> <span class="o">=</span> <span class="n">lons</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                            <span class="n">lat1</span> <span class="o">=</span> <span class="n">lats</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                            <span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span>
-                            <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
-                            <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)</span>
-                            <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="p">[</span><span class="n">n_x</span><span class="p">,</span> <span class="n">n_y</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span>
-
-                            <span class="k">if</span> <span class="n">geo_out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                                <span class="n">domain</span> <span class="o">=</span> <span class="p">{</span>
-                                    <span class="s2">&quot;nam_lonlat_reg&quot;</span><span class="p">:</span> <span class="p">{</span>
-                                        <span class="s2">&quot;xlonmin&quot;</span><span class="p">:</span> <span class="n">lon0</span><span class="p">,</span>
-                                        <span class="s2">&quot;xlonmax&quot;</span><span class="p">:</span> <span class="n">lon1</span><span class="p">,</span>
-                                        <span class="s2">&quot;xlatmin&quot;</span><span class="p">:</span> <span class="n">lat0</span><span class="p">,</span>
-                                        <span class="s2">&quot;xlatmax&quot;</span><span class="p">:</span> <span class="n">lat1</span><span class="p">,</span>
-                                        <span class="s2">&quot;nlon&quot;</span><span class="p">:</span> <span class="n">n_x</span><span class="p">,</span>
-                                        <span class="s2">&quot;nlat&quot;</span><span class="p">:</span> <span class="n">n_y</span><span class="p">,</span>
-                                    <span class="p">}</span>
-                                <span class="p">}</span>
-                                <span class="n">geo_out</span> <span class="o">=</span> <span class="n">LonLatReg</span><span class="p">(</span><span class="n">domain</span><span class="p">)</span>
-
-                        <span class="k">elif</span> <span class="n">grid_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;lambert&quot;</span><span class="p">:</span>
-                            <span class="n">geo_keys</span> <span class="o">=</span> <span class="p">[</span>
-                                <span class="s2">&quot;Nx&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;Ny&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;latitudeOfFirstGridPointInDegrees&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;longitudeOfFirstGridPointInDegrees&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;LoVInDegrees&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;DxInMetres&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;DyInMetres&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;iScansNegatively&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;jScansPositively&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;jPointsAreConsecutive&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;Latin1InDegrees&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;LaDInDegrees&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;Latin2InDegrees&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;latitudeOfSouthernPoleInDegrees&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;longitudeOfSouthernPoleInDegrees&quot;</span><span class="p">,</span>
-                            <span class="p">]</span>
-                            <span class="n">geo_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_geo_info</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="n">geo_keys</span><span class="p">)</span>
-
-                            <span class="n">n_x</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;Nx&quot;</span><span class="p">]</span>
-                            <span class="n">n_y</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;Ny&quot;</span><span class="p">]</span>
-
-                            <span class="n">lon0</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;LoVInDegrees&quot;</span><span class="p">]</span>
-                            <span class="n">lat0</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;LaDInDegrees&quot;</span><span class="p">]</span>
-                            <span class="n">ll_lon</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;longitudeOfFirstGridPointInDegrees&quot;</span><span class="p">]</span>
-                            <span class="n">ll_lat</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;latitudeOfFirstGridPointInDegrees&quot;</span><span class="p">]</span>
-                            <span class="n">d_x</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;DxInMetres&quot;</span><span class="p">]</span>
-                            <span class="n">d_y</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;DyInMetres&quot;</span><span class="p">]</span>
-
-                            <span class="n">earth</span> <span class="o">=</span> <span class="mf">6.37122e6</span>
-                            <span class="n">proj_string</span> <span class="o">=</span> <span class="p">(</span>
-                                <span class="sa">f</span><span class="s2">&quot;+proj=lcc +lat_0=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span><span class="si">}</span><span class="s2"> +lon_0=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">lon0</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
-                                <span class="sa">f</span><span class="s2">&quot;+lat_1=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span><span class="si">}</span><span class="s2"> +lat_2=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
-                                <span class="sa">f</span><span class="s2">&quot;+units=m +no_defs +R=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">earth</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-                            <span class="p">)</span>
-
-                            <span class="n">proj</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">proj_string</span><span class="p">)</span>
-                            <span class="n">wgs84</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="s2">&quot;EPSG:4326&quot;</span><span class="p">)</span>
-                            <span class="n">x_0</span><span class="p">,</span> <span class="n">y_0</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span>
-                                <span class="n">wgs84</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span>
-                            <span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">ll_lon</span><span class="p">,</span> <span class="n">ll_lat</span><span class="p">)</span>
-                            <span class="n">x_c</span> <span class="o">=</span> <span class="n">x_0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">d_x</span>
-                            <span class="n">y_c</span> <span class="o">=</span> <span class="n">y_0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">d_y</span>
-                            <span class="n">lonc</span><span class="p">,</span> <span class="n">latc</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span>
-                                <span class="n">proj</span><span class="p">,</span> <span class="n">wgs84</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span>
-                            <span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">x_c</span><span class="p">,</span> <span class="n">y_c</span><span class="p">)</span>
-
-                            <span class="c1"># TODO we should investigate scan angle and if done correctly</span>
-                            <span class="c1"># order should probaly be &quot;C&quot; and not &quot;F&quot;</span>
-                            <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="p">[</span><span class="n">n_x</span><span class="p">,</span> <span class="n">n_y</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span>
-
-                            <span class="k">if</span> <span class="n">geo_out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                                <span class="n">domain</span> <span class="o">=</span> <span class="p">{</span>
-                                    <span class="s2">&quot;nam_conf_proj&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;xlon0&quot;</span><span class="p">:</span> <span class="n">lon0</span><span class="p">,</span> <span class="s2">&quot;xlat0&quot;</span><span class="p">:</span> <span class="n">lat0</span><span class="p">},</span>
-                                    <span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">:</span> <span class="p">{</span>
-                                        <span class="s2">&quot;xloncen&quot;</span><span class="p">:</span> <span class="n">lonc</span><span class="p">,</span>
-                                        <span class="s2">&quot;xlatcen&quot;</span><span class="p">:</span> <span class="n">latc</span><span class="p">,</span>
-                                        <span class="s2">&quot;nimax&quot;</span><span class="p">:</span> <span class="n">n_x</span><span class="p">,</span>
-                                        <span class="s2">&quot;njmax&quot;</span><span class="p">:</span> <span class="n">n_y</span><span class="p">,</span>
-                                        <span class="s2">&quot;xdx&quot;</span><span class="p">:</span> <span class="n">d_x</span><span class="p">,</span>
-                                        <span class="s2">&quot;xdy&quot;</span><span class="p">:</span> <span class="n">d_y</span><span class="p">,</span>
-                                        <span class="s2">&quot;ilone&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                                        <span class="s2">&quot;ilate&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                                    <span class="p">},</span>
-                                <span class="p">}</span>
-                                <span class="n">geo_out</span> <span class="o">=</span> <span class="n">ConfProj</span><span class="p">(</span><span class="n">domain</span><span class="p">)</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-                                <span class="nb">str</span><span class="p">(</span><span class="n">grid_type</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; not implemented yet!&quot;</span>
-                            <span class="p">)</span>
-
-                        <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_release</span><span class="p">(</span><span class="n">gid</span><span class="p">)</span>
+                        <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="p">[</span><span class="n">n_x</span><span class="p">,</span> <span class="n">n_y</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span>
                         <span class="k">if</span> <span class="n">geo_out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No geometry is found in file&quot;</span><span class="p">)</span>
+                            <span class="n">geo_out</span> <span class="o">=</span> <span class="n">Geo</span><span class="p">(</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)</span>
 
-                        <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo_out</span>
-                    <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_release</span><span class="p">(</span><span class="n">gid</span><span class="p">)</span></div>
+                    <span class="k">elif</span> <span class="n">grid_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;regular_ll&quot;</span><span class="p">:</span>
+                        <span class="n">geo_keys</span> <span class="o">=</span> <span class="p">[</span>
+                            <span class="s2">&quot;Ni&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;Nj&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;latitudeOfFirstGridPointInDegrees&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;longitudeOfFirstGridPointInDegrees&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;latitudeOfLastGridPointInDegrees&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;longitudeOfLastGridPointInDegrees&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;iDirectionIncrementInDegrees&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;jDirectionIncrementInDegrees&quot;</span><span class="p">,</span>
+                        <span class="p">]</span>
+                        <span class="n">geo_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_geo_info</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="n">geo_keys</span><span class="p">)</span>
+                        <span class="n">n_x</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;Ni&quot;</span><span class="p">]</span>
+                        <span class="n">n_y</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;Nj&quot;</span><span class="p">]</span>
+                        <span class="n">lon0</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;longitudeOfFirstGridPointInDegrees&quot;</span><span class="p">]</span>
+                        <span class="n">lat0</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;latitudeOfFirstGridPointInDegrees&quot;</span><span class="p">]</span>
+                        <span class="n">d_x</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;iDirectionIncrementInDegrees&quot;</span><span class="p">]</span>
+                        <span class="n">d_y</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;jDirectionIncrementInDegrees&quot;</span><span class="p">]</span>
+                        <span class="n">lons</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="n">lats</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_x</span><span class="p">):</span>
+                            <span class="n">lons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lon0</span> <span class="o">+</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">d_x</span><span class="p">))</span>
+                        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_y</span><span class="p">):</span>
+                            <span class="n">lats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lat0</span> <span class="o">-</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="o">*</span> <span class="n">d_y</span><span class="p">))</span>
+                        <span class="n">lon1</span> <span class="o">=</span> <span class="n">lons</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="n">lat1</span> <span class="o">=</span> <span class="n">lats</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span>
+                        <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
+                        <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)</span>
+                        <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="p">[</span><span class="n">n_x</span><span class="p">,</span> <span class="n">n_y</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Grib.read_geo_info"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib.read_geo_info">[docs]</a>    <span class="nd">@staticmethod</span>
+                        <span class="k">if</span> <span class="n">geo_out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">domain</span> <span class="o">=</span> <span class="p">{</span>
+                                <span class="s2">&quot;nam_lonlat_reg&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                    <span class="s2">&quot;xlonmin&quot;</span><span class="p">:</span> <span class="n">lon0</span><span class="p">,</span>
+                                    <span class="s2">&quot;xlonmax&quot;</span><span class="p">:</span> <span class="n">lon1</span><span class="p">,</span>
+                                    <span class="s2">&quot;xlatmin&quot;</span><span class="p">:</span> <span class="n">lat0</span><span class="p">,</span>
+                                    <span class="s2">&quot;xlatmax&quot;</span><span class="p">:</span> <span class="n">lat1</span><span class="p">,</span>
+                                    <span class="s2">&quot;nlon&quot;</span><span class="p">:</span> <span class="n">n_x</span><span class="p">,</span>
+                                    <span class="s2">&quot;nlat&quot;</span><span class="p">:</span> <span class="n">n_y</span><span class="p">,</span>
+                                <span class="p">}</span>
+                            <span class="p">}</span>
+                            <span class="n">geo_out</span> <span class="o">=</span> <span class="n">LonLatReg</span><span class="p">(</span><span class="n">domain</span><span class="p">)</span>
+
+                    <span class="k">elif</span> <span class="n">grid_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;lambert&quot;</span><span class="p">:</span>
+                        <span class="n">geo_keys</span> <span class="o">=</span> <span class="p">[</span>
+                            <span class="s2">&quot;Nx&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;Ny&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;latitudeOfFirstGridPointInDegrees&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;longitudeOfFirstGridPointInDegrees&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;LoVInDegrees&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;DxInMetres&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;DyInMetres&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;iScansNegatively&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;jScansPositively&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;jPointsAreConsecutive&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;Latin1InDegrees&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;LaDInDegrees&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;Latin2InDegrees&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;latitudeOfSouthernPoleInDegrees&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;longitudeOfSouthernPoleInDegrees&quot;</span><span class="p">,</span>
+                        <span class="p">]</span>
+                        <span class="n">geo_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_geo_info</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="n">geo_keys</span><span class="p">)</span>
+
+                        <span class="n">n_x</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;Nx&quot;</span><span class="p">]</span>
+                        <span class="n">n_y</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;Ny&quot;</span><span class="p">]</span>
+
+                        <span class="n">lon0</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;LoVInDegrees&quot;</span><span class="p">]</span>
+                        <span class="n">lat0</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;LaDInDegrees&quot;</span><span class="p">]</span>
+                        <span class="n">ll_lon</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;longitudeOfFirstGridPointInDegrees&quot;</span><span class="p">]</span>
+                        <span class="n">ll_lat</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;latitudeOfFirstGridPointInDegrees&quot;</span><span class="p">]</span>
+                        <span class="n">d_x</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;DxInMetres&quot;</span><span class="p">]</span>
+                        <span class="n">d_y</span> <span class="o">=</span> <span class="n">geo_info</span><span class="p">[</span><span class="s2">&quot;DyInMetres&quot;</span><span class="p">]</span>
+
+                        <span class="n">earth</span> <span class="o">=</span> <span class="mf">6.37122e6</span>
+                        <span class="n">proj_string</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;+proj=lcc +lat_0=</span><span class="si">{</span><span class="n">lat0</span><span class="si">!s}</span><span class="s2"> +lon_0=</span><span class="si">{</span><span class="n">lon0</span><span class="si">!s}</span><span class="s2"> &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;+lat_1=</span><span class="si">{</span><span class="n">lat0</span><span class="si">!s}</span><span class="s2"> +lat_2=</span><span class="si">{</span><span class="n">lat0</span><span class="si">!s}</span><span class="s2"> &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;+units=m +no_defs +R=</span><span class="si">{</span><span class="n">earth</span><span class="si">!s}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+
+                        <span class="n">proj</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">proj_string</span><span class="p">)</span>
+                        <span class="n">wgs84</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="s2">&quot;EPSG:4326&quot;</span><span class="p">)</span>
+                        <span class="n">x_0</span><span class="p">,</span> <span class="n">y_0</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span>
+                            <span class="n">wgs84</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span>
+                        <span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">ll_lon</span><span class="p">,</span> <span class="n">ll_lat</span><span class="p">)</span>
+                        <span class="n">x_c</span> <span class="o">=</span> <span class="n">x_0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">d_x</span>
+                        <span class="n">y_c</span> <span class="o">=</span> <span class="n">y_0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">d_y</span>
+                        <span class="n">lonc</span><span class="p">,</span> <span class="n">latc</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span>
+                            <span class="n">proj</span><span class="p">,</span> <span class="n">wgs84</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span>
+                        <span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">x_c</span><span class="p">,</span> <span class="n">y_c</span><span class="p">)</span>
+
+                        <span class="c1"># TODO we should investigate scan angle and if done correctly</span>
+                        <span class="c1"># order should probaly be &quot;C&quot; and not &quot;F&quot;</span>
+                        <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="p">[</span><span class="n">n_x</span><span class="p">,</span> <span class="n">n_y</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span>
+
+                        <span class="k">if</span> <span class="n">geo_out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">domain</span> <span class="o">=</span> <span class="p">{</span>
+                                <span class="s2">&quot;nam_conf_proj&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;xlon0&quot;</span><span class="p">:</span> <span class="n">lon0</span><span class="p">,</span> <span class="s2">&quot;xlat0&quot;</span><span class="p">:</span> <span class="n">lat0</span><span class="p">},</span>
+                                <span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                    <span class="s2">&quot;xloncen&quot;</span><span class="p">:</span> <span class="n">lonc</span><span class="p">,</span>
+                                    <span class="s2">&quot;xlatcen&quot;</span><span class="p">:</span> <span class="n">latc</span><span class="p">,</span>
+                                    <span class="s2">&quot;nimax&quot;</span><span class="p">:</span> <span class="n">n_x</span><span class="p">,</span>
+                                    <span class="s2">&quot;njmax&quot;</span><span class="p">:</span> <span class="n">n_y</span><span class="p">,</span>
+                                    <span class="s2">&quot;xdx&quot;</span><span class="p">:</span> <span class="n">d_x</span><span class="p">,</span>
+                                    <span class="s2">&quot;xdy&quot;</span><span class="p">:</span> <span class="n">d_y</span><span class="p">,</span>
+                                    <span class="s2">&quot;ilone&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                                    <span class="s2">&quot;ilate&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                                <span class="p">},</span>
+                            <span class="p">}</span>
+                            <span class="n">geo_out</span> <span class="o">=</span> <span class="n">ConfProj</span><span class="p">(</span><span class="n">domain</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                            <span class="nb">str</span><span class="p">(</span><span class="n">grid_type</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; not implemented yet!&quot;</span>
+                        <span class="p">)</span>
+
+                    <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_release</span><span class="p">(</span><span class="n">gid</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">geo_out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No geometry is found in file&quot;</span><span class="p">)</span>
+
+                    <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo_out</span>
+                <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_release</span><span class="p">(</span><span class="n">gid</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;This should not happen&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Grib.read_geo_info">
+<a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib.read_geo_info">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">read_geo_info</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set geo keys in dict.</span>
 
@@ -336,13 +346,16 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;  </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="n">key</span><span class="p">))</span>
                 <span class="n">geo_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="n">key</span><span class="p">)})</span>
-            <span class="k">except</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">KeyValueNotFoundError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">except</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">KeyValueNotFoundError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>  <span class="c1"># noqa PERF203</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;  Key=&quot;</span><span class="si">%s</span><span class="s1">&quot; was not found: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">err</span><span class="o">.</span><span class="n">msg</span><span class="p">)</span>
             <span class="k">except</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">CodesInternalError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Error with key=&quot;</span><span class="si">%s</span><span class="s1">&quot; : </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">err</span><span class="o">.</span><span class="n">msg</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">geo_dict</span></div>
 
-<div class="viewcode-block" id="Grib.read_field_in_message"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib.read_field_in_message">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="Grib.read_field_in_message">
+<a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib.read_field_in_message">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">read_field_in_message</span><span class="p">(</span><span class="n">gid</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get field.</span>
 
@@ -384,7 +397,10 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Error with key=&quot;missingValue&quot; : </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">err</span><span class="o">.</span><span class="n">msg</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="Grib.points"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib.points">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gribvar</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Grib.points">
+<a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib.points">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gribvar</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a 2-D field and interpolates it to requested positions.</span>
 
 <span class="sd">        Args:</span>
@@ -400,7 +416,9 @@
         <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">gribvar</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
         <span class="n">interpolator</span> <span class="o">=</span> <span class="n">Interpolation</span><span class="p">(</span><span class="n">interpolation</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo</span><span class="p">)</span>
         <span class="n">field</span> <span class="o">=</span> <span class="n">interpolator</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">interpolator</span></div></div>
+        <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">interpolator</span></div>
+</div>
+
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">Grib1Variable</span><span class="p">:</span>
@@ -427,8 +445,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tri</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Value is accumulated&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">False</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gid</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if matchees.</span>
@@ -465,20 +482,17 @@
                     <span class="s2">&quot;Found matching grib1 record: </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">tri</span>
                 <span class="p">)</span>
                 <span class="k">return</span> <span class="kc">True</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">False</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Record is not grib1&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Record is not grib1&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">print_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Print keys.&quot;&quot;&quot;</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Version:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;indicatorOfParameter:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;levelType&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">typ</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;level:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;timeRangeIndicator:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tri</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Version: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;indicatorOfParameter: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;levelType </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">typ</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;level: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;timeRangeIndicator: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tri</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">generate_grib_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate grib1 ID.&quot;&quot;&quot;</span>
@@ -486,13 +500,17 @@
         <span class="n">typ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">typ</span>
         <span class="n">level</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">level</span>
         <span class="n">tri</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tri</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;:grib1:</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">par</span><span class="p">)</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">typ</span><span class="p">)</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">level</span><span class="p">)</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">tri</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;:grib1:</span><span class="si">{</span><span class="n">par</span><span class="si">!s}</span><span class="s2">:</span><span class="si">{</span><span class="n">typ</span><span class="si">!s}</span><span class="s2">:</span><span class="si">{</span><span class="n">level</span><span class="si">!s}</span><span class="s2">:</span><span class="si">{</span><span class="n">tri</span><span class="si">!s}</span><span class="s2">&quot;</span>
 
 
-<div class="viewcode-block" id="Grib2Variable"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Grib2Variable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Grib2Variable">
+<a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Grib2Variable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Grib2 variable.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Grib2Variable.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">discipline</span><span class="p">,</span> <span class="n">pca</span><span class="p">,</span> <span class="n">pnr</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">tsp</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="Grib2Variable.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">discipline</span><span class="p">,</span> <span class="n">pca</span><span class="p">,</span> <span class="n">pnr</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">tsp</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a grib2 variable.</span>
 
 <span class="sd">        Args:</span>
@@ -511,7 +529,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">lev</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">type_of_statistical_processing</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tsp</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Grib2Variable.matches"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable.matches">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gid</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Grib2Variable.matches">
+<a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable.matches">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gid</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if matches.</span>
 
 <span class="sd">        Args:</span>
@@ -568,32 +589,39 @@
                     <span class="n">level</span><span class="p">,</span>
                 <span class="p">)</span>
                 <span class="k">return</span> <span class="kc">True</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">False</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Record is not grib2&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="kc">False</span></div>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Record is not grib2&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
 
-<div class="viewcode-block" id="Grib2Variable.is_accumulated"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable.is_accumulated">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">is_accumulated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Grib2Variable.is_accumulated">
+<a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable.is_accumulated">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_accumulated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if accumulated.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_of_statistical_processing</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Parameter is accumulated&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">False</span></div>
+        <span class="k">return</span> <span class="kc">False</span></div>
 
-<div class="viewcode-block" id="Grib2Variable.print_keys"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable.print_keys">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">print_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Grib2Variable.print_keys">
+<a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable.print_keys">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">print_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Print keys.&quot;&quot;&quot;</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Version:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;discipline:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">discipline</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;parameterCategory:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_category</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;parameterNumber:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_number</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;levelType:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">level_type</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;level:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;typeOfStatisticalProcessing:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_of_statistical_processing</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Version: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;discipline: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">discipline</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;parameterCategory: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_category</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;parameterNumber: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_number</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;levelType: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">level_type</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;level: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;typeOfStatisticalProcessing: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_of_statistical_processing</span>
+        <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Grib2Variable.generate_grib_id"><a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable.generate_grib_id">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">generate_grib_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Grib2Variable.generate_grib_id">
+<a class="viewcode-back" href="../../index.html#pysurfex.grib.Grib2Variable.generate_grib_id">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_grib_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate grib2 ID.&quot;&quot;&quot;</span>
         <span class="n">dis</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">discipline</span><span class="p">)</span>
         <span class="n">pca</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameter_category</span><span class="p">)</span>
@@ -601,16 +629,18 @@
         <span class="n">typ</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">level_type</span><span class="p">)</span>
         <span class="n">lev</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
         <span class="n">tsp</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type_of_statistical_processing</span><span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;:grib2:</span><span class="si">{</span><span class="n">dis</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">pca</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">pnr</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">typ</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">lev</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">tsp</span><span class="si">}</span><span class="s2">&quot;</span></div></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;:grib2:</span><span class="si">{</span><span class="n">dis</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">pca</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">pnr</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">typ</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">lev</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">tsp</span><span class="si">}</span><span class="s2">&quot;</span></div>
+</div>
+
 </pre></div>
 
             <div class="clearer"></div>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
@@ -618,13 +648,13 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -636,8 +666,8 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
+    &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
     </div>
   </body>
 </html>

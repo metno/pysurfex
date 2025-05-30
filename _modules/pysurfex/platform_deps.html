@@ -1,22 +1,21 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pysurfex.platform_deps &#8212; SURFEX Python API (pysurfex)  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=536c50fe" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=1654e008" />
     
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/documentation_options.js?v=9fa44488"></script>
+    <script src="../../_static/doctools.js?v=695de88e"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -42,13 +41,17 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.datetime_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">as_datetime</span>
 
 
-<div class="viewcode-block" id="SystemFilePaths"><a class="viewcode-back" href="../../index.html#pysurfex.platform_deps.SystemFilePaths">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SystemFilePaths</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="SystemFilePaths">
+<a class="viewcode-back" href="../../index.html#pysurfex.platform_deps.SystemFilePaths">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SystemFilePaths</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Matches files and paths depending on possibly system specific settings.</span>
 
 <span class="sd">    User can provide a default system dir to nest dependencies.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="SystemFilePaths.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.platform_deps.SystemFilePaths.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">):</span>
+<div class="viewcode-block" id="SystemFilePaths.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.platform_deps.SystemFilePaths.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct SystemFilePaths.</span>
 
 <span class="sd">        Args:</span>
@@ -56,235 +59,6 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span> <span class="o">=</span> <span class="n">system_file_paths</span></div>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_system_path</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">dtype</span><span class="p">,</span>
-        <span class="n">default_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">check_existence</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">check_parsing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the system path for a given data type.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            dtype (str): The data type you want to get the path for (clim_dir/bin_dir etc)</span>
-<span class="sd">            default_dir (str): A fallback if the desired dtype is not found</span>
-<span class="sd">            check_existence (bool): Check if the path found also exists</span>
-<span class="sd">            check_parsing (bool): Check if parsing was successful (all @@ pairs substituted)</span>
-<span class="sd">            validtime (as_datetime): Parse setting with this as valid time</span>
-<span class="sd">            basedtg (as_datetime): Parse setting with this as base time</span>
-<span class="sd">            mbr (int): Parse setting with this as ensemble member</span>
-<span class="sd">            tstep (int): Parse setting with this as time step</span>
-<span class="sd">            pert (int): Parse setting with this as pertubation number</span>
-<span class="sd">            var (str): Parse setting with this as variable</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            data_dir (str):</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            RuntimeError: If path not found and check_existence is True</span>
-
-<span class="sd">        See Also:</span>
-<span class="sd">            self.parse_setting</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Search for: </span><span class="si">%s</span><span class="s2"> Default: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">default_dir</span><span class="p">))</span>
-
-        <span class="n">data_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_matching_data_dir</span><span class="p">(</span>
-            <span class="n">dtype</span><span class="p">,</span>
-            <span class="n">default_dir</span><span class="o">=</span><span class="n">default_dir</span><span class="p">,</span>
-            <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
-            <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
-            <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span>
-            <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span>
-            <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span>
-            <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span>
-            <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span>
-            <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="k">if</span> <span class="n">data_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">default_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No system path found for &quot;</span> <span class="o">+</span> <span class="n">dtype</span><span class="p">)</span>
-
-            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Find default path&quot;</span><span class="p">)</span>
-            <span class="n">data_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_matching_data_dir</span><span class="p">(</span>
-                <span class="n">default_dir</span><span class="p">,</span>
-                <span class="n">default_dir</span><span class="o">=</span><span class="n">default_dir</span><span class="p">,</span>
-                <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
-                <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
-                <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span>
-                <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span>
-                <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span>
-                <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span>
-                <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span>
-                <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="k">if</span> <span class="n">data_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No default path found for </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">default_dir</span><span class="p">)</span>
-
-        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;data_dir </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">data_dir</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">find_matching_data_dir</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">dtype</span><span class="p">,</span>
-        <span class="n">default_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">check_existence</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">check_parsing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find a matching path from the system path for a given data type.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            dtype (str): The data type you want to get the path for (clim_dir/bin_dir etc)</span>
-<span class="sd">            default_dir (str): A fallback if the desired dtype is not found</span>
-<span class="sd">            check_existence (bool): Check if the path found also exists</span>
-<span class="sd">            check_parsing (bool): Check if parsing was successful (all @@ pairs substituted)</span>
-<span class="sd">            validtime (as_datetime): Parse setting with this as valid time</span>
-<span class="sd">            basedtg (as_datetime): Parse setting with this as base time</span>
-<span class="sd">            mbr (int): Parse setting with this as ensemble member</span>
-<span class="sd">            tstep (int): Parse setting with this as time step</span>
-<span class="sd">            pert (int): Parse setting with this as pertubation number</span>
-<span class="sd">            var (str): Parse setting with this as variable</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            data_dir (str):</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            ValueError: data dir is not a string!</span>
-<span class="sd">            NotADirectoryError: Not a directory</span>
-
-<span class="sd">        See Also:</span>
-<span class="sd">            self.parse_setting</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">command</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">for</span> <span class="n">sfp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">sfp</span> <span class="o">==</span> <span class="n">dtype</span><span class="p">:</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">sfp</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">sfp</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="p">)</span>
-                <span class="n">data_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="p">[</span><span class="n">sfp</span><span class="p">]</span>
-                <span class="c1"># If dict, also a command is attached</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data_dir</span><span class="p">:</span>
-                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
-                        <span class="n">command</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">data_dir</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
-                        <span class="n">data_dir</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Data directory before parsing is: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">)</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;data dir is not a string!&quot;</span><span class="p">)</span>
-                <span class="n">data_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_setting</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">substitute_string</span><span class="p">(</span><span class="n">data_dir</span><span class="p">),</span>
-                    <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
-                    <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span>
-                    <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span>
-                    <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span>
-                    <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span>
-                    <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span>
-                    <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
-                <span class="p">)</span>
-                <span class="c1"># Add command to data_dir again</span>
-                <span class="k">if</span> <span class="n">command</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">data_dir</span> <span class="o">=</span> <span class="p">{</span><span class="n">data_dir</span><span class="p">:</span> <span class="n">command</span><span class="p">}</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Data directory after parsing is is: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">check_existence</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">data_dir</span><span class="p">)</span> <span class="ow">and</span> <span class="n">default_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">NotADirectoryError</span><span class="p">(</span><span class="n">data_dir</span><span class="p">)</span>
-                <span class="k">return</span> <span class="n">data_dir</span>
-        <span class="k">return</span> <span class="kc">None</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_system_file</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">dtype</span><span class="p">,</span>
-        <span class="n">fname</span><span class="p">,</span>
-        <span class="n">default_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">check_existence</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">check_parsing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">basedtg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">mbr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">tstep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">pert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the system path for a given data type and add a file name to the path.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            dtype (str): The data type you want to get the path for (clim_dir/bin_dir etc)</span>
-<span class="sd">            fname (str): Name of the file you want to join to the system path</span>
-<span class="sd">            default_dir (str): A fallback if the desired dtype is not found</span>
-<span class="sd">            check_existence (bool): Check if the path found also exists</span>
-<span class="sd">            check_parsing (bool): Check if parsing was successful (all @@ pairs substituted)</span>
-<span class="sd">            validtime (as_datetime): Parse setting with this as valid time</span>
-<span class="sd">            basedtg (as_datetime): Parse setting with this as base time</span>
-<span class="sd">            mbr (int): Parse setting with this as ensemble member</span>
-<span class="sd">            tstep (int): Parse setting with this as time step</span>
-<span class="sd">            pert (int): Parse setting with this as pertubation number</span>
-<span class="sd">            var (str): Parse setting with this as variable</span>
-<span class="sd">            system_variables (dict): Arbitrary settings to substitute @NAME@ =</span>
-<span class="sd">                                     system_variables={&quot;NAME&quot;: &quot;Value&quot;}</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            FileNotFoundError: If file not found</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            data_dir (str):</span>
-
-<span class="sd">        See Also:</span>
-<span class="sd">            self.parse_setting</span>
-<span class="sd">            self.substitute_string</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">command</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_system_path</span><span class="p">(</span>
-            <span class="n">dtype</span><span class="p">,</span>
-            <span class="n">default_dir</span><span class="o">=</span><span class="n">default_dir</span><span class="p">,</span>
-            <span class="n">check_existence</span><span class="o">=</span><span class="n">check_existence</span><span class="p">,</span>
-            <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
-            <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span>
-            <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span>
-            <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span>
-            <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span>
-            <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span>
-            <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
-        <span class="p">)</span>
-
-        <span class="c1"># If dict, also a command is attached</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span>
-                <span class="n">command</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
-                <span class="n">path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-        <span class="n">fname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_setting</span><span class="p">(</span>
-            <span class="n">fname</span><span class="p">,</span>
-            <span class="n">check_parsing</span><span class="o">=</span><span class="n">check_parsing</span><span class="p">,</span>
-            <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span>
-            <span class="n">basedtg</span><span class="o">=</span><span class="n">basedtg</span><span class="p">,</span>
-            <span class="n">mbr</span><span class="o">=</span><span class="n">mbr</span><span class="p">,</span>
-            <span class="n">tstep</span><span class="o">=</span><span class="n">tstep</span><span class="p">,</span>
-            <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span>
-            <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">fname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substitute_string</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">system_variables</span><span class="o">=</span><span class="n">system_variables</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No path found for: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">fname</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">fname</span>
-        <span class="k">if</span> <span class="n">check_existence</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">command</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">fname</span> <span class="o">=</span> <span class="p">{</span><span class="n">fname</span><span class="p">:</span> <span class="n">command</span><span class="p">}</span>
-        <span class="k">return</span> <span class="n">fname</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">parse_setting</span><span class="p">(</span>
@@ -301,12 +75,15 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse setting with date/time/experiment specific values.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            setting (str): The value of dictionary key which should be processes. Parser if type is str.</span>
+<span class="sd">            setting (str): The value of dictionary key which should be processes.</span>
+<span class="sd">                           Parser if type is str.</span>
 <span class="sd">            check_parsing (bool): Check if all @@ pairs were parsed</span>
 <span class="sd">            validtime (datetime.daetime): Parse setting with this as validtime</span>
 <span class="sd">            basedtg (datetime.datetime): Parse setting with this as base time</span>
-<span class="sd">            mbr (int): Parse setting with this as ensemble member number (@E@/@EE@/@EEE@)</span>
-<span class="sd">            tstep (int): Parse setting with this as timestep to get step number (@TTT@/@TTTT@)</span>
+<span class="sd">            mbr (int): Parse setting with this as ensemble</span>
+<span class="sd">                       member number (@E@/@EE@/@EEE@)</span>
+<span class="sd">            tstep (int): Parse setting with this as timestep to get</span>
+<span class="sd">                         step number (@TTT@/@TTTT@)</span>
 <span class="sd">            pert (int): Parse setting with this as perturbation number @PERT@</span>
 <span class="sd">            var (str): Parse setting with this as the variable (@VAR@)</span>
 <span class="sd">            micro (str, optional): Micro character. Defaults to &quot;@&quot;</span>
@@ -324,9 +101,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Check on arguments</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">basedtg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">basedtg</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                    <span class="n">basedtg</span> <span class="o">=</span> <span class="n">as_datetime</span><span class="p">(</span><span class="n">basedtg</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">basedtg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">basedtg</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">basedtg</span> <span class="o">=</span> <span class="n">as_datetime</span><span class="p">(</span><span class="n">basedtg</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">validtime</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">validtime</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                     <span class="n">validtime</span> <span class="o">=</span> <span class="n">as_datetime</span><span class="p">(</span><span class="n">validtime</span><span class="p">)</span>
@@ -425,13 +201,14 @@
             <span class="k">if</span> <span class="n">var</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">setting</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">setting</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">micro</span><span class="si">}</span><span class="s2">VAR</span><span class="si">{</span><span class="n">micro</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">check_parsing</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">setting</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">micro</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Setting was not substituted properly? &quot;</span> <span class="o">+</span> <span class="n">setting</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">check_parsing</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">setting</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">micro</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Setting was not substituted properly? &quot;</span> <span class="o">+</span> <span class="n">setting</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">setting</span>
 
-<div class="viewcode-block" id="SystemFilePaths.substitute_string"><a class="viewcode-back" href="../../index.html#pysurfex.platform_deps.SystemFilePaths.substitute_string">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="SystemFilePaths.substitute_string">
+<a class="viewcode-back" href="../../index.html#pysurfex.platform_deps.SystemFilePaths.substitute_string">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">substitute_string</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="n">system_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">micro</span><span class="o">=</span><span class="s2">&quot;@&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Substitute setting if string with OS values of values from system_variables.</span>
 
@@ -465,6 +242,7 @@
 
         <span class="k">return</span> <span class="n">setting</span></div>
 
+
     <span class="k">def</span><span class="w"> </span><span class="nf">add_system_file_path</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">,</span>
@@ -481,11 +259,13 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a system file path to be used.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            name (str): The data type you want to get the path for (clim_dir/bin_dir etc)</span>
+<span class="sd">            name (str): The data type you want to get the path for</span>
+<span class="sd">                        (clim_dir/bin_dir etc)</span>
 <span class="sd">            path (str): Name of the file you want to join to the system path</span>
-<span class="sd">            system_variables (dict): Arbitrary settings to substitute @NAME@ = system_variables=</span>
-<span class="sd">                                    {&quot;NAME&quot;: &quot;Value&quot;}</span>
-<span class="sd">            check_parsing (bool): Check if parsing was successful (all @@ pairs substituted)</span>
+<span class="sd">            system_variables (dict): Arbitrary settings to substitute</span>
+<span class="sd">                                     @NAME@ = system_variables={&quot;NAME&quot;: &quot;Value&quot;}</span>
+<span class="sd">            check_parsing (bool): Check if parsing was</span>
+<span class="sd">                                  successful (all @@ pairs substituted)</span>
 <span class="sd">            validtime (as_datetime): Parse setting with this as valid time</span>
 <span class="sd">            basedtg (as_datetime): Parse setting with this as base time</span>
 <span class="sd">            mbr (int): Parse setting with this as ensemble member</span>
@@ -509,30 +289,50 @@
             <span class="n">pert</span><span class="o">=</span><span class="n">pert</span><span class="p">,</span>
             <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">name</span><span class="p">:</span> <span class="n">path</span><span class="p">})</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">name</span><span class="p">:</span> <span class="n">path</span><span class="p">})</span>
+
+<div class="viewcode-block" id="SystemFilePaths.save_as">
+<a class="viewcode-back" href="../../index.html#pysurfex.platform_deps.SystemFilePaths.save_as">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_as</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save as a file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            fname (str): File name</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fhandler</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system_file_paths</span><span class="p">,</span> <span class="n">fhandler</span><span class="p">)</span></div>
+</div>
 
 
-<div class="viewcode-block" id="SystemFilePathsFromFile"><a class="viewcode-back" href="../../index.html#pysurfex.platform_deps.SystemFilePathsFromFile">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SystemFilePathsFromFile</span><span class="p">(</span><span class="n">SystemFilePaths</span><span class="p">):</span>
+
+<div class="viewcode-block" id="SystemFilePathsFromFile">
+<a class="viewcode-back" href="../../index.html#pysurfex.platform_deps.SystemFilePathsFromFile">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SystemFilePathsFromFile</span><span class="p">(</span><span class="n">SystemFilePaths</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;System file paths.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="SystemFilePathsFromFile.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.platform_deps.SystemFilePathsFromFile.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">):</span>
+<div class="viewcode-block" id="SystemFilePathsFromFile.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.platform_deps.SystemFilePathsFromFile.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;System file path from a file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            system_file_paths (_type_): _description_</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">system_file_paths</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">system_file_paths</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
-        <span class="n">SystemFilePaths</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">)</span></div></div>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">system_file_paths</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fhandler</span><span class="p">:</span>
+            <span class="n">system_file_paths</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fhandler</span><span class="p">)</span>
+        <span class="n">SystemFilePaths</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_file_paths</span><span class="p">)</span></div>
+</div>
+
 </pre></div>
 
             <div class="clearer"></div>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
@@ -540,13 +340,13 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -558,8 +358,8 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
+    &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
     </div>
   </body>
 </html>

@@ -1,22 +1,21 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pysurfex.bufr &#8212; SURFEX Python API (pysurfex)  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=536c50fe" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=1654e008" />
     
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/documentation_options.js?v=9fa44488"></script>
+    <script src="../../_static/doctools.js?v=695de88e"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -49,17 +48,18 @@
     <span class="n">eccodes</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;ECCODES not found. Needed for bufr reading&quot;</span><span class="p">)</span>
 <span class="c1"># Needed in Python 3.5</span>
-<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># noqa BLE001</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Could not load eccodes&quot;</span><span class="p">)</span>
     <span class="n">eccodes</span> <span class="o">=</span> <span class="kc">None</span>
-
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.datetime_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">as_datetime_args</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.obs</span><span class="w"> </span><span class="kn">import</span> <span class="n">ObservationSet</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.observation</span><span class="w"> </span><span class="kn">import</span> <span class="n">Observation</span>
 
 
-<div class="viewcode-block" id="BufrObservationSet"><a class="viewcode-back" href="../../index.html#pysurfex.bufr.BufrObservationSet">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">BufrObservationSet</span><span class="p">(</span><span class="n">ObservationSet</span><span class="p">):</span>
+<div class="viewcode-block" id="BufrObservationSet">
+<a class="viewcode-back" href="../../index.html#pysurfex.bufr.BufrObservationSet">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BufrObservationSet</span><span class="p">(</span><span class="n">ObservationSet</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create observation data set from bufr observations.&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -84,8 +84,10 @@
 <span class="sd">            lonrange (list): Allowed range of longitudes [min, max]</span>
 <span class="sd">            latrange (list): Allowed range of latitides [min, max]</span>
 <span class="sd">            label (str): A label for the resulting observations set</span>
-<span class="sd">            use_first (bool): Use only the first valid observation for a point if more are found</span>
-<span class="sd">            sigmao (float, optional): Observation error relative to normal background error. Defaults to None.</span>
+<span class="sd">            use_first (bool): Use only the first valid observation for a point if</span>
+<span class="sd">                              more are found</span>
+<span class="sd">            sigmao (float, optional): Observation error relative to normal background</span>
+<span class="sd">                                      error. Defaults to None.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            RuntimeError: ECCODES not found. Needed for bufr reading</span>
@@ -102,7 +104,7 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">eccodes</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span>
 
         <span class="c1"># open bufr file</span>
-        <span class="n">file_handler</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">bufrfile</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+        <span class="n">file_handler</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">bufrfile</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;rb&quot;</span><span class="p">)</span>  <span class="c1"># noqa SIM115</span>
         <span class="n">number_of_bytes</span> <span class="o">=</span> <span class="n">file_handler</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;File size: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">number_of_bytes</span><span class="p">)</span>
         <span class="n">file_handler</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
@@ -174,7 +176,7 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">bufrfile</span><span class="p">)</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Looking for keys: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">keys</span><span class="p">))</span>
         <span class="n">cnt</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">observations</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">observations</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="c1"># loop for the messages in the file</span>
         <span class="n">not_decoded</span> <span class="o">=</span> <span class="mi">0</span>
@@ -224,9 +226,9 @@
                         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Decode: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
                         <span class="n">val</span> <span class="o">=</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">codes_get</span><span class="p">(</span><span class="n">bufr</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
                         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got: </span><span class="si">%s</span><span class="s2">=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="p">(</span>
-                            <span class="n">val</span> <span class="o">==</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">CODES_MISSING_DOUBLE</span>
-                            <span class="ow">or</span> <span class="n">val</span> <span class="o">==</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">CODES_MISSING_LONG</span>
+                        <span class="k">if</span> <span class="n">val</span> <span class="ow">in</span> <span class="p">(</span>
+                            <span class="n">eccodes</span><span class="o">.</span><span class="n">CODES_MISSING_DOUBLE</span><span class="p">,</span>
+                            <span class="n">eccodes</span><span class="o">.</span><span class="n">CODES_MISSING_LONG</span><span class="p">,</span>
                         <span class="p">):</span>
                             <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;latitude&quot;</span><span class="p">:</span>
@@ -255,12 +257,13 @@
                             <span class="n">hour</span> <span class="o">=</span> <span class="n">val</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;minute&quot;</span><span class="p">:</span>
                             <span class="n">minute</span> <span class="o">=</span> <span class="n">val</span>
-                        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;heightOfStation&quot;</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
-                                <span class="n">elev</span> <span class="o">=</span> <span class="n">val</span>
-                        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;heightOfStationGroundAboveMeanSeaLevel&quot;</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
-                                <span class="n">elev</span> <span class="o">=</span> <span class="n">val</span>
+                        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;heightOfStation&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+                            <span class="n">elev</span> <span class="o">=</span> <span class="n">val</span>
+                        <span class="k">if</span> <span class="p">(</span>
+                            <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;heightOfStationGroundAboveMeanSeaLevel&quot;</span>
+                            <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+                        <span class="p">):</span>
+                            <span class="n">elev</span> <span class="o">=</span> <span class="n">val</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;stationNumber&quot;</span><span class="p">:</span>
                             <span class="n">station_number</span> <span class="o">=</span> <span class="n">val</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;blockNumber&quot;</span><span class="p">:</span>
@@ -269,13 +272,11 @@
                             <span class="n">site_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;airTemperatureAt2M&quot;</span><span class="p">:</span>
                             <span class="n">t2m</span> <span class="o">=</span> <span class="n">val</span>
-                        <span class="k">if</span> <span class="p">(</span>
-                            <span class="n">key</span>
-                            <span class="o">==</span> <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2&quot;</span>
-                            <span class="s2">&quot;/airTemperature&quot;</span>
-                            <span class="ow">or</span> <span class="n">key</span>
-                            <span class="o">==</span> <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5&quot;</span>
-                            <span class="s2">&quot;/airTemperature&quot;</span>
+                        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span>
+                            <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2&quot;</span>
+                            <span class="o">+</span> <span class="s2">&quot;/airTemperature&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5&quot;</span>
+                            <span class="o">+</span> <span class="s2">&quot;/airTemperature&quot;</span><span class="p">,</span>
                         <span class="p">):</span>
                             <span class="n">temp</span> <span class="o">=</span> <span class="n">val</span>
                         <span class="k">if</span> <span class="p">(</span>
@@ -286,13 +287,11 @@
                             <span class="n">rh2m</span> <span class="o">=</span> <span class="n">val</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;dewpointTemperatureAt2M&quot;</span><span class="p">:</span>
                             <span class="n">td2m</span> <span class="o">=</span> <span class="n">val</span>
-                        <span class="k">if</span> <span class="p">(</span>
-                            <span class="n">key</span>
-                            <span class="o">==</span> <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2&quot;</span>
-                            <span class="s2">&quot;/dewpointTemperature&quot;</span>
-                            <span class="ow">or</span> <span class="n">key</span>
-                            <span class="o">==</span> <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5&quot;</span>
-                            <span class="s2">&quot;/dewpointTemperature&quot;</span>
+                        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span>
+                            <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=2&quot;</span>
+                            <span class="o">+</span> <span class="s2">&quot;/dewpointTemperature&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;/heightOfSensorAboveLocalGroundOrDeckOfMarinePlatform=1.5&quot;</span>
+                            <span class="o">+</span> <span class="s2">&quot;/dewpointTemperature&quot;</span><span class="p">,</span>
                         <span class="p">):</span>
                             <span class="n">t_d</span> <span class="o">=</span> <span class="n">val</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;totalSnowDepth&quot;</span><span class="p">:</span>
@@ -300,7 +299,7 @@
                         <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;heightOfBaseOfCloud&quot;</span><span class="p">:</span>
                             <span class="n">c_b</span> <span class="o">=</span> <span class="n">val</span>
 
-                    <span class="k">except</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">CodesInternalError</span><span class="p">:</span>
+                    <span class="k">except</span> <span class="n">eccodes</span><span class="o">.</span><span class="n">CodesInternalError</span><span class="p">:</span>  <span class="c1"># noqa PERF203</span>
                         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Report does not contain key=&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
 
                 <span class="n">got_pos</span> <span class="o">=</span> <span class="kc">True</span>
@@ -337,7 +336,7 @@
                                     <span class="k">try</span><span class="p">:</span>
                                         <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">td2rh</span><span class="p">(</span><span class="n">td2m</span><span class="p">,</span> <span class="n">t2m</span><span class="p">)</span>
                                         <span class="n">value</span> <span class="o">=</span> <span class="n">value</span> <span class="o">*</span> <span class="mf">0.01</span>
-                                    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                                    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># noqa BLE001</span>
                                         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got exception for </span><span class="si">%s</span><span class="s2">:&quot;</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
                                         <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                                 <span class="k">elif</span> <span class="p">(</span>
@@ -348,7 +347,7 @@
                                     <span class="k">try</span><span class="p">:</span>
                                         <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">td2rh</span><span class="p">(</span><span class="n">t_d</span><span class="p">,</span> <span class="n">temp</span><span class="p">)</span>
                                         <span class="n">value</span> <span class="o">=</span> <span class="n">value</span> <span class="o">*</span> <span class="mf">0.01</span>
-                                    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                                    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># noqa BLE001</span>
                                         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
                                             <span class="s2">&quot;Got exception for </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
                                             <span class="n">var</span><span class="p">,</span>
@@ -371,7 +370,7 @@
                             <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s2">&quot;heightOfBaseOfCloud&quot;</span><span class="p">:</span>
                                 <span class="n">value</span> <span class="o">=</span> <span class="n">c_b</span>
                             <span class="k">elif</span> <span class="n">var</span> <span class="o">==</span> <span class="s2">&quot;stationOrSiteName&quot;</span><span class="p">:</span>
-                                <span class="n">site_name</span> <span class="o">=</span> <span class="n">site_name</span>
+                                <span class="k">pass</span>
                             <span class="k">else</span><span class="p">:</span>
                                 <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
                                     <span class="sa">f</span><span class="s2">&quot;Var </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2"> is not coded! Please do it!&quot;</span>
@@ -425,7 +424,8 @@
                                 <span class="p">)</span>
                             <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                                 <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                                    <span class="s2">&quot;Bad observations time: year=</span><span class="si">%s</span><span class="s2"> month=</span><span class="si">%s</span><span class="s2"> day=</span><span class="si">%s</span><span class="s2"> hour=</span><span class="si">%s</span><span class="s2"> minute=</span><span class="si">%s</span><span class="s2"> Position is lon=</span><span class="si">%s</span><span class="s2">, lat=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                                    <span class="s2">&quot;Bad observations time: year=</span><span class="si">%s</span><span class="s2"> month=</span><span class="si">%s</span><span class="s2"> day=</span><span class="si">%s</span><span class="s2"> &quot;</span><span class="p">,</span>
+                                    <span class="s2">&quot;hour=</span><span class="si">%s</span><span class="s2"> minute=</span><span class="si">%s</span><span class="s2"> Position is lon=</span><span class="si">%s</span><span class="s2">, lat=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
                                     <span class="n">year</span><span class="p">,</span>
                                     <span class="n">month</span><span class="p">,</span>
                                     <span class="n">day</span><span class="p">,</span>
@@ -485,7 +485,7 @@
                 <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                     <span class="n">nbytes</span> <span class="o">=</span> <span class="n">number_of_bytes</span>
 
-                <span class="n">processed</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">nbytes</span><span class="p">)</span> <span class="o">*</span> <span class="mf">100.0</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">number_of_bytes</span><span class="p">)))</span>
+                <span class="n">processed</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">nbytes</span><span class="p">)</span> <span class="o">*</span> <span class="mf">100.0</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">number_of_bytes</span><span class="p">))</span>
                 <span class="k">if</span> <span class="n">processed</span> <span class="o">&gt;</span> <span class="n">processed_threshold</span> <span class="ow">and</span> <span class="n">processed</span> <span class="o">%</span> <span class="mi">5</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="n">processed_threshold</span> <span class="o">=</span> <span class="n">processed</span>
                     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Read: </span><span class="si">%s%%</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">processed</span><span class="p">)</span>
@@ -515,7 +515,9 @@
 
         <span class="n">ObservationSet</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">sigmao</span><span class="o">=</span><span class="n">sigmao</span><span class="p">)</span>
 
-<div class="viewcode-block" id="BufrObservationSet.td2rh"><a class="viewcode-back" href="../../index.html#pysurfex.bufr.BufrObservationSet.td2rh">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="BufrObservationSet.td2rh">
+<a class="viewcode-back" href="../../index.html#pysurfex.bufr.BufrObservationSet.td2rh">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">td2rh</span><span class="p">(</span><span class="n">t_d</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">kelvin</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert dew point to temperature.</span>
 
@@ -561,7 +563,10 @@
             <span class="n">r_h</span> <span class="o">=</span> <span class="mi">100</span>
         <span class="k">return</span> <span class="n">r_h</span></div>
 
-<div class="viewcode-block" id="BufrObservationSet.inside_window"><a class="viewcode-back" href="../../index.html#pysurfex.bufr.BufrObservationSet.inside_window">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="BufrObservationSet.inside_window">
+<a class="viewcode-back" href="../../index.html#pysurfex.bufr.BufrObservationSet.inside_window">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">inside_window</span><span class="p">(</span><span class="n">obs_dtg</span><span class="p">,</span> <span class="n">valid_dtg</span><span class="p">,</span> <span class="n">valid_range</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if inside window.</span>
 
@@ -576,20 +581,18 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">valid_dtg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">True</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">valid_dtg</span> <span class="o">-</span> <span class="n">valid_range</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">obs_dtg</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">valid_dtg</span> <span class="o">+</span> <span class="n">valid_range</span><span class="p">):</span>
-                <span class="k">return</span> <span class="kc">True</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">False</span></div></div>
+        <span class="k">return</span> <span class="p">(</span><span class="n">valid_dtg</span> <span class="o">-</span> <span class="n">valid_range</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">obs_dtg</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">valid_dtg</span> <span class="o">+</span> <span class="n">valid_range</span><span class="p">)</span></div>
+</div>
+
 </pre></div>
 
             <div class="clearer"></div>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
@@ -597,13 +600,13 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -615,8 +618,8 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
+    &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
     </div>
   </body>
 </html>

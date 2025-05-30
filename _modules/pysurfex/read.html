@@ -1,22 +1,21 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pysurfex.read &#8212; SURFEX Python API (pysurfex)  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=536c50fe" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=1654e008" />
     
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/documentation_options.js?v=9fa44488"></script>
+    <script src="../../_static/doctools.js?v=695de88e"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -41,38 +40,58 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">.cmd_parsing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">converter_parse_options</span><span class="p">,</span>
+    <span class="n">parse_args_variable</span><span class="p">,</span>
+    <span class="n">variable_parse_options</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.datetime_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">as_datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.interpolation</span><span class="w"> </span><span class="kn">import</span> <span class="n">fill_field</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">deep_update</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.variable</span><span class="w"> </span><span class="kn">import</span> <span class="n">Variable</span>
 
 
-<div class="viewcode-block" id="ReadData"><a class="viewcode-back" href="../../index.html#pysurfex.read.ReadData">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ReadData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadData">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.ReadData">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ReadData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read data class.&quot;&quot;&quot;</span>
 
     <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">ABCMeta</span>
 
-<div class="viewcode-block" id="ReadData.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.read.ReadData.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadData.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.ReadData.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct readData object.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">geo</span> <span class="o">=</span> <span class="n">geo</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">var_name</span></div>
 
-<div class="viewcode-block" id="ReadData.read_time_step"><a class="viewcode-back" href="../../index.html#pysurfex.read.ReadData.read_time_step">[docs]</a>    <span class="nd">@abstractmethod</span>
+
+<div class="viewcode-block" id="ReadData.read_time_step">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.ReadData.read_time_step">[docs]</a>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">read_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;To be implemented.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="s2">&quot;users must define read_time_step to use this base class&quot;</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="ReadData.print_info"><a class="viewcode-back" href="../../index.html#pysurfex.read.ReadData.print_info">[docs]</a>    <span class="nd">@abstractmethod</span>
+
+<div class="viewcode-block" id="ReadData.print_info">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.ReadData.print_info">[docs]</a>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;To be implemented.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="s2">&quot;users must define read_time_step to use this base class&quot;</span>
-        <span class="p">)</span></div></div>
+        <span class="p">)</span></div>
+</div>
+
 
 
 <span class="c1"># Direct data can be ead with this class with converter = None</span>
-<div class="viewcode-block" id="ConvertedInput"><a class="viewcode-back" href="../../index.html#pysurfex.read.ConvertedInput">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ConvertedInput</span><span class="p">(</span><span class="n">ReadData</span><span class="p">):</span>
+<div class="viewcode-block" id="ConvertedInput">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.ConvertedInput">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConvertedInput</span><span class="p">(</span><span class="n">ReadData</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Converted input.</span>
 
 <span class="sd">    Args:</span>
@@ -81,7 +100,9 @@
 <span class="sd">        converter (surfex.Converter): Converter</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="ConvertedInput.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.read.ConvertedInput.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">converter</span><span class="p">):</span>
+<div class="viewcode-block" id="ConvertedInput.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.ConvertedInput.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">converter</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct converted input.</span>
 
 <span class="sd">        Args:</span>
@@ -93,7 +114,10 @@
         <span class="n">ReadData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">converter</span> <span class="o">=</span> <span class="n">converter</span></div>
 
-<div class="viewcode-block" id="ConvertedInput.read_time_step"><a class="viewcode-back" href="../../index.html#pysurfex.read.ConvertedInput.read_time_step">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">read_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+
+<div class="viewcode-block" id="ConvertedInput.read_time_step">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.ConvertedInput.read_time_step">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read time  step.</span>
 
 <span class="sd">        Args:</span>
@@ -105,23 +129,26 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">read_time_step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
-        <span class="c1"># Preserve positive values for precipitation</span>
-        <span class="c1"># TODO</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        if self.var_name == &quot;RAIN&quot; or self.var_name == &quot;SNOW&quot;:</span>
-<span class="sd">            field[field &lt; 0.] = 0.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">field</span></div>
 
-<div class="viewcode-block" id="ConvertedInput.print_info"><a class="viewcode-back" href="../../index.html#pysurfex.read.ConvertedInput.print_info">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="ConvertedInput.print_info">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.ConvertedInput.print_info">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Print info.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">print_info</span><span class="p">()</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">print_info</span><span class="p">()</span></div>
+</div>
 
 
-<div class="viewcode-block" id="ConstantValue"><a class="viewcode-back" href="../../index.html#pysurfex.read.ConstantValue">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ConstantValue</span><span class="p">(</span><span class="n">ReadData</span><span class="p">):</span>
+
+<div class="viewcode-block" id="ConstantValue">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.ConstantValue">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConstantValue</span><span class="p">(</span><span class="n">ReadData</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Constant value converter.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="ConstantValue.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.read.ConstantValue.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">):</span>
+<div class="viewcode-block" id="ConstantValue.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.ConstantValue.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set a field to a constant value.</span>
 
 <span class="sd">        Args:</span>
@@ -140,7 +167,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Constant value must have a value!&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ConstantValue.read_time_step"><a class="viewcode-back" href="../../index.html#pysurfex.read.ConstantValue.read_time_step">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">read_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>  <span class="c1"># noqa ARG002</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read time step.</span>
 
 <span class="sd">        Args:</span>
@@ -151,20 +179,26 @@
 <span class="sd">            _type_: _description_</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">npoints</span><span class="p">)])</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">geo</span><span class="o">.</span><span class="n">npoints</span><span class="p">)])</span>
         <span class="n">field</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">field</span></div>
+        <span class="k">return</span> <span class="n">field</span>
 
-<div class="viewcode-block" id="ConstantValue.print_info"><a class="viewcode-back" href="../../index.html#pysurfex.read.ConstantValue.print_info">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ConstantValue.print_info">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.ConstantValue.print_info">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Print info.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span></div>
+</div>
+
 
 
 <span class="c1">#######################################################</span>
 <span class="c1">#######################################################</span>
 
 
-<div class="viewcode-block" id="Converter"><a class="viewcode-back" href="../../index.html#pysurfex.read.Converter">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Converter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Converter">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.Converter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Converter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Converter.</span>
 
 <span class="sd">    Main interface to read a field is done through a converter.</span>
@@ -172,7 +206,9 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Converter.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.read.Converter.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">initial_time</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">):</span>
+<div class="viewcode-block" id="Converter.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.Converter.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">initial_time</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the converter.</span>
 
 <span class="sd">        Args:</span>
@@ -189,6 +225,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initial_time</span> <span class="o">=</span> <span class="n">initial_time</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;initial time </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_time</span><span class="p">)</span>
 
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Converter name: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Converter config: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">conf</span><span class="p">)</span>
@@ -196,7 +233,7 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;conf: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">conf</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; is missing in converter definition&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;analysis&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="s2">&quot;analysis&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
         <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;diff&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">field1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span>
@@ -228,19 +265,27 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">altitude</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span>
                 <span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;altitude&quot;</span><span class="p">]</span>
             <span class="p">)</span>
-        <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;windspeed&quot;</span> <span class="ow">or</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;winddir&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;td2q&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">td</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;td&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;p&quot;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;td2rh&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dewpoint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;td&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span>
+                <span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;t&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;windspeed&quot;</span><span class="p">,</span> <span class="s2">&quot;winddir&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">x_wind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;x&quot;</span><span class="p">])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">y_wind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;y&quot;</span><span class="p">])</span>
-        <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;totalprec&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;totalprec&quot;</span><span class="p">,</span> <span class="s2">&quot;calcsnow&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">totalprec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span>
                 <span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;totalprec&quot;</span><span class="p">]</span>
             <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">snow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;snow&quot;</span><span class="p">])</span>
-        <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;calcsnow&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">totalprec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span>
-                <span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;totalprec&quot;</span><span class="p">]</span>
-            <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;t&quot;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;totalprec&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">snow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span>
+                    <span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;snow&quot;</span><span class="p">]</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;calcsnow&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;t&quot;</span><span class="p">])</span>
         <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;calcrain&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">totalprec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span>
                 <span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;totalprec&quot;</span><span class="p">]</span>
@@ -253,9 +298,7 @@
             <span class="p">)</span>
         <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;phi2m&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">phi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;phi&quot;</span><span class="p">])</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;swe2sd&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">swe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;swe&quot;</span><span class="p">])</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;sweclim&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;swe2sd&quot;</span><span class="p">,</span> <span class="s2">&quot;sweclim&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">swe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;swe&quot;</span><span class="p">])</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;sea2land&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sea</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;sea&quot;</span><span class="p">])</span>
@@ -272,12 +315,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">smp1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;smp1&quot;</span><span class="p">])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">smp2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;smp2&quot;</span><span class="p">])</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;nature_town&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">nature_fraction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span>
-                <span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;nature_fraction&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span>
+                <span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;nature&quot;</span><span class="p">]</span>
             <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">town_fraction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span>
-                <span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;town_fraction&quot;</span><span class="p">]</span>
-            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">town</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span><span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;town&quot;</span><span class="p">])</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;cloud_base&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cloud_base</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_variable</span><span class="p">(</span>
                 <span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;cloud_base&quot;</span><span class="p">]</span>
@@ -287,11 +328,17 @@
 
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Constructed the converter </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Converter.print_info"><a class="viewcode-back" href="../../index.html#pysurfex.read.Converter.print_info">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Converter.print_info">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.Converter.print_info">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Print info.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;name: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span></div>
 
-<div class="viewcode-block" id="Converter.create_variable"><a class="viewcode-back" href="../../index.html#pysurfex.read.Converter.create_variable">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">create_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Converter.create_variable">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.Converter.create_variable">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fileformat</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a variable.</span>
 
 <span class="sd">        Args:</span>
@@ -319,7 +366,10 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">print_variable_info</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">var</span></div>
 
-<div class="viewcode-block" id="Converter.mslp2ps"><a class="viewcode-back" href="../../index.html#pysurfex.read.Converter.mslp2ps">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="Converter.mslp2ps">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.Converter.mslp2ps">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">mslp2ps</span><span class="p">(</span><span class="n">mslp</span><span class="p">,</span> <span class="n">altitude</span><span class="p">,</span> <span class="n">temp</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calcaulate ps from mslp.</span>
 
@@ -344,7 +394,120 @@
 
         <span class="k">return</span> <span class="n">pres</span></div>
 
-<div class="viewcode-block" id="Converter.read_time_step"><a class="viewcode-back" href="../../index.html#pysurfex.read.Converter.read_time_step">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">read_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Converter.saturation_mixing_ratio">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.Converter.saturation_mixing_ratio">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">saturation_mixing_ratio</span><span class="p">(</span><span class="n">total_press</span><span class="p">,</span> <span class="n">temperature</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate sat mixing ratio.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            total_press (np.ndarray): Pressure</span>
+<span class="sd">            temperature (np.ndarray): Temperature</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (np.ndarray): saturation mixing ratio</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Converter</span><span class="o">.</span><span class="n">mixing_ratio</span><span class="p">(</span>
+            <span class="n">Converter</span><span class="o">.</span><span class="n">saturation_vapor_pressure</span><span class="p">(</span><span class="n">temperature</span><span class="p">),</span> <span class="n">total_press</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Converter.mixing_ratio">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.Converter.mixing_ratio">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mixing_ratio</span><span class="p">(</span><span class="n">partial_press</span><span class="p">,</span> <span class="n">total_press</span><span class="p">,</span> <span class="n">molecular_weight_ratio</span><span class="o">=</span><span class="mf">0.622</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate mixing ratio.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            partial_press (np.ndarray): Partial pressure</span>
+<span class="sd">            total_press (np.ndarray): Total pressure</span>
+<span class="sd">            molecular_weight_ratio (float, optional): Molecular weight ratio.</span>
+<span class="sd">                                                      Defaults to 0.622</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (np.ndarray): mixing ratio</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
+            <span class="n">molecular_weight_ratio</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">partial_press</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">total_press</span><span class="p">,</span> <span class="n">partial_press</span><span class="p">)),</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Converter.specific_humidity_from_dewpoint">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.Converter.specific_humidity_from_dewpoint">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">specific_humidity_from_dewpoint</span><span class="p">(</span><span class="n">pressure</span><span class="p">,</span> <span class="n">dewpoint</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate q from Td.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pressure (np.ndarray): Pressure</span>
+<span class="sd">            dewpoint (np.ndarray): Temperature</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (np.ndarray): specific humidity</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mixing_ratio</span> <span class="o">=</span> <span class="n">Converter</span><span class="o">.</span><span class="n">saturation_mixing_ratio</span><span class="p">(</span><span class="n">pressure</span><span class="p">,</span> <span class="n">dewpoint</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Converter</span><span class="o">.</span><span class="n">specific_humidity_from_mixing_ratio</span><span class="p">(</span><span class="n">mixing_ratio</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Converter.mixing_ratio_from_specific_humidity">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.Converter.mixing_ratio_from_specific_humidity">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mixing_ratio_from_specific_humidity</span><span class="p">(</span><span class="n">specific_humidity</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate mixing ratio from q.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            specific_humidity (np.ndarray): Specific humidity</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (np.ndarray): mixing ratio</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">specific_humidity</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">specific_humidity</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Converter.specific_humidity_from_mixing_ratio">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.Converter.specific_humidity_from_mixing_ratio">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">specific_humidity_from_mixing_ratio</span><span class="p">(</span><span class="n">mixing_ratio</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate q from mixing ratio.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            mixing_ratio (np.ndarray): Mixing ratio</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (np.ndarray): Specific humidity</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">mixing_ratio</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">mixing_ratio</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Converter.saturation_vapor_pressure">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.Converter.saturation_vapor_pressure">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">saturation_vapor_pressure</span><span class="p">(</span><span class="n">temperature_kelvin</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate esat.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            temperature_kelvin (np.ndarray): Absolute temperature</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (np.ndarray): stauration vapor pressure</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">field_t_c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">temperature_kelvin</span><span class="p">,</span> <span class="mf">273.15</span><span class="p">)</span>
+        <span class="n">exp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="mf">17.67</span><span class="p">,</span> <span class="n">field_t_c</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">field_t_c</span><span class="p">,</span> <span class="mf">243.5</span><span class="p">))</span>
+        <span class="n">esat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="mf">6.112</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">exp</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">esat</span></div>
+
+
+<div class="viewcode-block" id="Converter.read_time_step">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.Converter.read_time_step">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read time step.</span>
 
 <span class="sd">        Args:</span>
@@ -355,6 +518,7 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            KeyError:Could not found climatological mean for month</span>
 <span class="sd">            NotImplementedError: _description_</span>
+<span class="sd">            RuntimeError: &quot;Alpha is different for the 2 wind vectors!</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            field (np.ndarray): Read and converted field</span>
@@ -363,28 +527,33 @@
         <span class="n">gravity</span> <span class="o">=</span> <span class="mf">9.81</span>
         <span class="n">field</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="c1"># Specific reading for each converter</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;analysis&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="s2">&quot;analysis&quot;</span><span class="p">):</span>
             <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;diff&quot;</span><span class="p">:</span>
             <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">field1</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span>
                 <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span>
             <span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">field2</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;windspeed&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;winddir&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;windspeed&quot;</span><span class="p">,</span> <span class="s2">&quot;winddir&quot;</span><span class="p">):</span>
             <span class="n">field_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_wind</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
             <span class="n">field_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_wind</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;windspeed&quot;</span><span class="p">:</span>
                 <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">field_x</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">field_y</span><span class="p">))</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">field</span> <span class="o">&lt;</span> <span class="mf">0.005</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;winddir&quot;</span><span class="p">:</span>
-                <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="mi">90</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">field_y</span><span class="p">,</span> <span class="n">field_x</span><span class="p">)),</span> <span class="mi">360</span><span class="p">)</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="mi">180</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">field_x</span><span class="p">,</span> <span class="n">field_y</span><span class="p">)),</span> <span class="mi">360</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_wind</span><span class="o">.</span><span class="n">alpha</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_wind</span><span class="o">.</span><span class="n">alpha</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_wind</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_wind</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                        <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_wind</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Wind was rotated to geographical coordinates&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Alpha is different for the 2 wind vectors!&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="s2">&quot;Wind was not rotated to geographical coordinates due to </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;missing alphas&quot;</span><span class="p">,</span>
+                    <span class="p">)</span>
 
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;rh2q&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;rh2q_mslp&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;rh2q_z&quot;</span><span class="p">:</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            ZES = 6.112 * exp((17.67 * (ZT - 273.15)) / ((ZT - 273.15) + 243.5))</span>
-<span class="sd">            ZE = ZRH * ZES</span>
-<span class="sd">            ZRATIO = 0.622 * ZE / (ZPRES / 100.)</span>
-<span class="sd">            RH2Q = 1. / (1. / ZRATIO + 1.)</span>
-<span class="sd">            &quot;&quot;&quot;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;rh2q&quot;</span><span class="p">,</span> <span class="s2">&quot;rh2q_mslp&quot;</span><span class="p">,</span> <span class="s2">&quot;rh2q_z&quot;</span><span class="p">):</span>
             <span class="n">field_r_h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_h</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>  <span class="c1"># %</span>
             <span class="n">field_temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>  <span class="c1"># In K</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;rh2q_z&quot;</span><span class="p">:</span>
@@ -392,7 +561,7 @@
                 <span class="n">field_pres</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">101325.0</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">field_pres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pres</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>  <span class="c1"># In Pa</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;rh2q_mslp&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;rh2q_z&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;rh2q_mslp&quot;</span><span class="p">,</span> <span class="s2">&quot;rh2q_z&quot;</span><span class="p">):</span>
                 <span class="n">field_altitude</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">altitude</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span>
                     <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span>
                 <span class="p">)</span>  <span class="c1"># In m</span>
@@ -404,6 +573,29 @@
             <span class="n">exp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="mf">17.67</span><span class="p">,</span> <span class="n">field_t_c</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">field_t_c</span><span class="p">,</span> <span class="mf">243.5</span><span class="p">))</span>
             <span class="n">esat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="mf">6.112</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">exp</span><span class="p">))</span>
             <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="mf">0.622</span><span class="p">,</span> <span class="n">field_r_h</span> <span class="o">/</span> <span class="mf">100.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">esat</span><span class="p">,</span> <span class="n">field_p_mb</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;td2rh&quot;</span><span class="p">:</span>
+            <span class="n">dewpoint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dewpoint</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>  <span class="c1"># In K</span>
+            <span class="n">temperature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>  <span class="c1"># In K</span>
+            <span class="n">td_e</span> <span class="o">=</span> <span class="n">Converter</span><span class="o">.</span><span class="n">saturation_vapor_pressure</span><span class="p">(</span><span class="n">dewpoint</span><span class="p">)</span>
+            <span class="n">t_e</span> <span class="o">=</span> <span class="n">Converter</span><span class="o">.</span><span class="n">saturation_vapor_pressure</span><span class="p">(</span><span class="n">temperature</span><span class="p">)</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">td_e</span><span class="p">,</span> <span class="n">t_e</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;td2q&quot;</span><span class="p">,</span> <span class="s2">&quot;td2q_z&quot;</span><span class="p">,</span> <span class="s2">&quot;td2q_mslp&quot;</span><span class="p">):</span>
+            <span class="n">field_td</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">td</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>  <span class="c1"># %</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;td2q_z&quot;</span><span class="p">:</span>
+                <span class="n">field_pres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">field_td</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+                <span class="n">field_pres</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mf">101325.0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">field_pres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pres</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>  <span class="c1"># In Pa</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;td2q_mslp&quot;</span><span class="p">,</span> <span class="s2">&quot;td2q_z&quot;</span><span class="p">):</span>
+                <span class="n">field_altitude</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">altitude</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span>
+                    <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span>
+                <span class="p">)</span>  <span class="c1"># In m</span>
+                <span class="n">field_pres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mslp2ps</span><span class="p">(</span><span class="n">field_pres</span><span class="p">,</span> <span class="n">field_altitude</span><span class="p">,</span> <span class="n">field_td</span><span class="p">)</span>
+
+            <span class="n">field_p_mb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">field_pres</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">)</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="n">Converter</span><span class="o">.</span><span class="n">specific_humidity_from_dewpoint</span><span class="p">(</span><span class="n">field_p_mb</span><span class="p">,</span> <span class="n">field_td</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;mslp2ps&quot;</span><span class="p">:</span>
             <span class="n">field_pres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pres</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>  <span class="c1"># In Pa</span>
@@ -482,8 +674,8 @@
             <span class="n">smp2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">smp2</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
             <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">smp1</span><span class="p">),</span> <span class="n">smp2</span><span class="p">,</span> <span class="n">smp1</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;nature_town&quot;</span><span class="p">:</span>
-            <span class="n">nature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nature_fraction</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
-            <span class="n">town</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">town_fraction</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
+            <span class="n">nature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nature</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
+            <span class="n">town</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">town</span><span class="o">.</span><span class="n">read_variable</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
             <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">nature</span><span class="p">,</span> <span class="n">town</span><span class="p">)</span>
             <span class="n">field</span><span class="p">[</span><span class="n">field</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;cloud_base&quot;</span><span class="p">:</span>
@@ -503,17 +695,319 @@
             <span class="n">field</span> <span class="o">=</span> <span class="n">field_2d</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">nlons</span> <span class="o">*</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Converter &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; not implemented&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">field</span></div></div>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Converter </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> not implemented&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">field</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="kwargs2converter">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.kwargs2converter">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">kwargs2converter</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a converter object from keyword arguments.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        kwargs(dict): keyword arguments</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        RuntimeError: _description_</span>
+<span class="sd">        RuntimeError: _description_</span>
+<span class="sd">        RuntimeError: _description_</span>
+<span class="sd">        RuntimeError: _description_</span>
+<span class="sd">        RuntimeError: _description_</span>
+<span class="sd">        RuntimeError: _description_</span>
+<span class="sd">        RuntimeError: _description_</span>
+<span class="sd">        RuntimeError: _description_</span>
+<span class="sd">        RuntimeError: _description_</span>
+<span class="sd">        RuntimeError: _description_</span>
+<span class="sd">        NotImplementedError: _description_</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Converter: A converter object</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">converter_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;converter&quot;</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">converter_name</span> <span class="o">=</span> <span class="s2">&quot;none&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">conv_variables</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;conv_variables&quot;</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">conv_variables</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">conv_variables</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">conv_variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;var&quot;</span><span class="p">]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">system_file_paths</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;var&quot;</span><span class="p">][</span><span class="s2">&quot;system_file_paths&quot;</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">system_file_paths</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;system_file_paths&quot;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span> <span class="kn">from</span><span class="w"> </span><span class="nn">KeyError</span>
+
+    <span class="n">var_dict2</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">conv_var</span> <span class="ow">in</span> <span class="n">conv_variables</span><span class="p">:</span>
+        <span class="n">kwargs2</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">conv_var</span><span class="p">]</span>
+
+        <span class="n">prefer_forecast</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;preference&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;forecast&quot;</span><span class="p">:</span>
+            <span class="n">prefer_forecast</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">basetime</span> <span class="o">=</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;basetime&quot;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">basetime</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">basetime</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">basetime</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">basetime</span> <span class="o">=</span> <span class="n">as_datetime</span><span class="p">(</span><span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;basetime&quot;</span><span class="p">])</span>
+        <span class="n">variable</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;varname&quot;</span> <span class="ow">in</span> <span class="n">kwargs2</span><span class="p">:</span>
+            <span class="n">variable</span> <span class="o">=</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;varname&quot;</span><span class="p">]</span>
+        <span class="n">filepattern</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;filepattern&quot;</span> <span class="ow">in</span> <span class="n">kwargs2</span><span class="p">:</span>
+            <span class="n">filepattern</span> <span class="o">=</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;filepattern&quot;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">inputtype</span> <span class="o">=</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;inputtype&quot;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Input type must be set&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">interpolator</span> <span class="o">=</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;interpolator&quot;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">interpolator</span> <span class="o">=</span> <span class="s2">&quot;nearest&quot;</span>
+        <span class="k">if</span> <span class="n">inputtype</span> <span class="o">==</span> <span class="s2">&quot;grib1&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">filepattern</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You must provide a filepattern&quot;</span><span class="p">)</span>
+
+            <span class="n">par</span> <span class="o">=</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;parameter&quot;</span><span class="p">]</span>
+            <span class="n">ltp</span> <span class="o">=</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;levelType&quot;</span><span class="p">]</span>
+            <span class="n">lev</span> <span class="o">=</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">]</span>
+            <span class="n">tri</span> <span class="o">=</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;timeRangeIndicator&quot;</span><span class="p">]</span>
+
+            <span class="n">var_dict</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;filepattern&quot;</span><span class="p">:</span> <span class="n">filepattern</span><span class="p">,</span>
+                <span class="s2">&quot;fcint&quot;</span><span class="p">:</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;fcint&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;file_inc&quot;</span><span class="p">:</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;file_inc&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;offset&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;prefer_forecast&quot;</span><span class="p">:</span> <span class="n">prefer_forecast</span><span class="p">,</span>
+                <span class="s2">&quot;parameter&quot;</span><span class="p">:</span> <span class="n">par</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">ltp</span><span class="p">,</span>
+                <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="n">lev</span><span class="p">,</span>
+                <span class="s2">&quot;tri&quot;</span><span class="p">:</span> <span class="n">tri</span><span class="p">,</span>
+                <span class="s2">&quot;interpolator&quot;</span><span class="p">:</span> <span class="n">interpolator</span><span class="p">,</span>
+                <span class="s2">&quot;system_file_paths&quot;</span><span class="p">:</span> <span class="n">system_file_paths</span><span class="p">,</span>
+            <span class="p">}</span>
+
+        <span class="k">elif</span> <span class="n">inputtype</span> <span class="o">==</span> <span class="s2">&quot;grib2&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">filepattern</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You must provide a filepattern&quot;</span><span class="p">)</span>
+
+            <span class="n">discipline</span> <span class="o">=</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;discipline&quot;</span><span class="p">]</span>
+            <span class="n">parameter_category</span> <span class="o">=</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;parameterCategory&quot;</span><span class="p">]</span>
+            <span class="n">parameter_number</span> <span class="o">=</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;parameterNumber&quot;</span><span class="p">]</span>
+            <span class="n">level_type</span> <span class="o">=</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;levelType&quot;</span><span class="p">]</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">]</span>
+            <span class="n">type_of_statistical_processing</span> <span class="o">=</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;typeOfStatisticalProcessing&quot;</span><span class="p">]</span>
+
+            <span class="n">var_dict</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;fcint&quot;</span><span class="p">:</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;fcint&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;file_inc&quot;</span><span class="p">:</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;file_inc&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;offset&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;prefer_forecast&quot;</span><span class="p">:</span> <span class="n">prefer_forecast</span><span class="p">,</span>
+                <span class="s2">&quot;filepattern&quot;</span><span class="p">:</span> <span class="n">filepattern</span><span class="p">,</span>
+                <span class="s2">&quot;discipline&quot;</span><span class="p">:</span> <span class="n">discipline</span><span class="p">,</span>
+                <span class="s2">&quot;parameterCategory&quot;</span><span class="p">:</span> <span class="n">parameter_category</span><span class="p">,</span>
+                <span class="s2">&quot;parameterNumber&quot;</span><span class="p">:</span> <span class="n">parameter_number</span><span class="p">,</span>
+                <span class="s2">&quot;levelType&quot;</span><span class="p">:</span> <span class="n">level_type</span><span class="p">,</span>
+                <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="n">level</span><span class="p">,</span>
+                <span class="s2">&quot;typeOfStatisticalProcessing&quot;</span><span class="p">:</span> <span class="n">type_of_statistical_processing</span><span class="p">,</span>
+                <span class="s2">&quot;system_file_paths&quot;</span><span class="p">:</span> <span class="n">system_file_paths</span><span class="p">,</span>
+            <span class="p">}</span>
+
+        <span class="k">elif</span> <span class="n">inputtype</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;netcdf&quot;</span><span class="p">,</span> <span class="s2">&quot;fa&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">variable</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You must provide a variable&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">filepattern</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You must provide a filepattern&quot;</span><span class="p">)</span>
+
+            <span class="n">var_dict</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">variable</span><span class="p">,</span>
+                <span class="s2">&quot;filepattern&quot;</span><span class="p">:</span> <span class="n">filepattern</span><span class="p">,</span>
+                <span class="s2">&quot;fcint&quot;</span><span class="p">:</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;fcint&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;file_inc&quot;</span><span class="p">:</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;file_inc&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;offset&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;prefer_forecast&quot;</span><span class="p">:</span> <span class="n">prefer_forecast</span><span class="p">,</span>
+                <span class="s2">&quot;interpolator&quot;</span><span class="p">:</span> <span class="n">interpolator</span><span class="p">,</span>
+                <span class="s2">&quot;system_file_paths&quot;</span><span class="p">:</span> <span class="n">system_file_paths</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="k">elif</span> <span class="n">inputtype</span> <span class="o">==</span> <span class="s2">&quot;surfex&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">variable</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You must provide a variable&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">filepattern</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You must provide a filepattern&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">patches</span> <span class="o">=</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;sfx_patches&quot;</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="n">patches</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">layers</span> <span class="o">=</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;sfx_layers&quot;</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="n">layers</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">datatype</span> <span class="o">=</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;sfx_datatype&quot;</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="n">datatype</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">interval</span> <span class="o">=</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;sfx_interval&quot;</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="n">interval</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">geo_sfx_input</span> <span class="o">=</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;sfx_geo_input&quot;</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="n">geo_sfx_input</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="n">var_dict</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;varname&quot;</span><span class="p">:</span> <span class="n">variable</span><span class="p">,</span>
+                <span class="s2">&quot;filepattern&quot;</span><span class="p">:</span> <span class="n">filepattern</span><span class="p">,</span>
+                <span class="s2">&quot;patches&quot;</span><span class="p">:</span> <span class="n">patches</span><span class="p">,</span>
+                <span class="s2">&quot;layers&quot;</span><span class="p">:</span> <span class="n">layers</span><span class="p">,</span>
+                <span class="s2">&quot;datatype&quot;</span><span class="p">:</span> <span class="n">datatype</span><span class="p">,</span>
+                <span class="s2">&quot;interval&quot;</span><span class="p">:</span> <span class="n">interval</span><span class="p">,</span>
+                <span class="s2">&quot;basetime&quot;</span><span class="p">:</span> <span class="n">basetime</span><span class="p">,</span>
+                <span class="s2">&quot;fcint&quot;</span><span class="p">:</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;fcint&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;file_inc&quot;</span><span class="p">:</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;file_inc&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="n">kwargs2</span><span class="p">[</span><span class="s2">&quot;offset&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;prefer_forecast&quot;</span><span class="p">:</span> <span class="n">prefer_forecast</span><span class="p">,</span>
+                <span class="s2">&quot;interpolator&quot;</span><span class="p">:</span> <span class="n">interpolator</span><span class="p">,</span>
+                <span class="s2">&quot;system_file_paths&quot;</span><span class="p">:</span> <span class="n">system_file_paths</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="k">if</span> <span class="n">geo_sfx_input</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">var_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;geo_input_file&quot;</span><span class="p">:</span> <span class="n">geo_sfx_input</span><span class="p">})</span>
+
+        <span class="k">elif</span> <span class="n">inputtype</span> <span class="o">==</span> <span class="s2">&quot;obs&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">variable</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You must provide a variable&quot;</span><span class="p">)</span>
+
+            <span class="n">obs_input_type</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;var&quot;</span><span class="p">][</span><span class="s2">&quot;obs_type&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">obs_input_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You must provide an obs type&quot;</span><span class="p">)</span>
+
+            <span class="n">var_dict</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;filetype&quot;</span><span class="p">:</span> <span class="n">obs_input_type</span><span class="p">,</span>
+                <span class="s2">&quot;varname&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">variable</span><span class="p">],</span>
+                <span class="s2">&quot;filepattern&quot;</span><span class="p">:</span> <span class="n">filepattern</span><span class="p">,</span>
+                <span class="s2">&quot;filenames&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">filepattern</span><span class="p">],</span>
+                <span class="s2">&quot;fcint&quot;</span><span class="p">:</span> <span class="mi">10800</span><span class="p">,</span>
+                <span class="s2">&quot;file_inc&quot;</span><span class="p">:</span> <span class="mi">10800</span><span class="p">,</span>
+                <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s2">&quot;system_file_paths&quot;</span><span class="p">:</span> <span class="n">system_file_paths</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="k">if</span> <span class="n">converter_name</span> <span class="o">!=</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
+            <span class="n">var_dict2</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">conv_var</span><span class="p">:</span> <span class="n">var_dict</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">var_dict2</span> <span class="o">=</span> <span class="n">var_dict</span>
+
+    <span class="n">defs</span> <span class="o">=</span> <span class="p">{</span><span class="n">variable</span><span class="p">:</span> <span class="p">{</span><span class="n">inputtype</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;converter&quot;</span><span class="p">:</span> <span class="p">{</span><span class="n">converter_name</span><span class="p">:</span> <span class="n">var_dict2</span><span class="p">}}}}</span>
+
+    <span class="n">converter_conf</span> <span class="o">=</span> <span class="n">defs</span><span class="p">[</span><span class="n">variable</span><span class="p">][</span><span class="n">inputtype</span><span class="p">][</span><span class="s2">&quot;converter&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">Converter</span><span class="p">(</span><span class="n">converter_name</span><span class="p">,</span> <span class="n">basetime</span><span class="p">,</span> <span class="n">defs</span><span class="p">,</span> <span class="n">converter_conf</span><span class="p">,</span> <span class="n">inputtype</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_multi_converters">
+<a class="viewcode-back" href="../../index.html#pysurfex.read.get_multi_converters">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_multi_converters</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="n">multivars</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get multi converter.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        parser (Parser): Argument parser</span>
+<span class="sd">        multivars (list): The variables</span>
+<span class="sd">        argv (list): Argument list</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        converters (dict): A dictionary with converters if several variables</span>
+<span class="sd">                           or a converter object</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">single</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">multivars</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">multivars</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">multivars</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;var&quot;</span><span class="p">]</span>
+        <span class="n">single</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">for</span> <span class="n">mvar</span> <span class="ow">in</span> <span class="n">multivars</span><span class="p">:</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="n">mvar</span>
+        <span class="k">if</span> <span class="n">single</span><span class="p">:</span>
+            <span class="n">prefix</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">converter_parse_options</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">)</span>
+
+    <span class="n">args</span><span class="p">,</span> <span class="n">__</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_known_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;arg=</span><span class="si">%s</span><span class="s2"> val=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">arg</span><span class="p">))</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">arg</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">arg</span><span class="p">)})</span>
+
+    <span class="c1">#################################################</span>
+
+    <span class="c1"># Set converter input</span>
+    <span class="n">converters</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">mvar</span> <span class="ow">in</span> <span class="n">multivars</span><span class="p">:</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mvar</span><span class="si">}</span><span class="s2">_&quot;</span>
+        <span class="k">if</span> <span class="n">single</span><span class="p">:</span>
+            <span class="n">prefix</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">converters</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="n">mvar</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;converter&quot;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">converter&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;variables&quot;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">conv_variables&quot;</span><span class="p">],</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Set converter options</span>
+    <span class="k">for</span> <span class="n">mvar</span> <span class="ow">in</span> <span class="n">multivars</span><span class="p">:</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="n">converters</span><span class="p">[</span><span class="n">mvar</span><span class="p">][</span><span class="s2">&quot;variables&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">variables</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">var_prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mvar</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="n">single</span><span class="p">:</span>
+                <span class="n">var_prefix</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">variable_parse_options</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">var_prefix</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+                <span class="n">var_prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mvar</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">if</span> <span class="n">single</span><span class="p">:</span>
+                    <span class="n">var_prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">variable_parse_options</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">var_prefix</span><span class="p">)</span>
+
+    <span class="n">converters2</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">mvar</span> <span class="ow">in</span> <span class="n">multivars</span><span class="p">:</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="n">converters</span><span class="p">[</span><span class="n">mvar</span><span class="p">][</span><span class="s2">&quot;variables&quot;</span><span class="p">]</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mvar</span><span class="p">,</span> <span class="n">variables</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">variables</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mvar</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="n">single</span><span class="p">:</span>
+                <span class="n">prefix</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="n">parse_args_variable</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="p">{},</span> <span class="n">argv</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mvar</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="n">single</span><span class="p">:</span>
+                <span class="n">prefix</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="n">parse_args_variable</span><span class="p">(</span>
+                <span class="n">parser</span><span class="p">,</span> <span class="p">{},</span> <span class="n">argv</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span>
+            <span class="p">)</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">kwargs2converter</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">converters</span><span class="p">[</span><span class="n">mvar</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;obj&quot;</span><span class="p">:</span> <span class="n">obj</span><span class="p">})</span>
+        <span class="n">converters2</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">mvar</span><span class="p">:</span> <span class="n">obj</span><span class="p">})</span>
+    <span class="k">if</span> <span class="n">single</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">converters2</span><span class="p">[</span><span class="s2">&quot;var&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">converters2</span></div>
+
 </pre></div>
 
             <div class="clearer"></div>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
@@ -521,13 +1015,13 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -539,8 +1033,8 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
+    &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
     </div>
   </body>
 </html>

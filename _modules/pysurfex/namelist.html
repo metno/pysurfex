@@ -1,22 +1,21 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pysurfex.namelist &#8212; SURFEX Python API (pysurfex)  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=536c50fe" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=1654e008" />
     
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/documentation_options.js?v=9fa44488"></script>
+    <script src="../../_static/doctools.js?v=695de88e"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -35,513 +34,64 @@
             
   <h1>Source code for pysurfex.namelist</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Namelist.&quot;&quot;&quot;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">collections</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">f90nml</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.binary_input</span><span class="w"> </span><span class="kn">import</span> <span class="n">InputDataFromNamelist</span>
 
 
-<div class="viewcode-block" id="NamelistGenerator"><a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGenerator">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">NamelistGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="NamelistGenerator">
+<a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGenerator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NamelistGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Namelist class.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="NamelistGenerator.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGenerator.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">definitions</span><span class="p">,</span> <span class="n">assemble</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">consistency</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="NamelistGenerator.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGenerator.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">nml</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">micro</span><span class="o">=</span><span class="s2">&quot;@&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a base namelists class.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            program (str): Which surfex binary you want to run [&quot;pgd&quot;, &quot;prep&quot;, &quot;offline&quot;, &quot;soda&quot;]</span>
-<span class="sd">            config (surfex.Configuration): A SURFEX configuration object</span>
-<span class="sd">            definitions (dict): Namelist definitions</span>
-<span class="sd">            assemble(dict, optional): Assembly order. Default to None.</span>
-<span class="sd">            consistency (bool, optional): Check configuration consistency. Defaults to True.</span>
+<span class="sd">            program (str): Which surfex binary you want to run</span>
+<span class="sd">                           [&quot;pgd&quot;, &quot;prep&quot;, &quot;offline&quot;, &quot;soda&quot;]</span>
+<span class="sd">            nml (f90nml.Namelist): A parsed fortran namelist</span>
+<span class="sd">            assemble(dict): Assembly order. Defines the configuration</span>
+<span class="sd">            macros(dict, optional): Macros</span>
+<span class="sd">            micro(str, optional): Micro character</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">program</span> <span class="o">=</span> <span class="n">program</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nldict</span> <span class="o">=</span> <span class="n">definitions</span>
-
-        <span class="n">nobstype</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">if</span> <span class="n">program</span> <span class="o">==</span> <span class="s2">&quot;soda&quot;</span> <span class="ow">or</span> <span class="n">program</span> <span class="o">==</span> <span class="s2">&quot;offline&quot;</span> <span class="ow">or</span> <span class="n">program</span> <span class="o">==</span> <span class="s2">&quot;perturbed&quot;</span><span class="p">:</span>
-            <span class="n">nnco</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#OBS#NNCO&quot;</span><span class="p">)</span>
-            <span class="n">nobstype</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">for</span> <span class="n">__</span><span class="p">,</span> <span class="n">obs_val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">nnco</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">obs_val</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">nobstype</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SODA#NOBSTYPE&quot;</span><span class="p">,</span> <span class="n">nobstype</span><span class="p">)</span>
-            <span class="n">soil_assim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">)</span>
-            <span class="n">nncv</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">if</span> <span class="n">soil_assim</span> <span class="o">==</span> <span class="s2">&quot;EKF&quot;</span><span class="p">:</span>
-                <span class="n">nncv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#EKF#NNCV&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">soil_assim</span> <span class="o">==</span> <span class="s2">&quot;ENKF&quot;</span><span class="p">:</span>
-                <span class="n">nncv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#ENKF#NNCV&quot;</span><span class="p">)</span>
-            <span class="n">nvar</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">if</span> <span class="n">nncv</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">__</span><span class="p">,</span> <span class="n">cval</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">nncv</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">cval</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                        <span class="n">nvar</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SODA#NVAR&quot;</span><span class="p">,</span> <span class="n">nvar</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">program</span> <span class="o">==</span> <span class="s2">&quot;soda&quot;</span><span class="p">:</span>
-            <span class="n">laesnm</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="n">hh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SODA#HH&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">hh</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#ISBA#UPDATE_SNOW_CYCLES&quot;</span><span class="p">):</span>
-                <span class="n">laesnm</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SODA#LAESNM&quot;</span><span class="p">,</span> <span class="n">laesnm</span><span class="p">)</span>
-
-        <span class="n">macros</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flatten_config</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nml</span> <span class="o">=</span> <span class="n">nml</span>
+        <span class="k">if</span> <span class="n">macros</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">macros</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">macros</span> <span class="o">=</span> <span class="n">macros</span>
-        <span class="k">if</span> <span class="n">assemble</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">assemble</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">namelist_blocks</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">assemble</span> <span class="o">=</span> <span class="n">assemble</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Namelist blocks: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">assemble</span><span class="p">)</span>
-        <span class="n">nlres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assemble_namelist</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nml</span> <span class="o">=</span> <span class="n">f90nml</span><span class="o">.</span><span class="n">Namelist</span><span class="p">(</span><span class="n">nlres</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">consistency</span><span class="p">:</span>
-            <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">concistency</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">problems</span><span class="p">:</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Found problems!&quot;</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">problem</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">problems</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="k">for</span> <span class="n">level</span><span class="p">,</span> <span class="n">desc</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                        <span class="k">if</span> <span class="n">level</span> <span class="o">==</span> <span class="s2">&quot;SEVERE&quot;</span><span class="p">:</span>
-                            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                                <span class="s2">&quot;Problem with: </span><span class="si">%s</span><span class="s2"> Description=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">desc</span>
-                            <span class="p">)</span>
-                        <span class="k">elif</span> <span class="n">level</span> <span class="o">==</span> <span class="s2">&quot;WARNING&quot;</span><span class="p">:</span>
-                            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                                <span class="s2">&quot;Problem with: </span><span class="si">%s</span><span class="s2"> Description=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">desc</span>
-                            <span class="p">)</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Problem with: </span><span class="si">%s</span><span class="s2"> Description=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">desc</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">micro</span> <span class="o">=</span> <span class="n">micro</span></div>
 
-<div class="viewcode-block" id="NamelistGenerator.flatten_config"><a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGenerator.flatten_config">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">flatten_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Flatten dictionary.</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            source(dict): Flat dict with settings</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">def</span><span class="w"> </span><span class="nf">_flatten_dict_gen</span><span class="p">(</span><span class="n">dic</span><span class="p">,</span> <span class="n">parent_key</span><span class="p">,</span> <span class="n">sep</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">dic</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="n">new_key</span> <span class="o">=</span> <span class="n">parent_key</span> <span class="o">+</span> <span class="n">sep</span> <span class="o">+</span> <span class="n">key</span> <span class="k">if</span> <span class="n">parent_key</span> <span class="k">else</span> <span class="n">key</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">MutableMapping</span><span class="p">):</span>
-                    <span class="k">yield from</span> <span class="n">flatten_dict</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">new_key</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-                        <span class="n">val</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
-                    <span class="k">yield</span> <span class="n">new_key</span><span class="p">,</span> <span class="n">val</span>
-
-        <span class="k">def</span><span class="w"> </span><span class="nf">flatten_dict</span><span class="p">(</span>
-            <span class="n">d</span><span class="p">:</span> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">MutableMapping</span><span class="p">,</span> <span class="n">parent_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;#&quot;</span>
-        <span class="p">):</span>
-            <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">_flatten_dict_gen</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">parent_key</span><span class="p">,</span> <span class="n">sep</span><span class="p">))</span>
-
-        <span class="k">return</span> <span class="n">flatten_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">settings</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="NamelistGenerator.namelist_blocks"><a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGenerator.namelist_blocks">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">namelist_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct building blocks for the namelist genrator.&quot;&quot;&quot;</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Building namelist blocks for program: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">program</span><span class="p">)</span>
-
-        <span class="n">input_blocks</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;io&quot;</span><span class="p">,</span> <span class="s2">&quot;constants&quot;</span><span class="p">,</span> <span class="s2">&quot;treedrag&quot;</span><span class="p">,</span> <span class="s2">&quot;flake&quot;</span><span class="p">]</span>
-        <span class="n">lisba</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SCHEME&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;DIF&quot;</span><span class="p">:</span>
-            <span class="n">lisba</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SCHEME&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;3-L&quot;</span><span class="p">:</span>
-            <span class="n">lisba</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SCHEME&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;2-L&quot;</span><span class="p">:</span>
-            <span class="n">lisba</span> <span class="o">=</span> <span class="kc">True</span>
-
-        <span class="c1"># Program specific settings</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">program</span> <span class="o">==</span> <span class="s2">&quot;pgd&quot;</span><span class="p">:</span>
-            <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;pgd&quot;</span><span class="p">,</span> <span class="s2">&quot;pgd_cover&quot;</span><span class="p">,</span> <span class="s2">&quot;pgd_zs&quot;</span><span class="p">]</span>
-            <span class="n">eco_sg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#SG&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">eco_sg</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;pgd_ecoclimap_sg&quot;</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;pgd_ecoclimap&quot;</span><span class="p">]</span>
-
-            <span class="c1"># Set ISBA properties</span>
-            <span class="k">if</span> <span class="n">lisba</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;pgd_isba&quot;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SCHEME&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;DIF&quot;</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;pgd_isba_dif&quot;</span><span class="p">]</span>
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SCHEME&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;3-L&quot;</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;pgd_isba_3l&quot;</span><span class="p">]</span>
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SCHEME&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;2-L&quot;</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;pgd_isba_2l&quot;</span><span class="p">]</span>
-
-            <span class="c1"># Set MEB</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#MEB&quot;</span><span class="p">):</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;pgd_meb&quot;</span><span class="p">]</span>
-
-            <span class="c1"># RSMIN</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#SG&quot;</span><span class="p">):</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;pgd_rsmin_sg&quot;</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;pgd_rsmin&quot;</span><span class="p">]</span>
-
-            <span class="c1"># CV</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#SG&quot;</span><span class="p">):</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;pgd_cv_sg&quot;</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;pgd_cv&quot;</span><span class="p">]</span>
-
-            <span class="c1"># Treedrag</span>
-            <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;pgd_treedrag&quot;</span><span class="p">]</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TOWN#LTOWN_TO_ROCK&quot;</span><span class="p">):</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;pgd_town_to_rock&quot;</span><span class="p">]</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#INLAND_WATER&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;FLAKE&quot;</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;pgd_flake&quot;</span><span class="p">]</span>
-
-            <span class="c1"># Sea</span>
-            <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;pgd_sea&quot;</span><span class="p">]</span>
-
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">program</span> <span class="o">==</span> <span class="s2">&quot;prep&quot;</span><span class="p">:</span>
-            <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;prep&quot;</span><span class="p">]</span>
-
-            <span class="c1"># SEAFLX settings</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#SEA&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;SEAFLX&quot;</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;prep_seaflux&quot;</span><span class="p">,</span> <span class="s2">&quot;prep_seaflx&quot;</span><span class="p">]</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SEA#ICE&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;SICE&quot;</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;prep_sice&quot;</span><span class="p">]</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#INLAND_WATER&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;FLAKE&quot;</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;prep_flake&quot;</span><span class="p">]</span>
-
-            <span class="c1"># ISBA</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SCHEME&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;DIF&quot;</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;prep_isba&quot;</span><span class="p">,</span> <span class="s2">&quot;prep_isba_dif&quot;</span><span class="p">]</span>
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SCHEME&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;3-L&quot;</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;prep_isba&quot;</span><span class="p">,</span> <span class="s2">&quot;prep_isba_3l&quot;</span><span class="p">]</span>
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SCHEME&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;2-L&quot;</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;prep_isba&quot;</span><span class="p">,</span> <span class="s2">&quot;prep_isba_2l&quot;</span><span class="p">]</span>
-
-            <span class="k">if</span> <span class="n">lisba</span><span class="p">:</span>
-                <span class="c1"># ISBA CANOPY</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#CANOPY&quot;</span><span class="p">):</span>
-                    <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;prep_isba_canopy&quot;</span><span class="p">]</span>
-
-                <span class="c1"># Snow</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;prep_isba_snow&quot;</span><span class="p">]</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SNOW&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;D95&quot;</span><span class="p">:</span>
-                    <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;prep_isba_snow_d95&quot;</span><span class="p">]</span>
-                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SNOW&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;3-L&quot;</span><span class="p">:</span>
-                    <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;prep_isba_snow_3l&quot;</span><span class="p">]</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SNOW&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;CRO&quot;</span><span class="p">:</span>
-                    <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;prep_isba_snow_cro&quot;</span><span class="p">]</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#PREP#FILE&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;prep_from_namelist&quot;</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;prep_from_file&quot;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#PREP#FILEPGD&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;prep_from_file_with_pgd&quot;</span><span class="p">]</span>
-
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">program</span> <span class="o">==</span> <span class="s2">&quot;offline&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">program</span> <span class="o">==</span> <span class="s2">&quot;perturbed&quot;</span><span class="p">:</span>
-            <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline&quot;</span><span class="p">]</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#LSELECT&quot;</span><span class="p">):</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_selected_output&quot;</span><span class="p">]</span>
-
-            <span class="c1"># SEAFLX settings</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#SEA&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;SEAFLX&quot;</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_seaflux&quot;</span><span class="p">,</span> <span class="s2">&quot;offline_seaflx&quot;</span><span class="p">]</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SEA#ICE&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;SICE&quot;</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_sice&quot;</span><span class="p">]</span>
-
-            <span class="c1"># ISBA settings</span>
-            <span class="k">if</span> <span class="n">lisba</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_isba&quot;</span><span class="p">]</span>
-
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SCHEME&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;DIF&quot;</span><span class="p">:</span>
-                    <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_isba_dif&quot;</span><span class="p">]</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#PERTSURF&quot;</span><span class="p">):</span>
-                    <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_isba_pertsurf&quot;</span><span class="p">]</span>
-
-            <span class="c1"># SSO</span>
-            <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_sso&quot;</span><span class="p">]</span>
-            <span class="n">sso</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SSO#SCHEME&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-            <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_sso_&quot;</span> <span class="o">+</span> <span class="n">sso</span><span class="p">]</span>
-
-            <span class="c1"># Perturbed offline settings</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">program</span> <span class="o">==</span> <span class="s2">&quot;perturbed&quot;</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">lisba</span><span class="p">:</span>
-                    <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_pert_isba_settings&quot;</span><span class="p">]</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;EKF&quot;</span><span class="p">:</span>
-                        <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_pert_isba_ekf&quot;</span><span class="p">]</span>
-
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;ENKF&quot;</span><span class="p">:</span>
-                        <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_pert_isba_enkf&quot;</span><span class="p">]</span>
-
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_pert_obs&quot;</span><span class="p">]</span>
-
-            <span class="c1"># Climate setting</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SEA#LVOLATILE_SIC&quot;</span><span class="p">):</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;offline_volatile_sic&quot;</span><span class="p">]</span>
-
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">program</span> <span class="o">==</span> <span class="s2">&quot;soda&quot;</span><span class="p">:</span>
-            <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;soda&quot;</span><span class="p">,</span> <span class="s2">&quot;soda_obs&quot;</span><span class="p">]</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#SEA#ICE&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;SICE&quot;</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;soda_sice&quot;</span><span class="p">]</span>
-
-            <span class="c1"># Set OI settings</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;OI&quot;</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;soda_isba_oi&quot;</span><span class="p">]</span>
-
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;EKF&quot;</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;soda_isba_ekf&quot;</span><span class="p">]</span>
-
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#ISBA&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;ENKF&quot;</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;soda_isba_enkf&quot;</span><span class="p">]</span>
-
-            <span class="c1"># Town</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ASSIM#SCHEMES#TEB&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
-                <span class="n">input_blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;soda_teb&quot;</span><span class="p">]</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">program</span><span class="p">)</span>
-
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Generated input_blocks: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">input_blocks</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">input_blocks</span></div>
-
-<div class="viewcode-block" id="NamelistGenerator.get_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGenerator.get_namelist">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="NamelistGenerator.get_namelist">
+<a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGenerator.get_namelist">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get namelist.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">bkey</span><span class="p">,</span> <span class="n">block</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">block</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">rval</span> <span class="o">=</span> <span class="n">val</span>
+                <span class="n">items</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="n">rval</span><span class="p">})</span>
+                <span class="k">for</span> <span class="n">mkey</span><span class="p">,</span> <span class="n">mval</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">macros</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rval</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                        <span class="n">rval</span> <span class="o">=</span> <span class="n">rval</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">micro</span><span class="si">}{</span><span class="n">mkey</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">micro</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mval</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">rval</span> <span class="o">==</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mval</span><span class="si">}</span><span class="s2">&quot;</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mval</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+                            <span class="n">rval</span> <span class="o">=</span> <span class="n">mval</span>
+                    <span class="n">items</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="n">rval</span><span class="p">})</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="p">[</span><span class="n">bkey</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nml</span></div>
 
-<div class="viewcode-block" id="NamelistGenerator.check_nml_setting"><a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGenerator.check_nml_setting">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">check_nml_setting</span><span class="p">(</span><span class="n">problems</span><span class="p">,</span> <span class="n">nml</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check namelist settings.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            problems (dict): Problems</span>
-<span class="sd">            nml (f90nml.Namelist): Namelist</span>
-<span class="sd">            block (str): Block</span>
-<span class="sd">            key (str): Key</span>
-<span class="sd">            value (any): Value</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            problems (dict): Problems</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">ckey</span> <span class="o">=</span> <span class="n">block</span> <span class="o">+</span> <span class="s2">&quot;#&quot;</span> <span class="o">+</span> <span class="n">key</span>
-        <span class="k">if</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">nml</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">nml</span><span class="p">[</span><span class="n">block</span><span class="p">]:</span>
-                <span class="k">if</span> <span class="n">nml</span><span class="p">[</span><span class="n">block</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">!=</span> <span class="n">value</span><span class="p">:</span>
-                    <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Mismatch: </span><span class="si">{</span><span class="n">nml</span><span class="p">[</span><span class="n">block</span><span class="p">][</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="s2"> != </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span>
-                    <span class="n">problems</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">ckey</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;SEVERE&quot;</span><span class="p">:</span> <span class="n">msg</span><span class="p">}})</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">problems</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">ckey</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;WARNING&quot;</span><span class="p">:</span> <span class="s2">&quot;Namelist key not found&quot;</span><span class="p">}})</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">problems</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">ckey</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;WARNING&quot;</span><span class="p">:</span> <span class="s2">&quot;Namelist block not found&quot;</span><span class="p">}})</span>
-        <span class="k">return</span> <span class="n">problems</span></div>
-
-<div class="viewcode-block" id="NamelistGenerator.concistency"><a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGenerator.concistency">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">concistency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nml</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if namelist is consistent with config.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            nml (f90nml.Namelist): A parsed f90nml namelist</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: Mode is not implemented</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            problems (dict): Problems.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Check namelist input for program: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">program</span><span class="p">)</span>
-
-        <span class="n">problems</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
-            <span class="n">problems</span><span class="p">,</span>
-            <span class="n">nml</span><span class="p">,</span>
-            <span class="s2">&quot;NAM_IO_OFFLINE&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;CSURF_FILETYPE&quot;</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CSURF_FILETYPE&quot;</span><span class="p">),</span>
-        <span class="p">)</span>
-        <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
-            <span class="n">problems</span><span class="p">,</span>
-            <span class="n">nml</span><span class="p">,</span>
-            <span class="s2">&quot;NAM_IO_OFFLINE&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;CTIMESERIES_FILETYPE&quot;</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CTIMESERIES_FILETYPE&quot;</span><span class="p">),</span>
-        <span class="p">)</span>
-        <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
-            <span class="n">problems</span><span class="p">,</span>
-            <span class="n">nml</span><span class="p">,</span>
-            <span class="s2">&quot;NAM_IO_OFFLINE&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;CFORCING_FILETYPE&quot;</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#CFORCING_FILETYPE&quot;</span><span class="p">),</span>
-        <span class="p">)</span>
-
-        <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
-            <span class="n">problems</span><span class="p">,</span>
-            <span class="n">nml</span><span class="p">,</span>
-            <span class="s2">&quot;NAM_IO_OFFLINE&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;XTSTEP_SURF&quot;</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#XTSTEP&quot;</span><span class="p">),</span>
-        <span class="p">)</span>
-        <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
-            <span class="n">problems</span><span class="p">,</span>
-            <span class="n">nml</span><span class="p">,</span>
-            <span class="s2">&quot;NAM_IO_OFFLINE&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;XTSTEP_OUTPUT&quot;</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#XTSTEP_OUTPUT&quot;</span><span class="p">),</span>
-        <span class="p">)</span>
-        <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
-            <span class="n">problems</span><span class="p">,</span>
-            <span class="n">nml</span><span class="p">,</span>
-            <span class="s2">&quot;NAM_WRITE_SURF_ATM&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;LSPLIT_PATCH&quot;</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#IO#LSPLIT_PATCH&quot;</span><span class="p">),</span>
-        <span class="p">)</span>
-
-        <span class="c1"># Constants and parameters</span>
-        <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
-            <span class="n">problems</span><span class="p">,</span>
-            <span class="n">nml</span><span class="p">,</span>
-            <span class="s2">&quot;NAM_SURF_ATM&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;XRIMAX&quot;</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#PARAMETERS#XRIMAX&quot;</span><span class="p">),</span>
-        <span class="p">)</span>
-
-        <span class="c1"># Program specific settings</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">program</span> <span class="o">==</span> <span class="s2">&quot;pgd&quot;</span><span class="p">:</span>
-            <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
-                <span class="n">problems</span><span class="p">,</span>
-                <span class="n">nml</span><span class="p">,</span>
-                <span class="s2">&quot;NAM_PGD_SCHEMES&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;CSEA&quot;</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#SEA&quot;</span><span class="p">),</span>
-            <span class="p">)</span>
-            <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
-                <span class="n">problems</span><span class="p">,</span>
-                <span class="n">nml</span><span class="p">,</span>
-                <span class="s2">&quot;NAM_PGD_SCHEMES&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;CWATER&quot;</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#INLAND_WATER&quot;</span><span class="p">),</span>
-            <span class="p">)</span>
-            <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
-                <span class="n">problems</span><span class="p">,</span>
-                <span class="n">nml</span><span class="p">,</span>
-                <span class="s2">&quot;NAM_PGD_SCHEMES&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;CNATURE&quot;</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#NATURE&quot;</span><span class="p">),</span>
-            <span class="p">)</span>
-            <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
-                <span class="n">problems</span><span class="p">,</span>
-                <span class="n">nml</span><span class="p">,</span>
-                <span class="s2">&quot;NAM_PGD_SCHEMES&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;CTOWN&quot;</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#TOWN&quot;</span><span class="p">),</span>
-            <span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TOWN#LTOWN_TO_ROCK&quot;</span><span class="p">):</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#TILES#TOWN&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;NONE&quot;</span><span class="p">:</span>
-                    <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                        <span class="s2">&quot;WARNING: TOWN is not NONE and you want LTOWN_TO_ROCK. &quot;</span>
-                        <span class="s2">&quot;Setting it to NONE!&quot;</span>
-                    <span class="p">)</span>
-
-            <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
-                <span class="n">problems</span><span class="p">,</span>
-                <span class="n">nml</span><span class="p">,</span>
-                <span class="s2">&quot;NAM_FRAC&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;LECOSG&quot;</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#SG&quot;</span><span class="p">),</span>
-            <span class="p">)</span>
-
-            <span class="n">fname</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#COVER#YCOVER&quot;</span><span class="p">))</span>
-            <span class="n">__</span><span class="p">,</span> <span class="n">filetype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_filetype_from_suffix</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">filetype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
-                    <span class="n">problems</span><span class="p">,</span> <span class="n">nml</span><span class="p">,</span> <span class="s2">&quot;NAM_COVER&quot;</span><span class="p">,</span> <span class="s2">&quot;YCOVERFILETYPE&quot;</span><span class="p">,</span> <span class="n">filetype</span>
-                <span class="p">)</span>
-
-            <span class="c1"># ZS</span>
-            <span class="n">fname</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ZS#YZS&quot;</span><span class="p">))</span>
-            <span class="n">__</span><span class="p">,</span> <span class="n">filetype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_filetype_from_suffix</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">filetype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
-                    <span class="n">problems</span><span class="p">,</span> <span class="n">nml</span><span class="p">,</span> <span class="s2">&quot;NAM_ZS&quot;</span><span class="p">,</span> <span class="s2">&quot;YZSFILETYPE&quot;</span><span class="p">,</span> <span class="n">filetype</span>
-                <span class="p">)</span>
-
-            <span class="c1"># Set ISBA properties</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SCHEME&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;DIF&quot;</span><span class="p">:</span>
-                <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
-                    <span class="n">problems</span><span class="p">,</span> <span class="n">nml</span><span class="p">,</span> <span class="s2">&quot;NAM_ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;CISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;DIF&quot;</span>
-                <span class="p">)</span>
-                <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
-                    <span class="n">problems</span><span class="p">,</span> <span class="n">nml</span><span class="p">,</span> <span class="s2">&quot;NAM_ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;NGROUND_LAYER&quot;</span><span class="p">,</span> <span class="mi">14</span>
-                <span class="p">)</span>
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SCHEME&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;3-L&quot;</span><span class="p">:</span>
-                <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
-                    <span class="n">problems</span><span class="p">,</span> <span class="n">nml</span><span class="p">,</span> <span class="s2">&quot;NAM_ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;CISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;3-L&quot;</span>
-                <span class="p">)</span>
-                <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
-                    <span class="n">problems</span><span class="p">,</span> <span class="n">nml</span><span class="p">,</span> <span class="s2">&quot;NAM_ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;NGROUND_LAYER&quot;</span><span class="p">,</span> <span class="mi">3</span>
-                <span class="p">)</span>
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#SCHEME&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;2-L&quot;</span><span class="p">:</span>
-                <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
-                    <span class="n">problems</span><span class="p">,</span> <span class="n">nml</span><span class="p">,</span> <span class="s2">&quot;NAM_ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;CISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;2-L&quot;</span>
-                <span class="p">)</span>
-                <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
-                    <span class="n">problems</span><span class="p">,</span> <span class="n">nml</span><span class="p">,</span> <span class="s2">&quot;NAM_ISBA&quot;</span><span class="p">,</span> <span class="s2">&quot;NGROUND_LAYER&quot;</span><span class="p">,</span> <span class="mi">2</span>
-                <span class="p">)</span>
-
-            <span class="c1"># Set patches</span>
-            <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
-                <span class="n">problems</span><span class="p">,</span>
-                <span class="n">nml</span><span class="p">,</span>
-                <span class="s2">&quot;NAM_ISBA&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;NPATCH&quot;</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#NPATCH&quot;</span><span class="p">),</span>
-            <span class="p">)</span>
-
-            <span class="c1"># Set MEB</span>
-            <span class="n">problems</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nml_setting</span><span class="p">(</span>
-                <span class="n">problems</span><span class="p">,</span>
-                <span class="n">nml</span><span class="p">,</span>
-                <span class="s2">&quot;NAM_ISBA&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;LMEB&quot;</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;SURFEX#ISBA#MEB&quot;</span><span class="p">),</span>
-            <span class="p">)</span>
-
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">program</span> <span class="o">==</span> <span class="s2">&quot;prep&quot;</span><span class="p">:</span>
-            <span class="k">pass</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">program</span> <span class="o">==</span> <span class="s2">&quot;offline&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">program</span> <span class="o">==</span> <span class="s2">&quot;perturbed&quot;</span><span class="p">:</span>
-            <span class="k">pass</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">program</span> <span class="o">==</span> <span class="s2">&quot;soda&quot;</span><span class="p">:</span>
-            <span class="k">pass</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">program</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">problems</span></div>
-
-<div class="viewcode-block" id="NamelistGenerator.get_filetype_from_suffix"><a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGenerator.get_filetype_from_suffix">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_filetype_from_suffix</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the file type from suffix.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            fname (str): File name</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            tuple: fname, format</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">fname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.dir&quot;</span><span class="p">):</span>
-            <span class="n">fname</span> <span class="o">=</span> <span class="n">fname</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.dir&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">fname</span><span class="p">,</span> <span class="s2">&quot;DIRECT&quot;</span>
-        <span class="k">if</span> <span class="n">fname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.ascllv&quot;</span><span class="p">):</span>
-            <span class="n">fname</span> <span class="o">=</span> <span class="n">fname</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.ascllv&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">fname</span><span class="p">,</span> <span class="s2">&quot;ASCLLV&quot;</span>
-        <span class="k">return</span> <span class="n">fname</span><span class="p">,</span> <span class="kc">None</span></div>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">input_data_from_namelist</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">input_data</span><span class="p">,</span> <span class="n">platform</span><span class="p">,</span> <span class="n">basetime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">input_data</span><span class="p">,</span> <span class="n">platform</span><span class="p">,</span> <span class="n">basetime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a base namelists class to be implemented by namelist implementations.</span>
 
@@ -550,12 +100,31 @@
 <span class="sd">            platform (SystemFilePaths): Platform specific settings</span>
 <span class="sd">            basetime (as_datetime, optional): Base time</span>
 <span class="sd">            validtime (as_datetime, optional): Valid time</span>
-
+<span class="sd">            check_existence (bool, optional): Check existence of input data.</span>
+<span class="sd">                                              Defaults to True</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            data_obj (InputDataFromNamelist): Input data from namelist</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Set input data from namelist for program: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">program</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">process_macros</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>  <span class="c1"># For DICT</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">process_macros</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>  <span class="c1"># For LIST</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">process_macros</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">v</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">vv</span> <span class="o">=</span> <span class="n">v</span>
+                    <span class="k">for</span> <span class="n">macro</span><span class="p">,</span> <span class="n">mval</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">macros</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vv</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mval</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                            <span class="n">vv</span> <span class="o">=</span> <span class="n">vv</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">micro</span><span class="si">}{</span><span class="n">macro</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">micro</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mval</span><span class="p">)</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">vv</span>
+            <span class="k">return</span> <span class="n">data</span>
+
+        <span class="c1"># Substitute macros in binary input data</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">macros</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">input_data</span> <span class="o">=</span> <span class="n">process_macros</span><span class="p">(</span><span class="n">input_data</span><span class="p">)</span>
 
         <span class="n">data_obj</span> <span class="o">=</span> <span class="n">InputDataFromNamelist</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="p">,</span>
@@ -565,10 +134,122 @@
             <span class="n">basetime</span><span class="o">=</span><span class="n">basetime</span><span class="p">,</span>
             <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span><span class="p">,</span>
         <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">check_existence</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">data_obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">data_obj</span>
 
-<div class="viewcode-block" id="NamelistGenerator.assemble_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGenerator.assemble_namelist">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">assemble_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">uppercase</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">true_repr</span><span class="o">=</span><span class="s2">&quot;.TRUE.&quot;</span><span class="p">,</span> <span class="n">false_repr</span><span class="o">=</span><span class="s2">&quot;.FALSE.&quot;</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the namelists for &#39;target&#39;.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            output_file (str): where to write the result</span>
+<span class="sd">            (OPTIONS.nam, fort.4 or EXSEG1.nam typically)</span>
+<span class="sd">            uppercase (bool, optional): Upper case namelist. Default to True</span>
+<span class="sd">            true_repr (str, optional): String representation of fortran boolean true.</span>
+<span class="sd">                                       Defaults to &quot;.TRUE.&quot;</span>
+<span class="sd">            false_repr (str, optional): String representation of fortran boolean false.</span>
+<span class="sd">                                        Defaults to &quot;.FALSE.&quot;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="o">.</span><span class="n">uppercase</span> <span class="o">=</span> <span class="n">uppercase</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="o">.</span><span class="n">true_repr</span> <span class="o">=</span> <span class="n">true_repr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="o">.</span><span class="n">false_repr</span> <span class="o">=</span> <span class="n">false_repr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Wrote: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NamelistGenerator.lower_case_namelist_dict">
+<a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGenerator.lower_case_namelist_dict">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">lower_case_namelist_dict</span><span class="p">(</span><span class="n">dict_in</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Lower case namelist.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dict_in (dict): Namelist dictionary to lower case</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Namelist in lower case</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">dict_in</span><span class="p">:</span>
+            <span class="n">lower_case_dict</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">key2</span> <span class="ow">in</span> <span class="n">dict_in</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                <span class="n">lower_case_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key2</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span> <span class="n">dict_in</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">key2</span><span class="p">]})</span>
+            <span class="n">new_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span> <span class="n">lower_case_dict</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">new_dict</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="NamelistGeneratorFromNamelistFile">
+<a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGeneratorFromNamelistFile">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NamelistGeneratorFromNamelistFile</span><span class="p">(</span><span class="n">NamelistGenerator</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Namelist class.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="NamelistGeneratorFromNamelistFile.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGeneratorFromNamelistFile.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">nml_file</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">micro</span><span class="o">=</span><span class="s2">&quot;@&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a base namelists class from a file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            program (str): Which surfex binary you want to run</span>
+<span class="sd">                           [&quot;pgd&quot;, &quot;prep&quot;, &quot;offline&quot;, &quot;soda&quot;]</span>
+<span class="sd">            nml_file (str): Namelist file</span>
+<span class="sd">            macros(dict, optional): Macros</span>
+<span class="sd">            micro(str, optional): Micro character</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">f90nml</span><span class="o">.</span><span class="n">Parser</span><span class="p">()</span>
+        <span class="n">nml</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">nml_file</span><span class="p">)</span>
+        <span class="n">NamelistGenerator</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">nml</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="n">macros</span><span class="p">,</span> <span class="n">micro</span><span class="o">=</span><span class="n">micro</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="NamelistGeneratorAssemble">
+<a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGeneratorAssemble">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NamelistGeneratorAssemble</span><span class="p">(</span><span class="n">NamelistGenerator</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Namelist class.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="NamelistGeneratorAssemble.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGeneratorAssemble.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">definitions</span><span class="p">,</span> <span class="n">assemble</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">micro</span><span class="o">=</span><span class="s2">&quot;@&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a base namelists class.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            program (str): Which surfex binary you want to run</span>
+<span class="sd">                           [&quot;pgd&quot;, &quot;prep&quot;, &quot;offline&quot;, &quot;soda&quot;]</span>
+<span class="sd">            definitions (dict): Namelist definitions</span>
+<span class="sd">            assemble(dict): Assembly order. Defines the configuration</span>
+<span class="sd">            macros(dict, optional): Macros</span>
+<span class="sd">            micro(str, optional): Micro character</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nldict</span> <span class="o">=</span> <span class="n">definitions</span>
+        <span class="k">if</span> <span class="n">macros</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">macros</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">macros</span> <span class="o">=</span> <span class="n">macros</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assemble</span> <span class="o">=</span> <span class="n">assemble</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Namelist blocks for program </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">assemble</span><span class="p">)</span>
+        <span class="n">nlres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assemble_namelist</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+        <span class="n">nml</span> <span class="o">=</span> <span class="n">f90nml</span><span class="o">.</span><span class="n">Namelist</span><span class="p">(</span><span class="n">nlres</span><span class="p">)</span>
+        <span class="n">NamelistGenerator</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">nml</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="n">macros</span><span class="p">,</span> <span class="n">micro</span><span class="o">=</span><span class="n">micro</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NamelistGeneratorAssemble.assemble_namelist">
+<a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGeneratorAssemble.assemble_namelist">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">assemble_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the namelists for &#39;target&#39;.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            program (str): Which surfex binary you want to run</span>
+<span class="sd">                           [&quot;pgd&quot;, &quot;prep&quot;, &quot;offline&quot;, &quot;soda&quot;]</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            KeyError: Key not found</span>
@@ -580,7 +261,7 @@
         <span class="c1"># Read namelist file with all the categories</span>
 
         <span class="c1"># Check target is valid</span>
-        <span class="n">cndict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assemble</span>
+        <span class="n">cndict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assemble</span><span class="p">[</span><span class="n">program</span><span class="p">]</span>
         <span class="n">nldict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nldict</span>
 
         <span class="c1"># Start with empty result dictionary</span>
@@ -593,6 +274,7 @@
             <span class="c1"># assemble namelists for this category</span>
             <span class="k">if</span> <span class="n">catg</span> <span class="ow">in</span> <span class="n">nldict</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">nl</span> <span class="ow">in</span> <span class="n">nldict</span><span class="p">[</span><span class="n">catg</span><span class="p">]:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;nl=</span><span class="si">%s</span><span class="s2"> catg=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">nl</span><span class="p">,</span> <span class="n">catg</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">nl</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">nlres</span><span class="p">:</span>
                         <span class="c1"># create the result namelist dict</span>
                         <span class="n">nlres</span><span class="p">[</span><span class="n">nl</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -603,8 +285,9 @@
                         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">nldict</span><span class="p">[</span><span class="n">catg</span><span class="p">][</span><span class="n">nl</span><span class="p">]:</span>
                             <span class="n">val</span> <span class="o">=</span> <span class="n">nldict</span><span class="p">[</span><span class="n">catg</span><span class="p">][</span><span class="n">nl</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
                             <span class="n">finval</span> <span class="o">=</span> <span class="n">val</span>
-                            <span class="c1"># Replace ${var-def} with value from config, possibly macro-expanded</span>
-                            <span class="c1"># For now assumes only one subst. per line, could be generalized if needed</span>
+                            <span class="c1"># Replace ${var-def} with value from config, possibly</span>
+                            <span class="c1"># macro-expanded. For now assumes only one subst. per line,</span>
+                            <span class="c1"># could be generalized if needed</span>
                             <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">finval</span><span class="p">)</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;$&quot;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
                                 <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
                                     <span class="sa">r</span><span class="s2">&quot;^([^\$]*)\$\{([\w\#]+)\-?([^}]*)\}(.*)&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
@@ -641,35 +324,29 @@
                                 <span class="k">else</span><span class="p">:</span>
                                     <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
                             <span class="n">nlres</span><span class="p">[</span><span class="n">nl</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">finval</span>
+                            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;nl=</span><span class="si">%s</span><span class="s2"> key=</span><span class="si">%s</span><span class="s2">, finval=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">nl</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">finval</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Category </span><span class="si">%s</span><span class="s2"> not found in definitions&quot;</span><span class="p">,</span> <span class="n">catg</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">nlres</span></div>
 
-<div class="viewcode-block" id="NamelistGenerator.write"><a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGenerator.write">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the namelists for &#39;target&#39;.</span>
 
-<span class="sd">        Args:</span>
-<span class="sd">            output_file (str): where to write the result (OPTIONS.nam, fort.4 or EXSEG1.nam typically)</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="o">.</span><span class="n">uppercase</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="o">.</span><span class="n">true_repr</span> <span class="o">=</span> <span class="s2">&quot;.TRUE.&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="o">.</span><span class="n">false_repr</span> <span class="o">=</span> <span class="s2">&quot;.FALSE.&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Wrote: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="NamelistGenerator.flatten_list"><a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGenerator.flatten_list">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="NamelistGeneratorAssemble.flatten_list">
+<a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGeneratorAssemble.flatten_list">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">flatten_list</span><span class="p">(</span><span class="n">li</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Recursively flatten a list of lists (of lists).&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">li</span> <span class="o">==</span> <span class="p">[]:</span>
             <span class="k">return</span> <span class="n">li</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">li</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">NamelistGenerator</span><span class="o">.</span><span class="n">flatten_list</span><span class="p">(</span><span class="n">li</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">NamelistGenerator</span><span class="o">.</span><span class="n">flatten_list</span><span class="p">(</span>
-                <span class="n">li</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
-            <span class="p">)</span>
-        <span class="k">return</span> <span class="n">li</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">NamelistGenerator</span><span class="o">.</span><span class="n">flatten_list</span><span class="p">(</span><span class="n">li</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span></div>
+            <span class="k">return</span> <span class="n">NamelistGeneratorAssemble</span><span class="o">.</span><span class="n">flatten_list</span><span class="p">(</span>
+                <span class="n">li</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">)</span> <span class="o">+</span> <span class="n">NamelistGeneratorAssemble</span><span class="o">.</span><span class="n">flatten_list</span><span class="p">(</span><span class="n">li</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+        <span class="k">return</span> <span class="n">li</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">NamelistGeneratorAssemble</span><span class="o">.</span><span class="n">flatten_list</span><span class="p">(</span><span class="n">li</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span></div>
 
-<div class="viewcode-block" id="NamelistGenerator.find_num"><a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGenerator.find_num">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="NamelistGeneratorAssemble.find_num">
+<a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGeneratorAssemble.find_num">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">find_num</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Purpose: un-quote numbers.&quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
@@ -681,16 +358,48 @@
             <span class="n">f</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">f</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">s</span></div></div>
+            <span class="k">return</span> <span class="n">s</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="NamelistGeneratorAssembleFromFiles">
+<a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGeneratorAssembleFromFiles">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NamelistGeneratorAssembleFromFiles</span><span class="p">(</span><span class="n">NamelistGeneratorAssemble</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Namelist class.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="NamelistGeneratorAssembleFromFiles.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGeneratorAssembleFromFiles.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">definitions</span><span class="p">,</span> <span class="n">assemble</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">micro</span><span class="o">=</span><span class="s2">&quot;@&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a base namelists class.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            program (str): Which surfex binary you want to run</span>
+<span class="sd">                           [&quot;pgd&quot;, &quot;prep&quot;, &quot;offline&quot;, &quot;soda&quot;]</span>
+<span class="sd">            definitions (str): Namelist definitions</span>
+<span class="sd">            assemble(str)): Assembly order. Defines the configuration</span>
+<span class="sd">            macros(dict, optional): Macros</span>
+<span class="sd">            micro(str, optional): Micro character</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">definitions</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_handler</span><span class="p">:</span>
+            <span class="n">definitions</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">assemble</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_handler</span><span class="p">:</span>
+            <span class="n">assemble</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span>
+        <span class="n">NamelistGeneratorAssemble</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">definitions</span><span class="p">,</span> <span class="n">assemble</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="n">macros</span><span class="p">,</span> <span class="n">micro</span><span class="o">=</span><span class="n">micro</span>
+        <span class="p">)</span></div>
+</div>
+
 </pre></div>
 
             <div class="clearer"></div>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
@@ -698,13 +407,13 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -716,8 +425,8 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
+    &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
     </div>
   </body>
 </html>

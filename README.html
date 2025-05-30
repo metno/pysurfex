@@ -1,23 +1,22 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Python API to SURFEX (pysurfex) &#8212; SURFEX Python API (pysurfex)  documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=536c50fe" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=1654e008" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/documentation_options.js?v=9fa44488"></script>
+    <script src="_static/doctools.js?v=695de88e"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -33,9 +32,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <img alt="https://coveralls.io/repos/github/metno/pysurfex/badge.svg?branch=master" src="https://coveralls.io/repos/github/metno/pysurfex/badge.svg?branch=master" />
-<section id="python-api-to-surfex-pysurfex">
-<h1>Python API to SURFEX (pysurfex)<a class="headerlink" href="#python-api-to-surfex-pysurfex" title="Permalink to this heading">¶</a></h1>
+  <section id="python-api-to-surfex-pysurfex">
+<h1>Python API to SURFEX (pysurfex)<a class="headerlink" href="#python-api-to-surfex-pysurfex" title="Link to this heading">¶</a></h1>
 <dl class="simple">
 <dt>An API in python to the external surface model SURFEX.</dt><dd><ul class="simple">
 <li><p>Prepare input and namelists to a SURFEX binary</p></li>
@@ -49,7 +47,7 @@
 </dl>
 <p>See online documentation in <a class="reference external" href="https://metno.github.io/pysurfex/">https://metno.github.io/pysurfex/</a></p>
 <section id="installation-of-pregenerated-packages-from-pypi-pip">
-<h2>Installation of pregenerated packages from pypi (pip)<a class="headerlink" href="#installation-of-pregenerated-packages-from-pypi-pip" title="Permalink to this heading">¶</a></h2>
+<h2>Installation of pregenerated packages from pypi (pip)<a class="headerlink" href="#installation-of-pregenerated-packages-from-pypi-pip" title="Link to this heading">¶</a></h2>
 <p>All releases will trigger an autmomatic pre-built package on pypi which can be installed by pip</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3<span class="w"> </span>install<span class="w"> </span>pysurfex
 </pre></div>
@@ -60,27 +58,21 @@
 </div>
 </section>
 <section id="run-pysurfex-from-pre-built-container">
-<h2>Run pysurfex from pre-built container<a class="headerlink" href="#run-pysurfex-from-pre-built-container" title="Permalink to this heading">¶</a></h2>
+<h2>Run pysurfex from pre-built container<a class="headerlink" href="#run-pysurfex-from-pre-built-container" title="Link to this heading">¶</a></h2>
 <p>Releases also trigger an update of the pysurfex container in the github container registry. Below is an example to run pgd without any arguments.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>podman<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>ghcr.io/metno/pysurfex:latest<span class="w"> </span>poetry<span class="w"> </span>run<span class="w"> </span>pgd
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>podman<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>ghcr.io/metno/pysurfex:latest<span class="w"> </span>pgd
 </pre></div>
 </div>
 </section>
 <section id="installation-on-debian-based-linux-system">
-<h2>Installation on debian based Linux system<a class="headerlink" href="#installation-on-debian-based-linux-system" title="Permalink to this heading">¶</a></h2>
-<p>Install the required pacakges (some might be obsolete if the pip packages contain the needed depedencies):</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt-get<span class="w"> </span>update
-sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>libudunits2-dev<span class="w"> </span>libproj-dev<span class="w"> </span>libeccodes0<span class="w"> </span>libeccodes-dev<span class="w"> </span>libnetcdf-dev<span class="w"> </span>netcdf-bin<span class="w"> </span>ca-certificates
-</pre></div>
-</div>
+<h2>Installation on debian based Linux system<a class="headerlink" href="#installation-on-debian-based-linux-system" title="Link to this heading">¶</a></h2>
 <p>The following depencies are needed. Install the non-standard ones e.g. with pip or your system installation system.</p>
 </section>
 <section id="general-dependencies-from-pypi">
-<h2>General dependencies (from pypi)<a class="headerlink" href="#general-dependencies-from-pypi" title="Permalink to this heading">¶</a></h2>
+<h2>General dependencies (from pypi)<a class="headerlink" href="#general-dependencies-from-pypi" title="Link to this heading">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>numpy
 pyproj
 pyyaml
-toml
 f90nml
 </pre></div>
 </div>
@@ -94,6 +86,11 @@ cfunits
 </pre></div>
 </div>
 <p>from ECMWF <a class="reference external" href="https://software.ecmwf.int/wiki/display/ECC/Releases">https://software.ecmwf.int/wiki/display/ECC/Releases</a> installed with ENABLE_PYTHON=ON</p>
+<p>To read FA files:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>falfilfa4py
+epygram
+</pre></div>
+</div>
 <p>To plot:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>matplotlib
 </pre></div>
@@ -116,39 +113,45 @@ cfunits
 </div>
 </section>
 <section id="install-pysurfex">
-<h2>Install pysurfex<a class="headerlink" href="#install-pysurfex" title="Permalink to this heading">¶</a></h2>
+<h2>Install pysurfex<a class="headerlink" href="#install-pysurfex" title="Link to this heading">¶</a></h2>
+<p>An environment manager like miniconda or micromamba is recommended to ensure consistency between the packages.
+After installing this you need to set it up for the current session or permanently add it to your shell.
+Now it is easy to create a suitable environment for pysurfex. Below is a recipie for micromamba.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install micromamba (linux, https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html)</span>
+<span class="s2">&quot;</span><span class="si">${</span><span class="nv">SHELL</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span>&lt;<span class="o">(</span>curl<span class="w"> </span>-L<span class="w"> </span>micro.mamba.pm/install.sh<span class="o">)</span>
+
+<span class="c1"># specify a installation location for micromamba and add it to your path afterwards. Default it will install in $HOME/.local/bin</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$HOME</span>/.local/bin:<span class="nv">$PATH</span><span class="w">  </span><span class="c1"># Use your PATH</span>
+
+<span class="c1"># initialize your shell (needed in all shells), e.g:</span>
+<span class="nb">eval</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>micromamba<span class="w"> </span>shell<span class="w"> </span>hook<span class="w"> </span>--shell<span class="w"> </span>bash<span class="k">)</span><span class="s2">&quot;</span>
+
+micromamba<span class="w"> </span>create<span class="w"> </span>env<span class="w"> </span>pysurfex
+micromamba<span class="w"> </span>activate<span class="w"> </span>pysurfex
+micromamba<span class="w"> </span>install<span class="w"> </span><span class="nv">python</span><span class="o">==</span><span class="m">3</span>.12<span class="w"> </span>poetry
+</pre></div>
+</div>
 <p>Download the source code, then install <code class="docutils literal notranslate"><span class="pre">pysurfex</span></code> by executing the following inside the extracted
 folder:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>poetry<span class="w"> </span>install
 </pre></div>
 </div>
-<p>This will install <code class="docutils literal notranslate"><span class="pre">pysurfex</span></code> in a poetry environment and this environment can be activated interactively by:</p>
+<p>If not already in a conda/manba environment, this will install <code class="docutils literal notranslate"><span class="pre">pysurfex</span></code> in a poetry environment and this environment can be activated interactively by:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>poetry<span class="w"> </span>shell
 </pre></div>
 </div>
 <p>or</p>
 </section>
 <section id="run-pysurfex-client-applications">
-<h2>Run pysurfex client applications<a class="headerlink" href="#run-pysurfex-client-applications" title="Permalink to this heading">¶</a></h2>
+<h2>Run pysurfex client applications<a class="headerlink" href="#run-pysurfex-client-applications" title="Link to this heading">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>poetry<span class="w"> </span>run<span class="w"> </span><span class="o">[</span>command<span class="o">]</span>
 <span class="c1"># e.g.</span>
 poetry<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span><span class="c1"># will run python inside the pysurfex poetry environment</span>
 </pre></div>
 </div>
 </section>
-<section id="id1">
-<h2>Run pysurfex client applications<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pysurfex.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_args_surfex_binary</span><span class="p">,</span> <span class="n">run_surfex_binary</span>
-
-<span class="n">argv</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
-<span class="n">kwargs</span> <span class="o">=</span> <span class="n">parse_args_surfex_binary</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span> <span class="s2">&quot;pgd&quot;</span><span class="p">)</span>
-<span class="n">run_surfex_binary</span><span class="p">(</span><span class="s2">&quot;pgd&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
 <section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading">¶</a></h2>
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h2>
 <p>See <a class="reference external" href="https://metno.github.io/pysurfex/#examples">https://metno.github.io/pysurfex/#examples</a></p>
 </section>
 </section>
@@ -158,7 +161,7 @@ poetry<span class="w"> </span>run<span class="w"> </span>python<span class="w"> 
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
   <div>
     <h3><a href="index.html">Table of Contents</a></h3>
@@ -170,7 +173,6 @@ poetry<span class="w"> </span>run<span class="w"> </span>python<span class="w"> 
 <li><a class="reference internal" href="#general-dependencies-from-pypi">General dependencies (from pypi)</a></li>
 <li><a class="reference internal" href="#install-pysurfex">Install pysurfex</a></li>
 <li><a class="reference internal" href="#run-pysurfex-client-applications">Run pysurfex client applications</a></li>
-<li><a class="reference internal" href="#id1">Run pysurfex client applications</a></li>
 <li><a class="reference internal" href="#examples">Examples</a></li>
 </ul>
 </li>
@@ -184,7 +186,7 @@ poetry<span class="w"> </span>run<span class="w"> </span>python<span class="w"> 
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -192,13 +194,13 @@ poetry<span class="w"> </span>run<span class="w"> </span>python<span class="w"> 
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -209,8 +211,8 @@ poetry<span class="w"> </span>run<span class="w"> </span>python<span class="w"> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
+    &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
     </div>
   </body>
 </html>

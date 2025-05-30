@@ -1,22 +1,21 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pysurfex.geo &#8212; SURFEX Python API (pysurfex)  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=536c50fe" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=1654e008" />
     
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/documentation_options.js?v=9fa44488"></script>
+    <script src="../../_static/doctools.js?v=695de88e"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -46,17 +45,21 @@
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">osgeo</span><span class="w"> </span><span class="kn">import</span> <span class="n">ogr</span>  <span class="c1"># type: ignore</span>
-<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># noqa BLE001</span>
     <span class="n">ogr</span> <span class="o">=</span> <span class="kc">None</span>
 
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">.namelist_legacy</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseNamelist</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.namelist</span><span class="w"> </span><span class="kn">import</span> <span class="n">NamelistGenerator</span>
 
 
-<div class="viewcode-block" id="Geo"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Geo">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Geo</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Geo">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.Geo">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Geo</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Geometry.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Geo.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Geo.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">):</span>
+<div class="viewcode-block" id="Geo.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.Geo.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct geometry.</span>
 
 <span class="sd">        Args:</span>
@@ -84,10 +87,10 @@
         <span class="k">if</span> <span class="n">ndims</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">nlats</span> <span class="o">=</span> <span class="n">lats</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
+        <span class="n">npoints</span> <span class="o">=</span> <span class="n">nlats</span>
         <span class="k">if</span> <span class="n">ndims</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">npoints</span> <span class="o">=</span> <span class="n">nlons</span> <span class="o">*</span> <span class="n">nlats</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">npoints</span> <span class="o">=</span> <span class="n">nlats</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">npoints</span> <span class="o">=</span> <span class="n">npoints</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nlons</span> <span class="o">=</span> <span class="n">nlons</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nlats</span> <span class="o">=</span> <span class="n">nlats</span>
@@ -104,7 +107,10 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;lats=</span><span class="si">%s</span><span class="s2"> shape=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">lats</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">can_interpolate</span> <span class="o">=</span> <span class="n">can_interpolate</span></div>
 
-<div class="viewcode-block" id="Geo.identifier"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Geo.identifier">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Geo.identifier">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.Geo.identifier">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create identifier.&quot;&quot;&quot;</span>
         <span class="n">f_lon</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="n">l_lon</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
@@ -138,7 +144,10 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;TAG: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">tag</span></div>
 
-<div class="viewcode-block" id="Geo.is_identical"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Geo.is_identical">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">is_identical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo_to_check</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Geo.is_identical">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.Geo.is_identical">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_identical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo_to_check</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if geometries are identical.</span>
 
 <span class="sd">        Args:</span>
@@ -151,19 +160,25 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">()</span> <span class="o">==</span> <span class="n">geo_to_check</span><span class="o">.</span><span class="n">identifier</span><span class="p">():</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Geometries are identical&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">False</span></div>
+        <span class="k">return</span> <span class="kc">False</span></div>
 
-<div class="viewcode-block" id="Geo.write_proj_info"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Geo.write_proj_info">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_proj_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Geo.write_proj_info">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.Geo.write_proj_info">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write_proj_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Write proj info.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            None: Do nothing for now.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="kc">None</span></div></div>
+        <span class="k">return</span></div>
+</div>
 
 
-<div class="viewcode-block" id="SurfexGeo"><a class="viewcode-back" href="../../index.html#pysurfex.geo.SurfexGeo">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SurfexGeo</span><span class="p">(</span><span class="n">ABC</span><span class="p">,</span> <span class="n">Geo</span><span class="p">):</span>
+
+<div class="viewcode-block" id="SurfexGeo">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.SurfexGeo">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SurfexGeo</span><span class="p">(</span><span class="n">ABC</span><span class="p">,</span> <span class="n">Geo</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract surfex geometry class.</span>
 
 <span class="sd">    Args:</span>
@@ -171,7 +186,9 @@
 <span class="sd">        Geo (_type_): _description_</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="SurfexGeo.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.geo.SurfexGeo.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">):</span>
+<div class="viewcode-block" id="SurfexGeo.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.SurfexGeo.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a surfex geometry.</span>
 
 <span class="sd">        Args:</span>
@@ -184,7 +201,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">proj</span> <span class="o">=</span> <span class="n">proj</span>
         <span class="n">Geo</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="SurfexGeo.update_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.geo.SurfexGeo.update_namelist">[docs]</a>    <span class="nd">@abstractmethod</span>
+
+<div class="viewcode-block" id="SurfexGeo.update_namelist">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.SurfexGeo.update_namelist">[docs]</a>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nml</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update namelist.</span>
 
@@ -196,20 +216,29 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="SurfexGeo.subset"><a class="viewcode-back" href="../../index.html#pysurfex.geo.SurfexGeo.subset">[docs]</a>    <span class="nd">@abstractmethod</span>
+
+<div class="viewcode-block" id="SurfexGeo.subset">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.SurfexGeo.subset">[docs]</a>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Find subset of geo.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            geo (surfex.Geo): Geometry to check.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+</div>
 
 
-<div class="viewcode-block" id="ConfProj"><a class="viewcode-back" href="../../index.html#pysurfex.geo.ConfProj">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ConfProj</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
+
+<div class="viewcode-block" id="ConfProj">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.ConfProj">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConfProj</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Conf proj.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="ConfProj.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.geo.ConfProj.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
+<div class="viewcode-block" id="ConfProj.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.ConfProj.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct conf proj geo.</span>
 
 <span class="sd">        Args:</span>
@@ -224,7 +253,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span> <span class="o">=</span> <span class="s2">&quot;CONF PROJ&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">json</span> <span class="o">=</span> <span class="n">from_json</span>
-        <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">BaseNamelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
+        <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">NamelistGenerator</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
 
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;from_json: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">from_json</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ilone</span> <span class="o">=</span> <span class="kc">None</span>
@@ -269,16 +298,16 @@
         <span class="c1"># Work-around for SP cases where projection info in FA header is wrong</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{:.5f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xlon0</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{:.5f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlon0</span><span class="p">))</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span> <span class="o">==</span> <span class="mf">90.0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span> <span class="o">==</span> <span class="o">-</span><span class="mf">90.0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span> <span class="ow">in</span> <span class="p">(</span><span class="mf">90.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">90.0</span><span class="p">):</span>
             <span class="n">proj_string</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;+proj=stere +lat_0=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span><span class="p">)</span><span class="si">}</span><span class="s2"> +lon_0=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlon0</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;+lat_ts=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;+proj=stere +lat_0=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span><span class="si">!s}</span><span class="s2"> +lon_0=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xlon0</span><span class="si">!s}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;+lat_ts=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span><span class="si">!s}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">proj_string</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;+proj=lcc +lat_0=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span><span class="p">)</span><span class="si">}</span><span class="s2"> +lon_0=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlon0</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;+lat_1=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span><span class="p">)</span><span class="si">}</span><span class="s2"> +lat_2=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;+units=m +no_defs +R=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">earth</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;+proj=lcc +lat_0=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span><span class="si">!s}</span><span class="s2"> +lon_0=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xlon0</span><span class="si">!s}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;+lat_1=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span><span class="si">!s}</span><span class="s2"> +lat_2=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span><span class="si">!s}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;+units=m +no_defs +R=</span><span class="si">{</span><span class="n">earth</span><span class="si">!s}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
 
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Proj string: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">proj_string</span><span class="p">)</span>
@@ -296,9 +325,9 @@
         <span class="n">xxx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">nimax</span><span class="p">])</span>
         <span class="n">yyy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">njmax</span><span class="p">])</span>
         <span class="c1"># TODO vectorize</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nimax</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nimax</span><span class="p">):</span>
             <span class="n">xxx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_0</span> <span class="o">+</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdx</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">njmax</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">njmax</span><span class="p">):</span>
             <span class="n">yyy</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_0</span> <span class="o">+</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdy</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xxx</span> <span class="o">=</span> <span class="n">xxx</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">yyy</span> <span class="o">=</span> <span class="n">yyy</span>
@@ -313,15 +342,20 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;lats.shape=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">lats</span><span class="p">)</span>
         <span class="n">SurfexGeo</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ConfProj.update_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.geo.ConfProj.update_namelist">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nml</span><span class="p">):</span>
+
+<div class="viewcode-block" id="ConfProj.update_namelist">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.ConfProj.update_namelist">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nam_nml</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update namelist.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            nml (f90nml.Namelist): Namelist object.</span>
+<span class="sd">            nam_nml (NamelistGenerator): Namelist object.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            nml (f90nml.Namelist): Namelist object.</span>
+<span class="sd">            nam_nml (NamelistGenerator): Namelist object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nml</span> <span class="o">=</span> <span class="n">nam_nml</span><span class="o">.</span><span class="n">nml</span>
+
         <span class="n">nml</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
             <span class="p">{</span>
                 <span class="s2">&quot;nam_pgd_grid&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;cgrid&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span><span class="p">},</span>
@@ -347,9 +381,13 @@
             <span class="n">nml</span><span class="p">[</span><span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;ilate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ilate</span><span class="p">})</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xtrunc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">nml</span><span class="p">[</span><span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;xtrunc&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xtrunc</span><span class="p">})</span>
-        <span class="k">return</span> <span class="n">nml</span></div>
+        <span class="n">nam_nml</span><span class="o">.</span><span class="n">nml</span> <span class="o">=</span> <span class="n">nml</span>
+        <span class="k">return</span> <span class="n">nam_nml</span></div>
 
-<div class="viewcode-block" id="ConfProj.subset"><a class="viewcode-back" href="../../index.html#pysurfex.geo.ConfProj.subset">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+
+<div class="viewcode-block" id="ConfProj.subset">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.ConfProj.subset">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Find subset of geo.</span>
 
 <span class="sd">        Args:</span>
@@ -378,11 +416,11 @@
                 <span class="n">x_0</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="n">y_0</span> <span class="o">=</span> <span class="kc">None</span>
 
-                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">nimax</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">nimax</span><span class="p">):</span>
                     <span class="k">if</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="nb">round</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">xxx</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">4</span><span class="p">):</span>
                         <span class="n">x_0</span> <span class="o">=</span> <span class="n">i</span>
                         <span class="k">break</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">njmax</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">njmax</span><span class="p">):</span>
                     <span class="k">if</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y_0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="nb">round</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">yyy</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="mi">4</span><span class="p">):</span>
                         <span class="n">y_0</span> <span class="o">=</span> <span class="n">j</span>
                         <span class="k">break</span>
@@ -393,13 +431,73 @@
                     <span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">x_0</span><span class="p">,</span> <span class="n">x_0</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nimax</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
                     <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">y_0</span><span class="p">,</span> <span class="n">y_0</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">njmax</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 
-        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div></div>
+        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div>
+</div>
 
 
-<div class="viewcode-block" id="LonLatVal"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatVal">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">LonLatVal</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
+
+<div class="viewcode-block" id="ConfProjFromHarmonie">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.ConfProjFromHarmonie">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConfProjFromHarmonie</span><span class="p">(</span><span class="n">ConfProj</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Conf proj.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ConfProjFromHarmonie.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.ConfProjFromHarmonie.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create geo from Harmonuie environment.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            env (dict, optional): Environment dict. Defaults to None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">env</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">env</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span>
+
+        <span class="c1"># Set domain from environment variables. Geo is alway conf proj</span>
+        <span class="n">ezone</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;EZONE&quot;</span><span class="p">])</span>
+        <span class="n">ndluxg</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;NLON&quot;</span><span class="p">])</span> <span class="o">-</span> <span class="n">ezone</span>
+        <span class="k">if</span> <span class="s2">&quot;LNDLUXG&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">ndluxg</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;LNDLUXG&quot;</span><span class="p">])</span>
+        <span class="n">ndguxg</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;NLAT&quot;</span><span class="p">])</span> <span class="o">-</span> <span class="n">ezone</span>
+        <span class="k">if</span> <span class="s2">&quot;LNDGUXG&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">ndguxg</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;LNDGUXG&quot;</span><span class="p">])</span>
+        <span class="n">gsize</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;GSIZE&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s2">&quot;LGSIZE&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">gsize</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;LGSIZE&quot;</span><span class="p">])</span>
+        <span class="n">trunc</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># linear</span>
+        <span class="k">if</span> <span class="s2">&quot;TRUNC&quot;</span> <span class="ow">in</span> <span class="n">env</span><span class="p">:</span>
+            <span class="n">trunc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;TRUNC&quot;</span><span class="p">])</span>
+        <span class="n">domain_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;nam_pgd_grid&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;cgrid&quot;</span><span class="p">:</span> <span class="s2">&quot;CONF PROJ&quot;</span><span class="p">},</span>
+            <span class="s2">&quot;nam_conf_proj&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;xlat0&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;LAT0&quot;</span><span class="p">]),</span>
+                <span class="s2">&quot;xlon0&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;LON0&quot;</span><span class="p">]),</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;ilone&quot;</span><span class="p">:</span> <span class="n">ezone</span><span class="p">,</span>
+                <span class="s2">&quot;ilate&quot;</span><span class="p">:</span> <span class="n">ezone</span><span class="p">,</span>
+                <span class="s2">&quot;xlatcen&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;LATC&quot;</span><span class="p">]),</span>
+                <span class="s2">&quot;xloncen&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s2">&quot;LONC&quot;</span><span class="p">]),</span>
+                <span class="s2">&quot;nimax&quot;</span><span class="p">:</span> <span class="n">ndluxg</span><span class="p">,</span>
+                <span class="s2">&quot;njmax&quot;</span><span class="p">:</span> <span class="n">ndguxg</span><span class="p">,</span>
+                <span class="s2">&quot;xdx&quot;</span><span class="p">:</span> <span class="n">gsize</span><span class="p">,</span>
+                <span class="s2">&quot;xdy&quot;</span><span class="p">:</span> <span class="n">gsize</span><span class="p">,</span>
+                <span class="s2">&quot;xtrunc&quot;</span><span class="p">:</span> <span class="n">trunc</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+        <span class="n">ConfProj</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain_dict</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="LonLatVal">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatVal">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LonLatVal</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;LonLatVal.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="LonLatVal.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatVal.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
+<div class="viewcode-block" id="LonLatVal.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatVal.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a LonLatVal geometry.</span>
 
 <span class="sd">        Used also for points/observations.</span>
@@ -414,7 +512,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span> <span class="o">=</span> <span class="s2">&quot;LONLATVAL&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">json</span> <span class="o">=</span> <span class="n">from_json</span>
-        <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">BaseNamelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
+        <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">NamelistGenerator</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">&quot;nam_lonlatval&quot;</span> <span class="ow">in</span> <span class="n">domain_dict</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">&quot;xx&quot;</span> <span class="ow">and</span> <span class="s2">&quot;xy&quot;</span> <span class="ow">and</span> <span class="s2">&quot;xdx&quot;</span> <span class="ow">and</span> <span class="s2">&quot;xdy&quot;</span> <span class="ow">in</span> <span class="n">domain_dict</span><span class="p">[</span><span class="s2">&quot;nam_lonlatval&quot;</span><span class="p">]:</span>
@@ -431,16 +529,19 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Missing key&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LonLatVal.update_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatVal.update_namelist">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nml</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LonLatVal.update_namelist">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatVal.update_namelist">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nam_nml</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update namelist.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            nml (f90nml.Namelist): Namelist object.</span>
+<span class="sd">            nam_nml (NamelistGenerator): Namelist object.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            nml (f90nml.Namelist): Namelist object.</span>
+<span class="sd">            nml (NamelistGenerator): Namelist object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">nml</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+        <span class="n">nam_nml</span><span class="o">.</span><span class="n">nml</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
             <span class="p">{</span>
                 <span class="s2">&quot;nam_pgd_grid&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;cgrid&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span><span class="p">},</span>
                 <span class="s2">&quot;nam_lonlatval&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -451,9 +552,10 @@
                 <span class="p">},</span>
             <span class="p">}</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">nml</span></div>
+        <span class="k">return</span> <span class="n">nam_nml</span></div>
 
-<div class="viewcode-block" id="LonLatVal.subset"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatVal.subset">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>  <span class="c1"># noqa ARG002</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Find subset of geo.</span>
 
 <span class="sd">        Args:</span>
@@ -465,13 +567,18 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Subset not implemented&quot;</span><span class="p">)</span>
         <span class="n">lons</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">lats</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div></div>
+        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div>
 
 
-<div class="viewcode-block" id="Cartesian"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Cartesian">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Cartesian</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Cartesian">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.Cartesian">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Cartesian</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Cartesian.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Cartesian.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Cartesian.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
+<div class="viewcode-block" id="Cartesian.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.Cartesian.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct Cartesian geometry.</span>
 
 <span class="sd">        Args:</span>
@@ -484,7 +591,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span> <span class="o">=</span> <span class="s2">&quot;CARTESIAN&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">json</span> <span class="o">=</span> <span class="n">from_json</span>
-        <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">BaseNamelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
+        <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">NamelistGenerator</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">&quot;nam_cartesian&quot;</span> <span class="ow">in</span> <span class="n">domain_dict</span><span class="p">:</span>
             <span class="k">if</span> <span class="p">(</span>
@@ -504,9 +611,9 @@
                 <span class="n">proj</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="n">lons</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="n">lats</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nimax</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nimax</span><span class="p">):</span>
                     <span class="n">lons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlon0</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdx</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">njmax</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">njmax</span><span class="p">):</span>
                     <span class="n">lats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlat0</span> <span class="o">+</span> <span class="n">j</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdy</span><span class="p">)</span>
 
                 <span class="n">SurfexGeo</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lons</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lats</span><span class="p">))</span>
@@ -515,17 +622,19 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Missing key&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Cartesian.update_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Cartesian.update_namelist">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nml</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Cartesian.update_namelist">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.Cartesian.update_namelist">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nam_nml</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update namelist.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            nml (f90nml.Namelist): Namelist object.</span>
+<span class="sd">            nam_nml (NamelistGenerator): Namelist object.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            nml (f90nml.Namelist): Namelist object.</span>
+<span class="sd">            nam_nml (NamelistGenerator): Namelist object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">nml</span><span class="p">)</span>
-        <span class="n">nml</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+        <span class="n">nam_nml</span><span class="o">.</span><span class="n">nml</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
             <span class="p">{</span>
                 <span class="s2">&quot;nam_pgd_grid&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;cgrid&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span><span class="p">},</span>
                 <span class="s2">&quot;nam_cartesian&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -538,9 +647,10 @@
                 <span class="p">},</span>
             <span class="p">}</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">nml</span></div>
+        <span class="k">return</span> <span class="n">nam_nml</span></div>
 
-<div class="viewcode-block" id="Cartesian.subset"><a class="viewcode-back" href="../../index.html#pysurfex.geo.Cartesian.subset">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>  <span class="c1"># noqa ARG002</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Find subset of geo.</span>
 
 <span class="sd">        Args:</span>
@@ -553,13 +663,18 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Subset not implemented&quot;</span><span class="p">)</span>
         <span class="n">lons</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">lats</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div></div>
+        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div>
 
 
-<div class="viewcode-block" id="LonLatReg"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatReg">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">LonLatReg</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LonLatReg">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatReg">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LonLatReg</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;LonLatReg.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="LonLatReg.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatReg.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
+<div class="viewcode-block" id="LonLatReg.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatReg.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct the LonLatReg geometry.</span>
 
 <span class="sd">        Args:</span>
@@ -573,7 +688,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span> <span class="o">=</span> <span class="s2">&quot;LONLAT REG&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">json</span> <span class="o">=</span> <span class="n">from_json</span>
-        <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">BaseNamelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
+        <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">NamelistGenerator</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">&quot;nam_lonlat_reg&quot;</span> <span class="ow">in</span> <span class="n">domain_dict</span><span class="p">:</span>
             <span class="k">if</span> <span class="p">(</span>
@@ -605,9 +720,9 @@
         <span class="n">dlon</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlonmax</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlonmin</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nlon</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">dlat</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlatmax</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlatmin</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nlat</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;nlon=</span><span class="si">%s</span><span class="s2"> nlat=</span><span class="si">%s</span><span class="s2"> dlon=</span><span class="si">%s</span><span class="s2"> dlat=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlat</span><span class="p">,</span> <span class="n">dlon</span><span class="p">,</span> <span class="n">dlat</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlon</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nlon</span><span class="p">):</span>
             <span class="n">lons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlonmin</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">dlon</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlat</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nlat</span><span class="p">):</span>
             <span class="n">lats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlatmin</span> <span class="o">+</span> <span class="n">j</span> <span class="o">*</span> <span class="n">dlat</span><span class="p">)</span>
 
         <span class="c1"># proj, npoints, nlons, nlats, lons, lats</span>
@@ -615,16 +730,19 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;longitudes=</span><span class="si">%s</span><span class="s2"> latitudes=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">longitudes</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">latitudes</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
         <span class="n">SurfexGeo</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">longitudes</span><span class="p">,</span> <span class="n">latitudes</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LonLatReg.update_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatReg.update_namelist">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nml</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LonLatReg.update_namelist">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatReg.update_namelist">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nam_nml</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update namelist.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            nml (f90nml.Namelist): Namelist object.</span>
+<span class="sd">            nam_nml (NamelistGenerator): Namelist object.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            nml (f90nml.Namelist): Namelist object.</span>
+<span class="sd">            nml (NamelistGenerator): Namelist object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">nml</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+        <span class="n">nam_nml</span><span class="o">.</span><span class="n">nml</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
             <span class="p">{</span>
                 <span class="s2">&quot;nam_pgd_grid&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;cgrid&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span><span class="p">},</span>
                 <span class="s2">&quot;nam_lonlat_reg&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -637,9 +755,10 @@
                 <span class="p">},</span>
             <span class="p">}</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">nml</span></div>
+        <span class="k">return</span> <span class="n">nam_nml</span></div>
 
-<div class="viewcode-block" id="LonLatReg.subset"><a class="viewcode-back" href="../../index.html#pysurfex.geo.LonLatReg.subset">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>  <span class="c1"># noqa ARG002</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Find subset of geo.</span>
 
 <span class="sd">        Args:</span>
@@ -652,13 +771,18 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Subset not implemented&quot;</span><span class="p">)</span>
         <span class="n">lons</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">lats</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div></div>
+        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div>
 
 
-<div class="viewcode-block" id="IGN"><a class="viewcode-back" href="../../index.html#pysurfex.geo.IGN">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">IGN</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
+
+<div class="viewcode-block" id="IGN">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.IGN">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IGN</span><span class="p">(</span><span class="n">SurfexGeo</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;IGN.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="IGN.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.geo.IGN.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">,</span> <span class="n">recreate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="IGN.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.IGN.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_json</span><span class="p">,</span> <span class="n">recreate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a IGN geometry.</span>
 
 <span class="sd">        Args:</span>
@@ -673,7 +797,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span> <span class="o">=</span> <span class="s2">&quot;IGN&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">json</span> <span class="o">=</span> <span class="n">from_json</span>
-        <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">BaseNamelist</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
+        <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">NamelistGenerator</span><span class="o">.</span><span class="n">lower_case_namelist_dict</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">&quot;nam_ign&quot;</span> <span class="ow">in</span> <span class="n">domain_dict</span><span class="p">:</span>
             <span class="k">if</span> <span class="p">(</span>
@@ -727,7 +851,7 @@
         <span class="c1"># proj, npoints, nlons, nlats, lons, lats</span>
         <span class="n">lons</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">lats</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">npoints</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">npoints</span><span class="p">):</span>
             <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="n">proj</span><span class="p">,</span> <span class="n">wgs84</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">x_x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
             <span class="p">)</span>
@@ -736,7 +860,10 @@
 
         <span class="n">SurfexGeo</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lons</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lats</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="IGN.get_coord"><a class="viewcode-back" href="../../index.html#pysurfex.geo.IGN.get_coord">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="IGN.get_coord">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.IGN.get_coord">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_coord</span><span class="p">(</span><span class="n">pin</span><span class="p">,</span> <span class="n">pdin</span><span class="p">,</span> <span class="n">coord</span><span class="p">,</span> <span class="n">recreate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the IGN coordinates.</span>
 
@@ -775,7 +902,7 @@
                 <span class="n">zdout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">pinval</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pin</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ksize</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ksize</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">pout</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="n">pinval</span><span class="p">:</span>
                     <span class="k">break</span>
                 <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">ksize</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
@@ -784,20 +911,20 @@
                     <span class="n">zdout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">pdin</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>
 
             <span class="c1"># Mesh constrains</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ksize</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">pout</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">pin</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">and</span> <span class="p">(</span><span class="n">pout</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">zdout</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="n">pin</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">pdin</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ksize</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">pout</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">pinval</span> <span class="ow">and</span> <span class="p">(</span><span class="n">pout</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">zdout</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="n">pinval</span> <span class="o">-</span> <span class="n">pdin</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
                     <span class="k">break</span>
                 <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">ksize</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="n">ksize</span> <span class="o">=</span> <span class="n">ksize</span> <span class="o">+</span> <span class="mi">1</span>
-                    <span class="n">pout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pin</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">pdin</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                    <span class="n">pout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pinval</span> <span class="o">-</span> <span class="n">pdin</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
                     <span class="n">zdout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
 
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ksize</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">pout</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">pin</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">and</span> <span class="p">(</span><span class="n">pout</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">zdout</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">pin</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">pdin</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ksize</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">pout</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">pinval</span> <span class="ow">and</span> <span class="p">(</span><span class="n">pout</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">zdout</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">pinval</span> <span class="o">+</span> <span class="n">pdin</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
                     <span class="k">break</span>
                 <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">ksize</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="n">ksize</span> <span class="o">=</span> <span class="n">ksize</span> <span class="o">+</span> <span class="mi">1</span>
-                    <span class="n">pout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pin</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">pdin</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                    <span class="n">pout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pinval</span> <span class="o">+</span> <span class="n">pdin</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
                     <span class="n">zdout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
 
         <span class="c1"># Sort pout</span>
@@ -809,7 +936,10 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Cached coordinates for : </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">coord</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">pout</span></div>
 
-<div class="viewcode-block" id="IGN.ign_mask"><a class="viewcode-back" href="../../index.html#pysurfex.geo.IGN.ign_mask">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="IGN.ign_mask">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.IGN.ign_mask">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">ign_mask</span><span class="p">(</span><span class="n">pxall</span><span class="p">,</span> <span class="n">pyall</span><span class="p">,</span> <span class="n">xxx</span><span class="p">,</span> <span class="n">yyy</span><span class="p">,</span> <span class="n">recreate</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the IGN mask.</span>
 
@@ -862,16 +992,19 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Created mask: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mask</span></div>
 
-<div class="viewcode-block" id="IGN.update_namelist"><a class="viewcode-back" href="../../index.html#pysurfex.geo.IGN.update_namelist">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nml</span><span class="p">):</span>
+
+<div class="viewcode-block" id="IGN.update_namelist">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.IGN.update_namelist">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nam_nml</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update namelist.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            nml (f90nml.Namelist): Namelist object.</span>
+<span class="sd">            nam_nml (NamelistGenerator): Namelist object.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            nml (f90nml.Namelist): Namelist object.</span>
+<span class="sd">            nam_nml (NamelistGenerator): Namelist object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">nml</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+        <span class="n">nam_nml</span><span class="o">.</span><span class="n">nml</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
             <span class="p">{</span>
                 <span class="s2">&quot;nam_pgd_grid&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;cgrid&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cgrid</span><span class="p">},</span>
                 <span class="s2">&quot;nam_ign&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -889,9 +1022,10 @@
                 <span class="p">},</span>
             <span class="p">}</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">nml</span></div>
+        <span class="k">return</span> <span class="n">nam_nml</span></div>
 
-<div class="viewcode-block" id="IGN.subset"><a class="viewcode-back" href="../../index.html#pysurfex.geo.IGN.subset">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geo</span><span class="p">):</span>  <span class="c1"># noqa ARG002</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Find subset of geo.</span>
 
 <span class="sd">        Args:</span>
@@ -904,10 +1038,13 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Subset not implemented&quot;</span><span class="p">)</span>
         <span class="n">lons</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">lats</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div></div>
+        <span class="k">return</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span></div>
 
 
-<div class="viewcode-block" id="get_geo_object"><a class="viewcode-back" href="../../index.html#pysurfex.geo.get_geo_object">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_geo_object</span><span class="p">(</span><span class="n">from_json</span><span class="p">):</span>
+
+<div class="viewcode-block" id="get_geo_object">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.get_geo_object">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_geo_object</span><span class="p">(</span><span class="n">from_json</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a surfex geometry object from a dictionary.</span>
 
 <span class="sd">    Args:</span>
@@ -948,7 +1085,10 @@
     <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;nam_pgd_grid not set!&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="get_geo_object_from_json_file"><a class="viewcode-back" href="../../index.html#pysurfex.geo.get_geo_object_from_json_file">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_geo_object_from_json_file</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+
+<div class="viewcode-block" id="get_geo_object_from_json_file">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.get_geo_object_from_json_file">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_geo_object_from_json_file</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a surfex geometry object from a dictionary.</span>
 
 <span class="sd">    Args:</span>
@@ -963,57 +1103,10 @@
     <span class="k">return</span> <span class="n">get_geo_object</span><span class="p">(</span><span class="n">domain_dict</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="set_domain"><a class="viewcode-back" href="../../index.html#pysurfex.geo.set_domain">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">set_domain</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="n">domain</span><span class="p">,</span> <span class="n">hm_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set domain.</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        settings (dict): Domain definitions</span>
-<span class="sd">        domain (str): Domain name</span>
-<span class="sd">        hm_mode (bool, optional): Harmonie definition. Defaults to False.</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        KeyError: Domain not found</span>
-<span class="sd">        ValueError: Settings should be a dict</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        dict: Domain dictionary</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">domain</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">hm_mode</span><span class="p">:</span>
-                <span class="n">ezone</span> <span class="o">=</span> <span class="mi">11</span>
-                <span class="k">if</span> <span class="s2">&quot;EZONE&quot;</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">[</span><span class="n">domain</span><span class="p">]:</span>
-                    <span class="n">ezone</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">domain</span><span class="p">][</span><span class="s2">&quot;EZONE&quot;</span><span class="p">]</span>
-
-                <span class="n">domain_dict</span> <span class="o">=</span> <span class="p">{</span>
-                    <span class="s2">&quot;nam_pgd_grid&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;cgrid&quot;</span><span class="p">:</span> <span class="s2">&quot;CONF PROJ&quot;</span><span class="p">},</span>
-                    <span class="s2">&quot;nam_conf_proj&quot;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="s2">&quot;xlat0&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">[</span><span class="n">domain</span><span class="p">][</span><span class="s2">&quot;LAT0&quot;</span><span class="p">],</span>
-                        <span class="s2">&quot;xlon0&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">[</span><span class="n">domain</span><span class="p">][</span><span class="s2">&quot;LON0&quot;</span><span class="p">],</span>
-                    <span class="p">},</span>
-                    <span class="s2">&quot;nam_conf_proj_grid&quot;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="s2">&quot;ilone&quot;</span><span class="p">:</span> <span class="n">ezone</span><span class="p">,</span>
-                        <span class="s2">&quot;ilate&quot;</span><span class="p">:</span> <span class="n">ezone</span><span class="p">,</span>
-                        <span class="s2">&quot;xlatcen&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">[</span><span class="n">domain</span><span class="p">][</span><span class="s2">&quot;LATC&quot;</span><span class="p">],</span>
-                        <span class="s2">&quot;xloncen&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">[</span><span class="n">domain</span><span class="p">][</span><span class="s2">&quot;LONC&quot;</span><span class="p">],</span>
-                        <span class="s2">&quot;nimax&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">[</span><span class="n">domain</span><span class="p">][</span><span class="s2">&quot;NLON&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">ezone</span><span class="p">,</span>
-                        <span class="s2">&quot;njmax&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">[</span><span class="n">domain</span><span class="p">][</span><span class="s2">&quot;NLAT&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">ezone</span><span class="p">,</span>
-                        <span class="s2">&quot;xdx&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">[</span><span class="n">domain</span><span class="p">][</span><span class="s2">&quot;GSIZE&quot;</span><span class="p">],</span>
-                        <span class="s2">&quot;xdy&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">[</span><span class="n">domain</span><span class="p">][</span><span class="s2">&quot;GSIZE&quot;</span><span class="p">],</span>
-                    <span class="p">},</span>
-                <span class="p">}</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">domain_dict</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">domain</span><span class="p">]</span>
-            <span class="k">return</span> <span class="n">domain_dict</span>
-
-        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Domain not found: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">domain</span><span class="p">)</span>
-        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Domain not found: &quot;</span> <span class="o">+</span> <span class="n">domain</span><span class="p">)</span>
-    <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Settings should be a dict&quot;</span><span class="p">)</span>
-    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Settings should be a dict&quot;</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="shape2ign"><a class="viewcode-back" href="../../index.html#pysurfex.geo.shape2ign">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">shape2ign</span><span class="p">(</span><span class="n">catchment</span><span class="p">,</span> <span class="n">infile</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">ref_proj</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="shape2ign">
+<a class="viewcode-back" href="../../index.html#pysurfex.geo.shape2ign">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">shape2ign</span><span class="p">(</span><span class="n">catchment</span><span class="p">,</span> <span class="n">infile</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">ref_proj</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read a shape file and convert to IGN geo.</span>
 
 <span class="sd">    Args:</span>
@@ -1024,13 +1117,14 @@
 <span class="sd">        indent (_type_, optional): _description_. Defaults to None.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">from_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">ref_proj</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ref_proj</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fhandler</span><span class="p">:</span>
+        <span class="n">from_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fhandler</span><span class="p">)</span>
     <span class="n">geo</span> <span class="o">=</span> <span class="n">get_geo_object</span><span class="p">(</span><span class="n">from_json</span><span class="p">)</span>
     <span class="n">earth</span> <span class="o">=</span> <span class="mf">6.37122e6</span>
     <span class="n">proj_string</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;+proj=lcc +lat_0=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">xlat0</span><span class="p">)</span><span class="si">}</span><span class="s2"> +lon_0=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">xlon0</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;+lat_1=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">xlat0</span><span class="p">)</span><span class="si">}</span><span class="s2"> +lat_2=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">xlat0</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;+units=m +no_defs +R=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">earth</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;+proj=lcc +lat_0=</span><span class="si">{</span><span class="n">geo</span><span class="o">.</span><span class="n">xlat0</span><span class="si">!s}</span><span class="s2"> +lon_0=</span><span class="si">{</span><span class="n">geo</span><span class="o">.</span><span class="n">xlon0</span><span class="si">!s}</span><span class="s2"> &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;+lat_1=</span><span class="si">{</span><span class="n">geo</span><span class="o">.</span><span class="n">xlat0</span><span class="si">!s}</span><span class="s2"> +lat_2=</span><span class="si">{</span><span class="n">geo</span><span class="o">.</span><span class="n">xlat0</span><span class="si">!s}</span><span class="s2"> &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;+units=m +no_defs +R=</span><span class="si">{</span><span class="n">earth</span><span class="si">!s}</span><span class="s2">&quot;</span>
     <span class="p">)</span>
 
     <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">proj_string</span><span class="p">)</span>
@@ -1080,9 +1174,9 @@
     <span class="n">xdy</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="n">npoints</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">for</span> <span class="n">x_p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_x</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">x_p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_x</span><span class="p">):</span>
         <span class="n">xxx</span> <span class="o">=</span> <span class="n">x_1</span> <span class="o">+</span> <span class="p">(</span><span class="n">x_p</span> <span class="o">*</span> <span class="n">delta_x</span><span class="p">)</span> <span class="o">-</span> <span class="n">delta_x</span>
-        <span class="k">for</span> <span class="n">y_p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_y</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">y_p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_y</span><span class="p">):</span>
             <span class="n">yyy</span> <span class="o">=</span> <span class="n">y_1</span> <span class="o">+</span> <span class="p">(</span><span class="n">y_p</span> <span class="o">*</span> <span class="n">delta_y</span><span class="p">)</span> <span class="o">-</span> <span class="n">delta_y</span>
             <span class="n">point</span> <span class="o">=</span> <span class="n">ogr</span><span class="o">.</span><span class="n">Geometry</span><span class="p">(</span><span class="n">ogr</span><span class="o">.</span><span class="n">wkbPoint</span><span class="p">)</span>
             <span class="n">point</span><span class="o">.</span><span class="n">AddPoint</span><span class="p">(</span><span class="n">xxx</span><span class="p">,</span> <span class="n">yyy</span><span class="p">)</span>
@@ -1111,15 +1205,16 @@
     <span class="p">}</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_handler</span><span class="p">:</span>
         <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">nam_json</span><span class="p">,</span> <span class="n">file_handler</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span></div>
+
 </pre></div>
 
             <div class="clearer"></div>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
@@ -1127,13 +1222,13 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -1145,8 +1240,8 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
+    &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
     </div>
   </body>
 </html>

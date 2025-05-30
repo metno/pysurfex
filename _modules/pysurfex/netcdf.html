@@ -1,22 +1,21 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pysurfex.netcdf &#8212; SURFEX Python API (pysurfex)  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=536c50fe" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=1654e008" />
     
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/documentation_options.js?v=9fa44488"></script>
+    <script src="../../_static/doctools.js?v=695de88e"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -58,10 +57,14 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.interpolation</span><span class="w"> </span><span class="kn">import</span> <span class="n">Interpolation</span>
 
 
-<div class="viewcode-block" id="Netcdf"><a class="viewcode-back" href="../../index.html#pysurfex.netcdf.Netcdf">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Netcdf</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Netcdf">
+<a class="viewcode-back" href="../../index.html#pysurfex.netcdf.Netcdf">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Netcdf</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Netcdf input.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Netcdf.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.netcdf.Netcdf.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+<div class="viewcode-block" id="Netcdf.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.netcdf.Netcdf.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct NetCDF.</span>
 
 <span class="sd">        Args:</span>
@@ -71,6 +74,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;filename: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="n">netCDF4</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span></div>
+
 
     <span class="k">def</span><span class="w"> </span><span class="nf">nc_slice</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -95,7 +99,8 @@
 <span class="sd">            xcoords: X-axis coordinates to subset</span>
 <span class="sd">            ycoords: Y-axis coordinates to subset</span>
 <span class="sd">            deaccumulate (bool): Deaccumulate field</span>
-<span class="sd">            instantanious (float): Scaling factor to make an accumulated value as instantanius</span>
+<span class="sd">            instantanious (float): Scaling factor to make an accumulated value as</span>
+<span class="sd">                                   instantanius</span>
 <span class="sd">            units (str): CF unit for the variable to be read</span>
 <span class="sd">            lev_from_ind (bool): level list are indices and not values</span>
 
@@ -125,7 +130,7 @@
         <span class="n">times_to_read</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">prev_time_steps</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="n">times</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">times</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">times</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
                 <span class="n">times_to_read</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="n">prev_time_steps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
@@ -137,8 +142,8 @@
             <span class="k">if</span> <span class="n">isdatetime</span><span class="p">(</span><span class="n">times</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Time provided in call as datetime objects&quot;</span><span class="p">)</span>
                 <span class="n">times_in_var</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">datetimes</span>
-                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">times_in_var_val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">times_in_var</span><span class="p">):</span>
-                    <span class="n">times_in_var_val</span> <span class="o">=</span> <span class="n">offsetaware</span><span class="p">(</span><span class="n">times_in_var_val</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">times_in_var_val_raw</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">times_in_var</span><span class="p">):</span>
+                    <span class="n">times_in_var_val</span> <span class="o">=</span> <span class="n">offsetaware</span><span class="p">(</span><span class="n">times_in_var_val_raw</span><span class="p">)</span>
                     <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
                         <span class="s2">&quot;i </span><span class="si">%s</span><span class="s2"> times_in_var </span><span class="si">%s</span><span class="s2"> times </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">times_in_var_val</span><span class="p">,</span> <span class="n">times</span>
                     <span class="p">)</span>
@@ -156,7 +161,7 @@
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">times_in_var</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">times</span>
-                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">times_in_var</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">times_in_var</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
                     <span class="k">for</span> <span class="n">times_val</span> <span class="ow">in</span> <span class="n">times</span><span class="p">:</span>
                         <span class="c1"># Time steps requested</span>
                         <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">times_val</span><span class="p">:</span>
@@ -169,36 +174,33 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;times to read </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">times_to_read</span><span class="p">)</span>
         <span class="n">levels_to_read</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="n">levels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">levels</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-                <span class="n">levels_to_read</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">levels</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="n">levels_to_read</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>  <span class="c1"># noqa PERF402</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Level provided in call. lev_from_ind=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">lev_from_ind</span><span class="p">))</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">levels</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Levels must be a list!&quot;</span><span class="p">)</span>
             <span class="n">levels_in_var</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">levels</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">levels_in_var</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">levels_in_var</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
                 <span class="k">for</span> <span class="n">level_ind</span> <span class="ow">in</span> <span class="n">levels</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">lev_from_ind</span><span class="p">:</span>
                         <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">level_ind</span><span class="p">:</span>
                             <span class="n">levels_to_read</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                    <span class="k">else</span><span class="p">:</span>
+                    <span class="k">elif</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">levels_in_var</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="mi">5</span><span class="p">)</span> <span class="o">==</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">level_ind</span><span class="p">),</span> <span class="mi">5</span><span class="p">):</span>
                         <span class="c1"># NB! Round number to avoid round off when matching</span>
-                        <span class="k">if</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">levels_in_var</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="mi">5</span><span class="p">)</span> <span class="o">==</span> <span class="nb">round</span><span class="p">(</span>
-                            <span class="nb">float</span><span class="p">(</span><span class="n">level_ind</span><span class="p">),</span> <span class="mi">5</span>
-                        <span class="p">):</span>
-                            <span class="n">levels_to_read</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                        <span class="n">levels_to_read</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">levels_to_read</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">levels_to_read</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">members_to_read</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="n">members</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-                <span class="n">members_to_read</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="n">members_to_read</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>  <span class="c1"># noqa PERF402</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">members</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Members must be a list!&quot;</span><span class="p">)</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Ensemble members provided in call&quot;</span><span class="p">)</span>
             <span class="n">members_in_var</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">members</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">members_in_var</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">members_in_var</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
                 <span class="k">for</span> <span class="n">member_val</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">members_in_var</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">member_val</span><span class="p">:</span>
                         <span class="n">members_to_read</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
@@ -237,11 +239,11 @@
         <span class="n">types</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">axis_types</span>
         <span class="n">mapping</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Map axis to output axis</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">type_val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">types</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">type_val</span> <span class="o">==</span> <span class="n">Axis</span><span class="o">.</span><span class="n">GEOX</span> <span class="ow">or</span> <span class="n">type_val</span> <span class="o">==</span> <span class="n">Axis</span><span class="o">.</span><span class="n">LON</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">type_val</span> <span class="o">==</span> <span class="n">Axis</span><span class="o">.</span><span class="n">GEOX</span> <span class="ow">or</span> <span class="n">type_val</span> <span class="o">==</span> <span class="n">Axis</span><span class="o">.</span><span class="n">LON</span><span class="p">:</span>  <span class="c1"># noqa PLR1714</span>
                 <span class="n">dims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lon_ind</span><span class="p">)</span>
                 <span class="n">prev_dims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lon_ind</span><span class="p">)</span>
                 <span class="n">mapping</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
-            <span class="k">elif</span> <span class="n">type_val</span> <span class="o">==</span> <span class="n">Axis</span><span class="o">.</span><span class="n">GEOY</span> <span class="ow">or</span> <span class="n">type_val</span> <span class="o">==</span> <span class="n">Axis</span><span class="o">.</span><span class="n">LAT</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">type_val</span> <span class="o">==</span> <span class="n">Axis</span><span class="o">.</span><span class="n">GEOY</span> <span class="ow">or</span> <span class="n">type_val</span> <span class="o">==</span> <span class="n">Axis</span><span class="o">.</span><span class="n">LAT</span><span class="p">:</span>  <span class="c1"># noqa PLR1714</span>
                 <span class="n">dims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lat_ind</span><span class="p">)</span>
                 <span class="n">prev_dims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lat_ind</span><span class="p">)</span>
                 <span class="n">mapping</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
@@ -258,7 +260,7 @@
                 <span class="n">prev_dims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">members_to_read</span><span class="p">)</span>
                 <span class="n">mapping</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">types</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot; is not defined!&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">type_val</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; is not defined!&quot;</span><span class="p">)</span>
 
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Read </span><span class="si">%s</span><span class="s2"> with dimensions: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">var_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">dims</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">deaccumulate</span><span class="p">:</span>
@@ -294,7 +296,7 @@
         <span class="c1"># Add extra dimensions</span>
         <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">reverse_mapping</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">dim</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">mapping</span><span class="p">:</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Adding dimension </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">dim</span><span class="p">))</span>
                 <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span>
@@ -311,24 +313,24 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Shape of output: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo</span>
 
-<div class="viewcode-block" id="Netcdf.field"><a class="viewcode-back" href="../../index.html#pysurfex.netcdf.Netcdf.field">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">member</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Netcdf.field">
+<a class="viewcode-back" href="../../index.html#pysurfex.netcdf.Netcdf.field">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">member</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read field.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var_name (str): Variable name</span>
 <span class="sd">            level (int, optional): Level. Defaults to None.</span>
 <span class="sd">            member (int, optional): Realization. Defaults to None.</span>
-<span class="sd">            validtime (surfex.datetime_utils.as_datetime, optional): Validtime. Defaults to None.</span>
+<span class="sd">            validtime (surfex.datetime_utils.as_datetime, optional): Validtime.</span>
+<span class="sd">                                                                     Defaults to None.</span>
 <span class="sd">            units (str, optional): Units. Defaults to None.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple: Field, Geo</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">validtime</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">validtime</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">validtime</span> <span class="o">=</span> <span class="p">[</span><span class="n">validtime</span><span class="p">]</span>
+        <span class="n">validtime</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">validtime</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[</span><span class="n">validtime</span><span class="p">]</span>
 
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;level </span><span class="si">%s</span><span class="s2"> member </span><span class="si">%s</span><span class="s2"> validtime </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">member</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
         <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nc_slice</span><span class="p">(</span>
@@ -338,13 +340,17 @@
         <span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="p">[</span><span class="n">geo_in</span><span class="o">.</span><span class="n">nlons</span><span class="p">,</span> <span class="n">geo_in</span><span class="o">.</span><span class="n">nlats</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">geo_in</span></div>
 
-<div class="viewcode-block" id="Netcdf.points"><a class="viewcode-back" href="../../index.html#pysurfex.netcdf.Netcdf.points">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Netcdf.points">
+<a class="viewcode-back" href="../../index.html#pysurfex.netcdf.Netcdf.points">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a field and interpolate it to requested positions.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var (NetCDFReadVariable): NetCDF variable</span>
 <span class="sd">            geo (surfx.geo.Geo): Geometry</span>
-<span class="sd">            validtime (surfex.datetime_utils.as_datetime, optional): Validtime. Defaults to None.</span>
+<span class="sd">            validtime (surfex.datetime_utils.as_datetime, optional): Validtime.</span>
+<span class="sd">                                                                     Defaults to None.</span>
 <span class="sd">            interpolation (str, optional): Interpolation. Defaults to &quot;bilinear&quot;.</span>
 
 <span class="sd">        Returns:</span>
@@ -361,10 +367,14 @@
         <span class="p">)</span>
         <span class="n">interpolator</span> <span class="o">=</span> <span class="n">Interpolation</span><span class="p">(</span><span class="n">interpolation</span><span class="p">,</span> <span class="n">geo_in</span><span class="p">,</span> <span class="n">geo</span><span class="p">)</span>
         <span class="n">field</span> <span class="o">=</span> <span class="n">interpolator</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">interpolator</span></div></div>
+        <span class="k">return</span> <span class="n">field</span><span class="p">,</span> <span class="n">interpolator</span></div>
+</div>
 
 
-<div class="viewcode-block" id="Axis"><a class="viewcode-back" href="../../index.html#pysurfex.netcdf.Axis">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Axis</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Axis">
+<a class="viewcode-back" href="../../index.html#pysurfex.netcdf.Axis">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Axis</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Axis.&quot;&quot;&quot;</span>
 
     <span class="n">UNDEFINED</span> <span class="o">=</span> <span class="mi">0</span>
@@ -381,10 +391,15 @@
     <span class="n">HYBRID</span> <span class="o">=</span> <span class="mi">11</span></div>
 
 
-<div class="viewcode-block" id="NetCDFReadVariable"><a class="viewcode-back" href="../../index.html#pysurfex.netcdf.NetCDFReadVariable">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">NetCDFReadVariable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+<div class="viewcode-block" id="NetCDFReadVariable">
+<a class="viewcode-back" href="../../index.html#pysurfex.netcdf.NetCDFReadVariable">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NetCDFReadVariable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;NetCDF read variable.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="NetCDFReadVariable.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.netcdf.NetCDFReadVariable.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">member</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="NetCDFReadVariable.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.netcdf.NetCDFReadVariable.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">member</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct object.</span>
 
 <span class="sd">        Args:</span>
@@ -397,13 +412,19 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="n">level</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">units</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">member</span> <span class="o">=</span> <span class="n">member</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">member</span> <span class="o">=</span> <span class="n">member</span></div>
+</div>
 
 
-<div class="viewcode-block" id="NetCDFFileVariable"><a class="viewcode-back" href="../../index.html#pysurfex.netcdf.NetCDFFileVariable">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">NetCDFFileVariable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+<div class="viewcode-block" id="NetCDFFileVariable">
+<a class="viewcode-back" href="../../index.html#pysurfex.netcdf.NetCDFFileVariable">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NetCDFFileVariable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;NetDF file variable.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="NetCDFFileVariable.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.netcdf.NetCDFFileVariable.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_handler</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
+<div class="viewcode-block" id="NetCDFFileVariable.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.netcdf.NetCDFFileVariable.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_handler</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct object.</span>
 
 <span class="sd">        Args:</span>
@@ -417,6 +438,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">name</span></div>
 
+
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">axis_types</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get axis_types.&quot;&quot;&quot;</span>
@@ -426,11 +448,11 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">]:</span>
             <span class="k">for</span> <span class="n">dim_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">]</span><span class="o">.</span><span class="n">dimensions</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">dim_name</span> <span class="o">==</span> <span class="s2">&quot;longitude&quot;</span> <span class="ow">or</span> <span class="n">dim_name</span> <span class="o">==</span> <span class="s2">&quot;lon&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">dim_name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">):</span>
                     <span class="n">types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Axis</span><span class="o">.</span><span class="n">LON</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="n">dim_name</span> <span class="o">==</span> <span class="s2">&quot;x&quot;</span><span class="p">:</span>
                     <span class="n">types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Axis</span><span class="o">.</span><span class="n">GEOX</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="n">dim_name</span> <span class="o">==</span> <span class="s2">&quot;latitude&quot;</span> <span class="ow">or</span> <span class="n">dim_name</span> <span class="o">==</span> <span class="s2">&quot;lat&quot;</span><span class="p">:</span>
+                <span class="k">elif</span> <span class="n">dim_name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="s2">&quot;lat&quot;</span><span class="p">):</span>
                     <span class="n">types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Axis</span><span class="o">.</span><span class="n">LAT</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="n">dim_name</span> <span class="o">==</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span>
                     <span class="n">types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Axis</span><span class="o">.</span><span class="n">GEOY</span><span class="p">)</span>
@@ -455,7 +477,7 @@
         <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">]:</span>
             <span class="k">for</span> <span class="n">dim_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">]</span><span class="o">.</span><span class="n">dimensions</span><span class="p">:</span>
-                <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dim_name</span><span class="p">)</span>
+                <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dim_name</span><span class="p">)</span>  <span class="c1"># noqa PERF402</span>
         <span class="k">return</span> <span class="n">names</span>
 
     <span class="nd">@property</span>
@@ -608,7 +630,9 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No levels found for </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">levels</span>
 
-<div class="viewcode-block" id="NetCDFFileVariable.is_level"><a class="viewcode-back" href="../../index.html#pysurfex.netcdf.NetCDFFileVariable.is_level">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="NetCDFFileVariable.is_level">
+<a class="viewcode-back" href="../../index.html#pysurfex.netcdf.NetCDFFileVariable.is_level">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_level</span><span class="p">(</span><span class="n">axis_type</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if is level.</span>
 
@@ -619,15 +643,14 @@
 <span class="sd">            bool: If axis is a level type</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="p">(</span>
-            <span class="n">axis_type</span> <span class="o">==</span> <span class="n">Axis</span><span class="o">.</span><span class="n">HEIGHT</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">axis_type</span> <span class="o">==</span> <span class="n">Axis</span><span class="o">.</span><span class="n">HEIGHT</span>  <span class="c1"># noqa PLR1714</span>
             <span class="ow">or</span> <span class="n">axis_type</span> <span class="o">==</span> <span class="n">Axis</span><span class="o">.</span><span class="n">PESSURE</span>
             <span class="ow">or</span> <span class="n">axis_type</span> <span class="o">==</span> <span class="n">Axis</span><span class="o">.</span><span class="n">GEOZ</span>
             <span class="ow">or</span> <span class="n">axis_type</span> <span class="o">==</span> <span class="n">Axis</span><span class="o">.</span><span class="n">HYBRID</span>
-        <span class="p">):</span>
-            <span class="k">return</span> <span class="kc">True</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">False</span></div></div>
+        <span class="p">)</span></div>
+</div>
+
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">create_netcdf_first_guess_template</span><span class="p">(</span>
@@ -722,21 +745,22 @@
         <span class="n">my_fg</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">my_var</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">units</span><span class="p">[</span><span class="n">my_var</span><span class="p">]</span>
 
     <span class="c1"># Global attributes</span>
-    <span class="k">if</span> <span class="n">geo</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">ConfProj</span><span class="p">):</span>
-            <span class="n">my_fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;gridtype&quot;</span><span class="p">,</span> <span class="s2">&quot;lambert&quot;</span><span class="p">)</span>
-            <span class="n">my_fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;dlon&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">xdx</span><span class="p">))</span>
-            <span class="n">my_fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;dlat&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">xdy</span><span class="p">))</span>
-            <span class="n">my_fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;projlat&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">xlat0</span><span class="p">))</span>
-            <span class="n">my_fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;projlat2&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">xlat0</span><span class="p">))</span>
-            <span class="n">my_fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;projlon&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">xlon0</span><span class="p">))</span>
-            <span class="n">my_fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;lonc&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">xloncen</span><span class="p">))</span>
-            <span class="n">my_fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;latc&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">xlatcen</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">geo</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">ConfProj</span><span class="p">):</span>
+        <span class="n">my_fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;gridtype&quot;</span><span class="p">,</span> <span class="s2">&quot;lambert&quot;</span><span class="p">)</span>
+        <span class="n">my_fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;dlon&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">xdx</span><span class="p">))</span>
+        <span class="n">my_fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;dlat&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">xdy</span><span class="p">))</span>
+        <span class="n">my_fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;projlat&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">xlat0</span><span class="p">))</span>
+        <span class="n">my_fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;projlat2&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">xlat0</span><span class="p">))</span>
+        <span class="n">my_fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;projlon&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">xlon0</span><span class="p">))</span>
+        <span class="n">my_fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;lonc&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">xloncen</span><span class="p">))</span>
+        <span class="n">my_fg</span><span class="o">.</span><span class="n">setncattr</span><span class="p">(</span><span class="s2">&quot;latc&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">xlatcen</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">my_fg</span>
 
 
-<div class="viewcode-block" id="read_first_guess_netcdf_file"><a class="viewcode-back" href="../../index.html#pysurfex.netcdf.read_first_guess_netcdf_file">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">read_first_guess_netcdf_file</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
+<div class="viewcode-block" id="read_first_guess_netcdf_file">
+<a class="viewcode-back" href="../../index.html#pysurfex.netcdf.read_first_guess_netcdf_file">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_first_guess_netcdf_file</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read netCDF first guess file.</span>
 
 <span class="sd">    Args:</span>
@@ -815,6 +839,7 @@
     <span class="k">return</span> <span class="n">geo</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">background</span><span class="p">,</span> <span class="n">glafs</span><span class="p">,</span> <span class="n">gelevs</span></div>
 
 
+
 <span class="k">def</span><span class="w"> </span><span class="nf">write_analysis_netcdf_file</span><span class="p">(</span>
     <span class="n">filename</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">validtime</span><span class="p">,</span> <span class="n">elevs</span><span class="p">,</span> <span class="n">lafs</span><span class="p">,</span> <span class="n">new_file</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">geo</span><span class="o">=</span><span class="kc">None</span>
 <span class="p">):</span>
@@ -852,8 +877,8 @@
         <span class="p">)</span>
         <span class="n">file_handler</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s2">&quot;longitude&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">lons</span><span class="p">)</span>
         <span class="n">file_handler</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s2">&quot;latitude&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">lats</span><span class="p">)</span>
-        <span class="n">file_handler</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlons</span><span class="p">))</span>
-        <span class="n">file_handler</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">))</span>
+        <span class="n">file_handler</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">nlons</span><span class="p">))</span>
+        <span class="n">file_handler</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">geo</span><span class="o">.</span><span class="n">nlats</span><span class="p">))</span>
         <span class="n">file_handler</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s2">&quot;altitude&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">elevs</span><span class="p">)</span>
         <span class="n">file_handler</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s2">&quot;land_area_fraction&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">lafs</span><span class="p">)</span>
 
@@ -866,13 +891,17 @@
     <span class="n">file_handler</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="oi2soda"><a class="viewcode-back" href="../../index.html#pysurfex.netcdf.oi2soda">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">oi2soda</span><span class="p">(</span><span class="n">dtg</span><span class="p">,</span> <span class="n">t2m</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rh2m</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">s_d</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">s_m</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="oi2soda">
+<a class="viewcode-back" href="../../index.html#pysurfex.netcdf.oi2soda">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">oi2soda</span><span class="p">(</span><span class="n">dtg</span><span class="p">,</span> <span class="n">t2m</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rh2m</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">s_d</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">s_m</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert analysis to ASCII obs file for SODA.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        dtg (surfex.datetime_utils): Analysis time</span>
-<span class="sd">        t2m (dict, optional): Screen level temperature var and file name. Defaults to None.</span>
-<span class="sd">        rh2m (dict, optional): Screen level relative humidiy var and file name. Defaults to None.</span>
+<span class="sd">        t2m (dict, optional): Screen level temperature var and file name.</span>
+<span class="sd">                              Defaults to None.</span>
+<span class="sd">        rh2m (dict, optional): Screen level relative humidiy var and file name.</span>
+<span class="sd">                               Defaults to None.</span>
 <span class="sd">        s_d (dict, optional): Snow depth var and file name. Defaults to None.</span>
 <span class="sd">        s_m (dict, optional): Soil moisture var and file name. Defaults to None.</span>
 <span class="sd">        output (str, optional): Output file name. Defaults to None.</span>
@@ -987,7 +1016,7 @@
         <span class="p">)</span>
 
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">out</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_x</span> <span class="o">*</span> <span class="n">n_y</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_x</span> <span class="o">*</span> <span class="n">n_y</span><span class="p">):</span>
             <span class="n">line</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
             <span class="k">if</span> <span class="n">t2m_var</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">line</span> <span class="o">=</span> <span class="n">line</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">t2m_var</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
@@ -1002,12 +1031,16 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;i </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="read_cryoclim_nc"><a class="viewcode-back" href="../../index.html#pysurfex.netcdf.read_cryoclim_nc">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">read_cryoclim_nc</span><span class="p">(</span><span class="n">infiles</span><span class="p">,</span> <span class="n">cryo_varname</span><span class="o">=</span><span class="s2">&quot;classed_value_c&quot;</span><span class="p">):</span>
+
+<div class="viewcode-block" id="read_cryoclim_nc">
+<a class="viewcode-back" href="../../index.html#pysurfex.netcdf.read_cryoclim_nc">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_cryoclim_nc</span><span class="p">(</span><span class="n">infiles</span><span class="p">,</span> <span class="n">cryo_varname</span><span class="o">=</span><span class="s2">&quot;classed_value_c&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read crycoclim netCDF file.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        infiles (list): Input files.</span>
-<span class="sd">        cryo_varname (str, optional): Variable name in cryo file. Defaults to &quot;classed_value_c&quot;</span>
+<span class="sd">        cryo_varname (str, optional): Variable name in cryo file.</span>
+<span class="sd">                                      Defaults to &quot;classed_value_c&quot;</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        RuntimeError: &quot;No files were read properly&quot;</span>
@@ -1038,7 +1071,10 @@
     <span class="k">return</span> <span class="n">grid_lons</span><span class="p">,</span> <span class="n">grid_lats</span><span class="p">,</span> <span class="n">grid_snow_class</span></div>
 
 
-<div class="viewcode-block" id="read_sentinel_nc"><a class="viewcode-back" href="../../index.html#pysurfex.netcdf.read_sentinel_nc">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">read_sentinel_nc</span><span class="p">(</span><span class="n">infiles</span><span class="p">):</span>
+
+<div class="viewcode-block" id="read_sentinel_nc">
+<a class="viewcode-back" href="../../index.html#pysurfex.netcdf.read_sentinel_nc">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_sentinel_nc</span><span class="p">(</span><span class="n">infiles</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read sentinel nc files.</span>
 
 <span class="sd">    Args:</span>
@@ -1068,15 +1104,16 @@
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No files were read properly&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">grid_lons</span><span class="p">,</span> <span class="n">grid_lats</span><span class="p">,</span> <span class="n">grid_sm</span></div>
+
 </pre></div>
 
             <div class="clearer"></div>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
@@ -1084,13 +1121,13 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -1102,8 +1139,8 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
+    &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
     </div>
   </body>
 </html>

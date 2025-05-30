@@ -1,22 +1,21 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pysurfex.titan &#8212; SURFEX Python API (pysurfex)  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=536c50fe" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=1654e008" />
     
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/documentation_options.js?v=9fa44488"></script>
+    <script src="../../_static/doctools.js?v=695de88e"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -53,14 +52,21 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.observation</span><span class="w"> </span><span class="kn">import</span> <span class="n">Observation</span>
 
 
-<div class="viewcode-block" id="QualityControl"><a class="viewcode-back" href="../../index.html#pysurfex.titan.QualityControl">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">QualityControl</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="QualityControl">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.QualityControl">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">QualityControl</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Quality control abstract class.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="QualityControl.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.titan.QualityControl.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<div class="viewcode-block" id="QualityControl.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.QualityControl.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct base class.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span></div>
 
-<div class="viewcode-block" id="QualityControl.set_input"><a class="viewcode-back" href="../../index.html#pysurfex.titan.QualityControl.set_input">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+
+<div class="viewcode-block" id="QualityControl.set_input">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.QualityControl.set_input">[docs]</a>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set input to test.</span>
 
@@ -72,7 +78,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="QualityControl.test"><a class="viewcode-back" href="../../index.html#pysurfex.titan.QualityControl.test">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+
+<div class="viewcode-block" id="QualityControl.test">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.QualityControl.test">[docs]</a>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The quality control test.</span>
 
@@ -86,7 +95,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="QualityControl.set_flags"><a class="viewcode-back" href="../../index.html#pysurfex.titan.QualityControl.set_flags">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="QualityControl.set_flags">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.QualityControl.set_flags">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_flags</span><span class="p">(</span><span class="n">global_flags</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set flags.</span>
 
@@ -104,13 +116,19 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">imask</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">global_flags</span><span class="p">[</span><span class="n">imask</span><span class="p">]</span> <span class="o">=</span> <span class="n">code</span>
 
-        <span class="k">return</span> <span class="n">global_flags</span></div></div>
+        <span class="k">return</span> <span class="n">global_flags</span></div>
+</div>
 
 
-<div class="viewcode-block" id="Plausibility"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Plausibility">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Plausibility</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Plausibility">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Plausibility">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Plausibility</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Plausibilty.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Plausibility.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Plausibility.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Plausibility.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Plausibility.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct plausibility test.</span>
 
 <span class="sd">        Args:</span>
@@ -124,7 +142,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">def_max</span> <span class="o">=</span> <span class="n">maxval</span>
         <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;plausibility&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Plausibility.set_input"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Plausibility.set_input">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Plausibility.set_input">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Plausibility.set_input">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set input.</span>
 
 <span class="sd">        Args:</span>
@@ -151,14 +172,17 @@
 
         <span class="n">minvals</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">maxvals</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
             <span class="n">minvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">used_min</span><span class="p">)</span>
             <span class="n">maxvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">used_max</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">minvals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minvals</span> <span class="o">+</span> <span class="n">minvals</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">maxvals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxvals</span> <span class="o">+</span> <span class="n">maxvals</span></div>
 
-<div class="viewcode-block" id="Plausibility.test"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Plausibility.test">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">102</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Plausibility.test">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Plausibility.test">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">102</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Do the test.</span>
 
 <span class="sd">        Args:</span>
@@ -202,10 +226,14 @@
                 <span class="n">global_flags</span><span class="p">[</span><span class="n">mask_ind</span><span class="p">],</span>
             <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">global_flags</span></div></div>
+        <span class="k">return</span> <span class="n">global_flags</span></div>
+</div>
 
 
-<div class="viewcode-block" id="FirstGuess"><a class="viewcode-back" href="../../index.html#pysurfex.titan.FirstGuess">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">FirstGuess</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
+
+<div class="viewcode-block" id="FirstGuess">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.FirstGuess">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FirstGuess</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;First guess check.&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -238,7 +266,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">max_distance</span> <span class="o">=</span> <span class="n">max_distance</span>
         <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;firstguess&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="FirstGuess.set_input"><a class="viewcode-back" href="../../index.html#pysurfex.titan.FirstGuess.set_input">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">posdiff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">negdiff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="FirstGuess.set_input">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.FirstGuess.set_input">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">posdiff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">negdiff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set input.</span>
 
 <span class="sd">        Args:</span>
@@ -267,14 +297,17 @@
 
         <span class="n">minvals</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">maxvals</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
             <span class="n">minvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">used_negdiff</span><span class="p">)</span>
             <span class="n">maxvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">used_posdiff</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">negdiff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">negdiff</span> <span class="o">+</span> <span class="n">minvals</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">posdiff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">posdiff</span> <span class="o">+</span> <span class="n">maxvals</span></div>
 
-<div class="viewcode-block" id="FirstGuess.test"><a class="viewcode-back" href="../../index.html#pysurfex.titan.FirstGuess.test">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">108</span><span class="p">):</span>
+
+<div class="viewcode-block" id="FirstGuess.test">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.FirstGuess.test">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">108</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Do the test.</span>
 
 <span class="sd">        Args:</span>
@@ -314,7 +347,7 @@
 
         <span class="n">global_flags</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">flags</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">mask_ind</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mask</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">fg_operator</span><span class="o">.</span><span class="n">is_in_grid</span><span class="p">(</span><span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="n">fg_operator</span><span class="o">.</span><span class="n">is_in_grid</span><span class="p">(</span><span class="n">mask_ind</span><span class="p">):</span>
                 <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">global_flags</span><span class="p">[</span><span class="n">mask_ind</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">int</span><span class="p">(</span><span class="n">flags</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="n">global_flags</span><span class="p">[</span><span class="n">mask_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">code</span>
             <span class="k">else</span><span class="p">:</span>
@@ -336,10 +369,14 @@
                 <span class="n">fg_vals</span><span class="p">[</span><span class="n">mask_ind</span><span class="p">],</span>
             <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">global_flags</span></div></div>
+        <span class="k">return</span> <span class="n">global_flags</span></div>
+</div>
 
 
-<div class="viewcode-block" id="Fraction"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Fraction">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Fraction</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Fraction">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Fraction">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Fraction</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Fraction test.&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -372,7 +409,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">max_distance</span> <span class="o">=</span> <span class="n">max_distance</span>
         <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;fraction&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Fraction.set_input"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Fraction.set_input">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Fraction.set_input">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Fraction.set_input">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set input.</span>
 
 <span class="sd">        Args:</span>
@@ -401,14 +440,17 @@
 
         <span class="n">minvals</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">maxvals</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
             <span class="n">minvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">used_min</span><span class="p">)</span>
             <span class="n">maxvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">used_max</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span> <span class="o">+</span> <span class="n">minvals</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">+</span> <span class="n">maxvals</span></div>
 
-<div class="viewcode-block" id="Fraction.test"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Fraction.test">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">151</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Fraction.test">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Fraction.test">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">151</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform test.</span>
 
 <span class="sd">        Args:</span>
@@ -481,10 +523,14 @@
                 <span class="n">fraction_vals</span><span class="p">[</span><span class="n">mask_ind</span><span class="p">],</span>
             <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">global_flags</span></div></div>
+        <span class="k">return</span> <span class="n">global_flags</span></div>
+</div>
 
 
-<div class="viewcode-block" id="Sct"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Sct">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Sct</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Sct">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Sct">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Sct</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Spatial consistency check.&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -522,7 +568,8 @@
 <span class="sd">            eps2 (float, optional): eps2. Defaults to 0.5.</span>
 <span class="sd">            cmin (float, optional): cmin. Defaults to 0.9.</span>
 <span class="sd">            cmax (float, optional): cmax. Defaults to 1.1.</span>
-<span class="sd">            missing_elev_to_zero (bool, optional): Set missing elevtions to zero. Defaults to False.</span>
+<span class="sd">            missing_elev_to_zero (bool, optional): Set missing elevtions to zero.</span>
+<span class="sd">                                                   Defaults to False.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_min</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_min</span><span class="p">)</span>
@@ -545,7 +592,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">missing_elev_to_zero</span> <span class="o">=</span> <span class="n">missing_elev_to_zero</span>
         <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;sct&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Sct.set_input"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Sct.set_input">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">neg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eps2</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Sct.set_input">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Sct.set_input">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">neg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eps2</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set input.</span>
 
 <span class="sd">        Args:</span>
@@ -574,7 +623,7 @@
         <span class="n">pos</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">neg</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">eps2</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
             <span class="n">pos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">used_pos</span><span class="p">)</span>
             <span class="n">neg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">used_neg</span><span class="p">)</span>
             <span class="n">eps2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">used_eps2</span><span class="p">)</span>
@@ -583,7 +632,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">neg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neg</span> <span class="o">+</span> <span class="n">neg</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">eps2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps2</span> <span class="o">+</span> <span class="n">eps2</span></div>
 
-<div class="viewcode-block" id="Sct.test"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Sct.test">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">105</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Sct.test">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Sct.test">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">105</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Do the test.</span>
 
 <span class="sd">        Args:</span>
@@ -710,10 +762,14 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No observations to run test on&quot;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">global_flags</span></div></div>
+        <span class="k">return</span> <span class="n">global_flags</span></div>
+</div>
 
 
-<div class="viewcode-block" id="Buddy"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Buddy">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Buddy</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Buddy">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Buddy">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Buddy</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Buddy test.&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -794,7 +850,7 @@
         <span class="k">if</span> <span class="n">obs_to_check</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">used_distance_lim</span> <span class="o">=</span> <span class="n">obs_to_check</span>
 
-        <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
             <span class="n">distance_lim</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">used_distance_lim</span><span class="p">)</span>
             <span class="n">priorities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">used_priorities</span><span class="p">)</span>
             <span class="n">buddies_min</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">used_buddies_min</span><span class="p">)</span>
@@ -813,7 +869,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">thresholds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">thresholds</span> <span class="o">+</span> <span class="n">thresholds</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">obs_to_check</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_to_check</span> <span class="o">+</span> <span class="n">obs_to_check</span>
 
-<div class="viewcode-block" id="Buddy.test"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Buddy.test">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">104</span><span class="p">):</span>
+<div class="viewcode-block" id="Buddy.test">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Buddy.test">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">104</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Do the test.</span>
 
 <span class="sd">        Args:</span>
@@ -840,7 +898,7 @@
         <span class="n">lats</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">elevs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)):</span>
             <span class="n">lons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">lons</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
             <span class="n">lats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">lats</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
             <span class="n">elevs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">elevs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
@@ -876,13 +934,19 @@
                 <span class="n">global_flags</span><span class="p">[</span><span class="n">mask_ind</span><span class="p">],</span>
             <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">global_flags</span></div></div>
+        <span class="k">return</span> <span class="n">global_flags</span></div>
+</div>
 
 
-<div class="viewcode-block" id="Climatology"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Climatology">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Climatology</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Climatology">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Climatology">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Climatology</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Climatology QC test.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Climatology.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Climatology.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="Climatology.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Climatology.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct test.</span>
 
 <span class="sd">        Args:</span>
@@ -903,7 +967,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">maxvals</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;climatology&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Climatology.set_input"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Climatology.set_input">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Climatology.set_input">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Climatology.set_input">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set input.</span>
 
 <span class="sd">        Args:</span>
@@ -931,7 +998,7 @@
         <span class="n">minvals</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">maxvals</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">offset</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
             <span class="n">minvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">used_min</span><span class="p">)</span>
             <span class="n">maxvals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">used_max</span><span class="p">)</span>
             <span class="n">offset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">used_offset</span><span class="p">)</span>
@@ -939,7 +1006,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">maxvals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxvals</span> <span class="o">+</span> <span class="n">maxvals</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">+</span> <span class="n">offset</span></div>
 
-<div class="viewcode-block" id="Climatology.test"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Climatology.test">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">103</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Climatology.test">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Climatology.test">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">103</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Do the test.</span>
 
 <span class="sd">        Args:</span>
@@ -989,13 +1059,19 @@
                 <span class="n">flags</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                 <span class="n">global_flags</span><span class="p">[</span><span class="n">mask_ind</span><span class="p">],</span>
             <span class="p">)</span>
-        <span class="k">return</span> <span class="n">global_flags</span></div></div>
+        <span class="k">return</span> <span class="n">global_flags</span></div>
+</div>
 
 
-<div class="viewcode-block" id="Redundancy"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Redundancy">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Redundancy</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Redundancy">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Redundancy">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Redundancy</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Redundancy.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Redundancy.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Redundancy.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">an_time</span><span class="p">):</span>
+<div class="viewcode-block" id="Redundancy.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Redundancy.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">an_time</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct test.</span>
 
 <span class="sd">        Args:</span>
@@ -1004,10 +1080,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">an_time</span> <span class="o">=</span> <span class="n">an_time</span>
         <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;redundancy&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Redundancy.set_input"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Redundancy.set_input">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Redundancy.set_input">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Redundancy.set_input">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set input.&quot;&quot;&quot;</span></div>
 
-<div class="viewcode-block" id="Redundancy.test"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Redundancy.test">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">115</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Redundancy.test">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Redundancy.test">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">115</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Do the test.</span>
 
 <span class="sd">        Args:</span>
@@ -1064,13 +1146,19 @@
                 <span class="n">flags</span><span class="p">[</span><span class="n">mask_ind</span><span class="p">],</span>
             <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">flags</span></div></div>
+        <span class="k">return</span> <span class="n">flags</span></div>
+</div>
 
 
-<div class="viewcode-block" id="Blacklist"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Blacklist">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Blacklist</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Blacklist">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Blacklist">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Blacklist</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Blacklist.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Blacklist.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Blacklist.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blacklist</span><span class="p">):</span>
+<div class="viewcode-block" id="Blacklist.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Blacklist.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blacklist</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct test.</span>
 
 <span class="sd">        Args:</span>
@@ -1087,7 +1175,7 @@
         <span class="n">blacklist_pos</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">blacklist_stid</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="s2">&quot;lons&quot;</span> <span class="ow">in</span> <span class="n">blacklist</span> <span class="ow">and</span> <span class="s2">&quot;lats&quot;</span> <span class="ow">in</span> <span class="n">blacklist</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">blacklist</span><span class="p">[</span><span class="s2">&quot;lons&quot;</span><span class="p">])):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">blacklist</span><span class="p">[</span><span class="s2">&quot;lons&quot;</span><span class="p">])):</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">blacklist</span><span class="p">[</span><span class="s2">&quot;lons&quot;</span><span class="p">])</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">blacklist</span><span class="p">[</span><span class="s2">&quot;lats&quot;</span><span class="p">]):</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                         <span class="s2">&quot;Blacklist must have the same length for both lons and lats&quot;</span>
@@ -1099,7 +1187,7 @@
                 <span class="n">blacklist_pos</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">pos</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
 
         <span class="k">if</span> <span class="s2">&quot;stids&quot;</span> <span class="ow">in</span> <span class="n">blacklist</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">blacklist</span><span class="p">[</span><span class="s2">&quot;stids&quot;</span><span class="p">])):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">blacklist</span><span class="p">[</span><span class="s2">&quot;stids&quot;</span><span class="p">])):</span>
                 <span class="n">stid</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">blacklist</span><span class="p">[</span><span class="s2">&quot;stids&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
 
                 <span class="k">if</span> <span class="n">stid</span> <span class="o">!=</span> <span class="s2">&quot;NA&quot;</span><span class="p">:</span>
@@ -1109,10 +1197,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">blacklist_stid</span> <span class="o">=</span> <span class="n">blacklist_stid</span>
         <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;blacklist&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Blacklist.set_input"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Blacklist.set_input">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Blacklist.set_input">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Blacklist.set_input">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set input.&quot;&quot;&quot;</span></div>
 
-<div class="viewcode-block" id="Blacklist.test"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Blacklist.test">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Blacklist.test">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Blacklist.test">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Do the test.</span>
 
 <span class="sd">        Args:</span>
@@ -1152,18 +1246,25 @@
                 <span class="n">flags</span><span class="p">[</span><span class="n">mask_ind</span><span class="p">],</span>
             <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">flags</span></div></div>
+        <span class="k">return</span> <span class="n">flags</span></div>
+</div>
 
 
-<div class="viewcode-block" id="DomainCheck"><a class="viewcode-back" href="../../index.html#pysurfex.titan.DomainCheck">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">DomainCheck</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DomainCheck">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.DomainCheck">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DomainCheck</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Domain check.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="DomainCheck.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.titan.DomainCheck.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain_geo</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mi">5000</span><span class="p">):</span>
+<div class="viewcode-block" id="DomainCheck.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.DomainCheck.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain_geo</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mi">5000</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct test.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            domain_geo (surfex.Geo): Surfex geometry</span>
-<span class="sd">            max_distance (int, optional): Maximum distance to grid border. Defaults to 5000.</span>
+<span class="sd">            max_distance (int, optional): Maximum distance to grid border.</span>
+<span class="sd">                                          Defaults to 5000.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">             RuntimeError: Domain geo was not set!</span>
@@ -1177,10 +1278,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">max_distance</span> <span class="o">=</span> <span class="n">max_distance</span>
         <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;domain&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DomainCheck.set_input"><a class="viewcode-back" href="../../index.html#pysurfex.titan.DomainCheck.set_input">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DomainCheck.set_input">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.DomainCheck.set_input">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set input.&quot;&quot;&quot;</span></div>
 
-<div class="viewcode-block" id="DomainCheck.test"><a class="viewcode-back" href="../../index.html#pysurfex.titan.DomainCheck.test">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">199</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DomainCheck.test">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.DomainCheck.test">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">199</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Do the test.</span>
 
 <span class="sd">        Args:</span>
@@ -1212,20 +1319,32 @@
                 <span class="n">dataset</span><span class="o">.</span><span class="n">stids</span><span class="p">[</span><span class="n">mask_ind</span><span class="p">],</span>
                 <span class="n">flags</span><span class="p">[</span><span class="n">mask_ind</span><span class="p">],</span>
             <span class="p">)</span>
-        <span class="k">return</span> <span class="n">flags</span></div></div>
+        <span class="k">return</span> <span class="n">flags</span></div>
+</div>
 
 
-<div class="viewcode-block" id="NoMeta"><a class="viewcode-back" href="../../index.html#pysurfex.titan.NoMeta">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">NoMeta</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
+
+<div class="viewcode-block" id="NoMeta">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.NoMeta">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NoMeta</span><span class="p">(</span><span class="n">QualityControl</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check for missing meta data.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="NoMeta.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.titan.NoMeta.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="NoMeta.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.NoMeta.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct test.&quot;&quot;&quot;</span>
         <span class="n">QualityControl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;nometa&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="NoMeta.set_input"><a class="viewcode-back" href="../../index.html#pysurfex.titan.NoMeta.set_input">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="NoMeta.set_input">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.NoMeta.set_input">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set input.&quot;&quot;&quot;</span></div>
 
-<div class="viewcode-block" id="NoMeta.test"><a class="viewcode-back" href="../../index.html#pysurfex.titan.NoMeta.test">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">101</span><span class="p">):</span>
+
+<div class="viewcode-block" id="NoMeta.test">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.NoMeta.test">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">101</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Do the test.</span>
 
 <span class="sd">        Args:</span>
@@ -1254,10 +1373,14 @@
                 <span class="n">flags</span><span class="p">[</span><span class="n">mask_ind</span><span class="p">],</span>
             <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">flags</span></div></div>
+        <span class="k">return</span> <span class="n">flags</span></div>
+</div>
 
 
-<div class="viewcode-block" id="define_quality_control"><a class="viewcode-back" href="../../index.html#pysurfex.titan.define_quality_control">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">define_quality_control</span><span class="p">(</span><span class="n">test_list</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">domain_geo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">blacklist</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="define_quality_control">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.define_quality_control">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">define_quality_control</span><span class="p">(</span><span class="n">test_list</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">domain_geo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">blacklist</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Define different QC test from a dict.</span>
 
 <span class="sd">    Parameters:</span>
@@ -1318,9 +1441,8 @@
                 <span class="n">fg_geo</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">fg_field</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">__</span> <span class="o">=</span> <span class="n">read_first_guess_netcdf_file</span><span class="p">(</span>
                     <span class="n">fg_file</span><span class="p">,</span> <span class="n">fg_var</span>
                 <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">fg_geo</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">fg_field</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You must set both fg_field and fg_geo&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">fg_geo</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">fg_field</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You must set both fg_field and fg_geo&quot;</span><span class="p">)</span>
             <span class="n">tests</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FirstGuess</span><span class="p">(</span><span class="n">fg_geo</span><span class="p">,</span> <span class="n">fg_field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
 
         <span class="k">elif</span> <span class="n">qct</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;fraction&quot;</span><span class="p">:</span>
@@ -1352,11 +1474,8 @@
                 <span class="n">fraction_geo</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">fraction_field</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">__</span> <span class="o">=</span> <span class="n">read_first_guess_netcdf_file</span><span class="p">(</span>
                     <span class="n">fraction_file</span><span class="p">,</span> <span class="n">fraction_var</span>
                 <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">fraction_field</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">fraction_geo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                        <span class="s2">&quot;You must set both fraction_field and fraction_geo&quot;</span>
-                    <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">fraction_field</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">fraction_geo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You must set both fraction_field and fraction_geo&quot;</span><span class="p">)</span>
             <span class="n">tests</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Fraction</span><span class="p">(</span><span class="n">fraction_geo</span><span class="p">,</span> <span class="n">fraction_field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
 
         <span class="k">elif</span> <span class="n">qct</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;buddy&quot;</span><span class="p">:</span>
@@ -1414,6 +1533,10 @@
             <span class="n">tests</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Redundancy</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
 
         <span class="k">elif</span> <span class="n">qct</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;blacklist&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">blacklist</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="s2">&quot;You must set a blacklist if you want to use it for QC&quot;</span>
+                <span class="p">)</span>
             <span class="k">if</span> <span class="n">test_options</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">opts</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">for</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">opts</span><span class="p">:</span>
@@ -1443,7 +1566,10 @@
     <span class="k">return</span> <span class="n">tests</span></div>
 
 
-<div class="viewcode-block" id="QCDataSet"><a class="viewcode-back" href="../../index.html#pysurfex.titan.QCDataSet">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">QCDataSet</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+<div class="viewcode-block" id="QCDataSet">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.QCDataSet">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">QCDataSet</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;QC data set.&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -1469,7 +1595,8 @@
 <span class="sd">            passed_tests (list, optional): Tests which have been passed. Defaults to None.</span>
 <span class="sd">            fg_dep (list, optional): First guess departures. Defaults to None.</span>
 <span class="sd">            an_dep (list, optional): Analysis depatures. Defaults to None.</span>
-<span class="sd">            remove_invalid_elevs (bool, optional): Remove invalid elevations. Defaults to False.</span>
+<span class="sd">            remove_invalid_elevs (bool, optional): Remove invalid elevations.</span>
+<span class="sd">                                                   Defaults to False.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">analysis_time</span> <span class="o">=</span> <span class="n">analysis_time</span>
@@ -1514,7 +1641,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">flags</span> <span class="o">=</span> <span class="n">flags</span>
 
         <span class="n">metadata</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">flags</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">flags</span><span class="p">)):</span>
             <span class="k">if</span> <span class="n">remove_invalid_elevs</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">elevs</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">flags</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">101</span>
                 <span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata</span> <span class="o">+</span> <span class="mi">1</span>
@@ -1523,23 +1650,25 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">providers</span> <span class="o">=</span> <span class="n">providers</span>
         <span class="k">if</span> <span class="n">passed_tests</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">passed_tests</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">observations</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observations</span><span class="p">)):</span>
                 <span class="n">passed_tests</span><span class="o">.</span><span class="n">append</span><span class="p">([])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">passed_tests</span> <span class="o">=</span> <span class="n">passed_tests</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">passed_tests</span> <span class="o">=</span> <span class="n">passed_tests</span>
         <span class="k">if</span> <span class="n">fg_dep</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">fg_dep</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">observations</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observations</span><span class="p">)):</span>
                 <span class="n">fg_dep</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fg_dep</span> <span class="o">=</span> <span class="n">fg_dep</span>
         <span class="k">if</span> <span class="n">an_dep</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">an_dep</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">observations</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observations</span><span class="p">)):</span>
                 <span class="n">an_dep</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">an_dep</span> <span class="o">=</span> <span class="n">an_dep</span>
 
-<div class="viewcode-block" id="QCDataSet.get_stid_index"><a class="viewcode-back" href="../../index.html#pysurfex.titan.QCDataSet.get_stid_index">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_stid_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stid</span><span class="p">):</span>
+<div class="viewcode-block" id="QCDataSet.get_stid_index">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.QCDataSet.get_stid_index">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_stid_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stid</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get station ID index.</span>
 
 <span class="sd">        Args:</span>
@@ -1553,7 +1682,10 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_stid</span><span class="p">[</span><span class="n">stid</span><span class="p">]</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="QCDataSet.get_pos_index"><a class="viewcode-back" href="../../index.html#pysurfex.titan.QCDataSet.get_pos_index">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_pos_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">):</span>
+
+<div class="viewcode-block" id="QCDataSet.get_pos_index">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.QCDataSet.get_pos_index">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_pos_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get position index in dict.</span>
 
 <span class="sd">        Args:</span>
@@ -1570,7 +1702,10 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_pos</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="QCDataSet.perform_tests"><a class="viewcode-back" href="../../index.html#pysurfex.titan.QCDataSet.perform_tests">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+
+<div class="viewcode-block" id="QCDataSet.perform_tests">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.QCDataSet.perform_tests">[docs]</a>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">perform_tests</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform the test.</span>
 
@@ -1579,7 +1714,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;You must implement this method&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="QCDataSet.write_output"><a class="viewcode-back" href="../../index.html#pysurfex.titan.QCDataSet.write_output">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="QCDataSet.write_output">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.QCDataSet.write_output">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Dump QC data to a json file.</span>
 
 <span class="sd">        Args:</span>
@@ -1608,13 +1746,20 @@
                     <span class="p">}</span>
                 <span class="p">}</span>
             <span class="p">)</span>
-        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span></div></div>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fhandler</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">fhandler</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span></div>
+</div>
 
 
-<div class="viewcode-block" id="TitanDataSet"><a class="viewcode-back" href="../../index.html#pysurfex.titan.TitanDataSet">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">TitanDataSet</span><span class="p">(</span><span class="n">QCDataSet</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TitanDataSet">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.TitanDataSet">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TitanDataSet</span><span class="p">(</span><span class="n">QCDataSet</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Titan QC data set.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="TitanDataSet.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.titan.TitanDataSet.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">tests</span><span class="p">,</span> <span class="n">datasources</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">test_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="TitanDataSet.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.TitanDataSet.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">tests</span><span class="p">,</span> <span class="n">datasources</span><span class="p">,</span> <span class="n">an_time</span><span class="p">,</span> <span class="n">test_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Titan Data set.</span>
 
 <span class="sd">        Args:</span>
@@ -1623,7 +1768,8 @@
 <span class="sd">            tests (list): Tests to perform in order.</span>
 <span class="sd">            datasources (list): List of observations sets.</span>
 <span class="sd">            an_time (datetime.datetime): Analysis time</span>
-<span class="sd">            test_flags (dict, optional): Dictionary to set custom test flags. Defaults to None.</span>
+<span class="sd">            test_flags (dict, optional): Dictionary to set custom test flags.</span>
+<span class="sd">                                         Defaults to None.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ModuleNotFoundError: itanlib was not loaded properly</span>
@@ -1668,10 +1814,10 @@
             <span class="n">values</span> <span class="o">=</span> <span class="n">values</span> <span class="o">+</span> <span class="n">lvalues</span>
             <span class="n">varnames</span> <span class="o">=</span> <span class="n">varnames</span> <span class="o">+</span> <span class="n">lvarnames</span>
             <span class="n">sigmaos</span> <span class="o">=</span> <span class="n">sigmaos</span> <span class="o">+</span> <span class="n">lsigmaos</span>
-            <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">llons</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">llons</span><span class="p">)):</span>
                 <span class="n">providers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obs_set</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)):</span>
             <span class="n">passed_tests</span><span class="o">.</span><span class="n">append</span><span class="p">([])</span>
         <span class="n">flags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">))</span>
         <span class="n">lafs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">))</span>
@@ -1694,7 +1840,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">titan_dataset</span> <span class="o">=</span> <span class="n">tit</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">passed_tests</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">passed_tests</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)):</span>
                 <span class="n">passed_tests</span><span class="o">.</span><span class="n">append</span><span class="p">([])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">passed_tests</span> <span class="o">=</span> <span class="n">passed_tests</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1711,11 +1857,14 @@
             <span class="n">remove_invalid_elevs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="TitanDataSet.perform_tests"><a class="viewcode-back" href="../../index.html#pysurfex.titan.TitanDataSet.perform_tests">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">perform_tests</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TitanDataSet.perform_tests">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.TitanDataSet.perform_tests">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">perform_tests</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform the tests.&quot;&quot;&quot;</span>
         <span class="n">summary</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">test</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tests</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Test: &quot;</span><span class="p">,</span> <span class="n">test</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Test: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">test</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">findex</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">for</span> <span class="n">obs_set</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasources</span><span class="p">:</span>
@@ -1725,26 +1874,25 @@
                         <span class="s2">&quot;assumed to have a label&quot;</span>
                     <span class="p">)</span>
 
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;obs_set&quot;</span><span class="p">,</span> <span class="n">obs_set</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;obs_set: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">obs_set</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
                 <span class="n">size</span> <span class="o">=</span> <span class="n">obs_set</span><span class="o">.</span><span class="n">size</span>
 
                 <span class="n">do_test</span> <span class="o">=</span> <span class="kc">False</span>
                 <span class="k">if</span> <span class="s2">&quot;do_test&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">:</span>
                     <span class="n">do_test</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;do_test&quot;</span><span class="p">]</span>
-                <span class="k">if</span> <span class="n">test</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="s2">&quot;do_test&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="n">test</span><span class="o">.</span><span class="n">name</span><span class="p">]:</span>
-                        <span class="n">do_test</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="n">test</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;do_test&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">test</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="ow">and</span> <span class="s2">&quot;do_test&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="n">test</span><span class="o">.</span><span class="n">name</span><span class="p">]:</span>
+                    <span class="n">do_test</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="n">test</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;do_test&quot;</span><span class="p">]</span>
 
                 <span class="n">test_settings</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;do_test&quot;</span><span class="p">:</span> <span class="n">do_test</span><span class="p">}</span>
-                <span class="k">if</span> <span class="s2">&quot;sets&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">obs_set</span><span class="o">.</span><span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;sets&quot;</span><span class="p">]:</span>
-                        <span class="k">if</span> <span class="s2">&quot;tests&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;sets&quot;</span><span class="p">][</span><span class="n">obs_set</span><span class="o">.</span><span class="n">label</span><span class="p">]:</span>
-                            <span class="k">if</span> <span class="n">test</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;sets&quot;</span><span class="p">][</span><span class="n">obs_set</span><span class="o">.</span><span class="n">label</span><span class="p">][</span><span class="s2">&quot;tests&quot;</span><span class="p">]:</span>
-                                <span class="n">test_settings</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                                    <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;sets&quot;</span><span class="p">][</span><span class="n">obs_set</span><span class="o">.</span><span class="n">label</span><span class="p">][</span><span class="s2">&quot;tests&quot;</span><span class="p">][</span>
-                                        <span class="n">test</span><span class="o">.</span><span class="n">name</span>
-                                    <span class="p">]</span>
-                                <span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="s2">&quot;sets&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span>
+                    <span class="ow">and</span> <span class="n">obs_set</span><span class="o">.</span><span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;sets&quot;</span><span class="p">]</span>
+                    <span class="ow">and</span> <span class="s2">&quot;tests&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;sets&quot;</span><span class="p">][</span><span class="n">obs_set</span><span class="o">.</span><span class="n">label</span><span class="p">]</span>
+                    <span class="ow">and</span> <span class="n">test</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;sets&quot;</span><span class="p">][</span><span class="n">obs_set</span><span class="o">.</span><span class="n">label</span><span class="p">][</span><span class="s2">&quot;tests&quot;</span><span class="p">]</span>
+                <span class="p">):</span>
+                    <span class="n">test_settings</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;sets&quot;</span><span class="p">][</span><span class="n">obs_set</span><span class="o">.</span><span class="n">label</span><span class="p">][</span><span class="s2">&quot;tests&quot;</span><span class="p">][</span><span class="n">test</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+                    <span class="p">)</span>
 
                 <span class="n">do_test</span> <span class="o">=</span> <span class="n">test_settings</span><span class="p">[</span><span class="s2">&quot;do_test&quot;</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">do_test</span><span class="p">:</span>
@@ -1755,8 +1903,7 @@
                     <span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 
                     <span class="k">for</span> <span class="n">lmask_ind</span> <span class="ow">in</span> <span class="n">lmask</span><span class="p">:</span>
-                        <span class="n">lmask_ind</span> <span class="o">=</span> <span class="n">lmask_ind</span> <span class="o">+</span> <span class="n">findex</span>
-                        <span class="n">mask</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lmask_ind</span><span class="p">)</span>
+                        <span class="n">mask</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lmask_ind</span> <span class="o">+</span> <span class="n">findex</span><span class="p">)</span>
 
                     <span class="c1"># Set input for this set</span>
                     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
@@ -1779,9 +1926,8 @@
             <span class="n">outside</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_flags</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">test</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_flags</span><span class="p">:</span>
-                        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_flags</span><span class="p">[</span><span class="n">test</span><span class="o">.</span><span class="n">name</span><span class="p">]})</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_flags</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">test</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_flags</span><span class="p">:</span>
+                    <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_flags</span><span class="p">[</span><span class="n">test</span><span class="o">.</span><span class="n">name</span><span class="p">]})</span>
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">flags</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">mask_ind</span> <span class="ow">in</span> <span class="n">mask</span><span class="p">:</span>
@@ -1831,13 +1977,19 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;  tested: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">summary</span><span class="p">[</span><span class="n">test</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;tested&quot;</span><span class="p">])</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;      ok: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">summary</span><span class="p">[</span><span class="n">test</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;ok&quot;</span><span class="p">])</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;     bad: </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">summary</span><span class="p">[</span><span class="n">test</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;bad&quot;</span><span class="p">],</span> <span class="n">outside</span><span class="p">)</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div></div>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+</div>
 
 
-<div class="viewcode-block" id="Departure"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Departure">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Departure</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Departure">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Departure">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Departure</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Departure. Difference between an observation and a value.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Departure.__init__"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Departure.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mi">5000</span><span class="p">):</span>
+<div class="viewcode-block" id="Departure.__init__">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Departure.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">geo</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mi">5000</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a departure object.</span>
 
 <span class="sd">        Args:</span>
@@ -1846,8 +1998,8 @@
 <span class="sd">            dataset (QCDataSet): QC data set.</span>
 <span class="sd">            grid_values (np.darray): Values in the grid.</span>
 <span class="sd">            mode (str): What kind of departure (analysis/first_guess)</span>
-<span class="sd">            max_distance (int, optional): Max allowed deviation in meters from grid borders.</span>
-<span class="sd">                                          Defaults to 5000.</span>
+<span class="sd">            max_distance (int, optional): Max allowed deviation in meters from grid</span>
+<span class="sd">                                          borders. Defaults to 5000.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            NotImplementedError: Mode not implemented</span>
@@ -1878,7 +2030,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">departures</span> <span class="o">=</span> <span class="n">departures</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">obs_values</span> <span class="o">=</span> <span class="n">values</span></div>
 
-<div class="viewcode-block" id="Departure.get_departure"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Departure.get_departure">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_departure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Departure.get_departure">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Departure.get_departure">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_departure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get departure.</span>
 
 <span class="sd">        Args:</span>
@@ -1891,7 +2046,10 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">departures</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="Departure.get_values"><a class="viewcode-back" href="../../index.html#pysurfex.titan.Departure.get_values">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Departure.get_values">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.Departure.get_values">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the obs values.</span>
 
 <span class="sd">        Args:</span>
@@ -1901,7 +2059,9 @@
 <span class="sd">            float: Observation equivalent of the input field.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_operator</span><span class="o">.</span><span class="n">get_obs_value</span><span class="p">(</span><span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_operator</span><span class="o">.</span><span class="n">get_obs_value</span><span class="p">(</span><span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">)</span></div>
+</div>
+
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">dataset_from_file</span><span class="p">(</span>
@@ -1921,7 +2081,8 @@
 <span class="sd">        QCDataSet: QCDataSet</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fhandler</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fhandler</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">dataset_from_json</span><span class="p">(</span>
         <span class="n">an_time</span><span class="p">,</span>
         <span class="n">data</span><span class="p">,</span>
@@ -1987,19 +2148,21 @@
             <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">flag</span><span class="p">)</span>
             <span class="n">lafs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;laf&quot;</span><span class="p">])</span>
             <span class="k">if</span> <span class="n">fg_dep</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">fg_deps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fg_dep</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)])</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="s2">&quot;fg_dep&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
-                    <span class="n">fg_deps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;fg_dep&quot;</span><span class="p">])</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fg_dep</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+                    <span class="n">fg_deps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fg_dep</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">fg_deps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+                    <span class="n">fg_deps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fg_dep</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fg_dep</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fg_dep&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+                <span class="n">fg_deps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fg_dep</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">an_dep</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">an_deps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">an_dep</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)])</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="s2">&quot;an_dep&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
-                    <span class="n">an_deps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;an_dep&quot;</span><span class="p">])</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">an_dep</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+                    <span class="n">an_deps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">an_dep</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">an_deps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+                    <span class="n">an_deps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">an_dep</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">an_dep</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;an_dep&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+                <span class="n">an_deps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">an_dep</span><span class="p">)</span>
             <span class="k">if</span> <span class="s2">&quot;passed_tests&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
                 <span class="n">passed_tests</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;passed_tests&quot;</span><span class="p">])</span>
 
@@ -2018,7 +2181,9 @@
     <span class="p">)</span>
 
 
-<div class="viewcode-block" id="merge_json_qc_data_sets"><a class="viewcode-back" href="../../index.html#pysurfex.titan.merge_json_qc_data_sets">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">merge_json_qc_data_sets</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="n">filenames</span><span class="p">,</span> <span class="n">qc_flag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">skip_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="merge_json_qc_data_sets">
+<a class="viewcode-back" href="../../index.html#pysurfex.titan.merge_json_qc_data_sets">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">merge_json_qc_data_sets</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="n">filenames</span><span class="p">,</span> <span class="n">qc_flag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">skip_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Merge QC data sets from json files.</span>
 
 <span class="sd">    Args:</span>
@@ -2050,15 +2215,16 @@
 
     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Merged </span><span class="si">%s</span><span class="s2"> observations&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">ind</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">dataset_from_json</span><span class="p">(</span><span class="n">an_time</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">qc_flag</span><span class="o">=</span><span class="n">qc_flag</span><span class="p">,</span> <span class="n">skip_flags</span><span class="o">=</span><span class="n">skip_flags</span><span class="p">)</span></div>
+
 </pre></div>
 
             <div class="clearer"></div>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
@@ -2066,13 +2232,13 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -2084,8 +2250,8 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
+    &#169; Copyright 2020, Trygve Aspelien.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
     </div>
   </body>
 </html>
