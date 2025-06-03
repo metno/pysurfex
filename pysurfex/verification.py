@@ -594,7 +594,7 @@ def converter2ds(argv=None):
         vdata = ObsDataFromSurfexConverter(
             converter, variable, stationlist, validtime, cache=cache
         )
-    if not kwargs["are_observations"]:
+    elif not kwargs["are_observations"]:
         vdata = VerificationDataFromSurfexConverter(
             converter, variable, stationlist, validtime, basetime, cache=cache
         )
