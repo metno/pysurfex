@@ -34,7 +34,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Copy"
-        run: cp Dockerfile_ubuntu_20_04 Dockerfile
+        run: cp Dockerfile_ubuntu_24_04 Dockerfile
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v2
