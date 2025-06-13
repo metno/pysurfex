@@ -1,4 +1,5 @@
 """Test EKF chain."""
+
 import pytest
 
 from pysurfex.binary_input import JsonInputData

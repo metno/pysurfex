@@ -1,13 +1,19 @@
 """Surfex file related stuff."""
+
 import abc
 import logging
 import os
 import re
 import shutil
 
-import netCDF4
 import numpy as np
 import pyproj
+
+try:
+    import netCDF4
+except ModuleNotFoundError:
+    netCDF4 = None  # noqa: N816
+    logging.debug("netCDF4 not found")
 
 from .datetime_utils import as_datetime, as_datetime_args, as_timedelta
 from .fa import Fa
@@ -774,6 +780,8 @@ class NCSurfexFile(SurfexIO):
             surfex.Geometry: Surfex geometry in file
 
         """
+        if netCDF4 is None:
+            raise ModuleNotFoundError("netCDF4 is needed for this")
         try:
             f_h = netCDF4.Dataset(self.filename, "r")
         except OSError:

@@ -1,4 +1,5 @@
 """Variable."""
+
 import copy
 import logging
 

@@ -1,6 +1,5 @@
 """Pseuodo-obs."""
 
-
 import logging
 
 import numpy as np

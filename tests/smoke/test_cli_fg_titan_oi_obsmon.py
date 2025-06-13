@@ -1,4 +1,5 @@
 """Test fg + titan + gridpp + obsmon."""
+
 import json
 import shutil
 

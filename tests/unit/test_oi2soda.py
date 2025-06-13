@@ -1,4 +1,5 @@
 """Test oi2soda."""
+
 from datetime import datetime
 
 from netCDF4 import Dataset

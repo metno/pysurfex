@@ -1,4 +1,5 @@
 """Test geometry."""
+
 import json
 import os
 

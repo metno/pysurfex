@@ -1,4 +1,5 @@
 """Test ruinning a binary emulator."""
+
 import contextlib
 import json
 import os

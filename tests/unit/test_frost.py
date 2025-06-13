@@ -1,4 +1,5 @@
 """Test observations from frost API."""
+
 import os
 
 import pytest

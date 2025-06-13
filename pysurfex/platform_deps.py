@@ -1,4 +1,5 @@
 """Platform dependent settings."""
+
 import json
 import logging
 import os

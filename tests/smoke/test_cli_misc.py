@@ -1,4 +1,5 @@
 """Test first guess for OI."""
+
 import contextlib
 import json
 import os

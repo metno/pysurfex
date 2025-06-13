@@ -1,4 +1,5 @@
 """Test namelist settings."""
+
 import json
 
 import f90nml

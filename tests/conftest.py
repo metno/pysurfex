@@ -1,4 +1,5 @@
 """Mockers."""
+
 import json
 import logging
 import os
@@ -6,8 +7,13 @@ from contextlib import contextmanager
 
 import numpy as np
 import pytest
-from netCDF4 import Dataset
 
+try:
+    from netCDF4 import Dataset
+except ModuleNotFoundError:
+    logging.warning("netCDF4 not loaded")
+
+import pysurfex
 from pysurfex.datetime_utils import as_datetime
 from pysurfex.geo import ConfProj
 from pysurfex.platform_deps import SystemFilePaths
@@ -1400,33 +1406,37 @@ def _mockers(session_mocker):
 
     # Do the actual mocking
     session_mocker.patch("pysurfex.obs.requests.get", new=dummy_frost_data)
-    session_mocker.patch(
-        "pysurfex.grib.eccodes.codes_grib_new_from_file", new=my_codes_new_from_file
-    )
-    session_mocker.patch("pysurfex.grib.open", new=my_open_with_file)
-    session_mocker.patch("pysurfex.grib.eccodes.codes_get", new=my_codes_get)
-    session_mocker.patch("pysurfex.grib.eccodes.codes_get_long", new=my_codes_get)
-    session_mocker.patch("pysurfex.grib.eccodes.codes_get_size", new=my_codes_get_size)
-    session_mocker.patch(
-        "pysurfex.grib.eccodes.codes_get_values", new=my_codes_get_values
-    )
-    session_mocker.patch("pysurfex.grib.eccodes.codes_release")
+    if pysurfex.grib.eccodes is not None:
+        session_mocker.patch(
+            "pysurfex.grib.eccodes.codes_grib_new_from_file", new=my_codes_new_from_file
+        )
+        session_mocker.patch("pysurfex.grib.open", new=my_open_with_file)
+        session_mocker.patch("pysurfex.grib.eccodes.codes_get", new=my_codes_get)
+        session_mocker.patch("pysurfex.grib.eccodes.codes_get_long", new=my_codes_get)
+        session_mocker.patch(
+            "pysurfex.grib.eccodes.codes_get_size", new=my_codes_get_size
+        )
+        session_mocker.patch(
+            "pysurfex.grib.eccodes.codes_get_values", new=my_codes_get_values
+        )
+        session_mocker.patch("pysurfex.grib.eccodes.codes_release")
     session_mocker.patch("pysurfex.bufr.open", new=my_open_file)
-    session_mocker.patch("pysurfex.bufr.eccodes.codes_release")
-    session_mocker.patch(
-        "pysurfex.bufr.eccodes.CodesInternalError", new=MyCodesInternalError
-    )
-    session_mocker.patch(
-        "pysurfex.bufr.eccodes.codes_bufr_new_from_file", new=my_codes_new_from_file
-    )
-    session_mocker.patch("pysurfex.bufr.eccodes.codes_set", new=my_codes_set)
-    session_mocker.patch("pysurfex.bufr.eccodes.codes_get", new=my_codes_get)
-    session_mocker.patch(
-        "pysurfex.bufr.eccodes.CODES_MISSING_DOUBLE", new=MY_CODES_MISSING_DOUBLE
-    )
-    session_mocker.patch(
-        "pysurfex.bufr.eccodes.CODES_MISSING_LONG", new=MY_CODES_MISSING_LONG
-    )
+    if pysurfex.bufr.eccodes is not None:
+        session_mocker.patch("pysurfex.bufr.eccodes.codes_release")
+        session_mocker.patch(
+            "pysurfex.bufr.eccodes.CodesInternalError", new=MyCodesInternalError
+        )
+        session_mocker.patch(
+            "pysurfex.bufr.eccodes.codes_bufr_new_from_file", new=my_codes_new_from_file
+        )
+        session_mocker.patch("pysurfex.bufr.eccodes.codes_set", new=my_codes_set)
+        session_mocker.patch("pysurfex.bufr.eccodes.codes_get", new=my_codes_get)
+        session_mocker.patch(
+            "pysurfex.bufr.eccodes.CODES_MISSING_DOUBLE", new=MY_CODES_MISSING_DOUBLE
+        )
+        session_mocker.patch(
+            "pysurfex.bufr.eccodes.CODES_MISSING_LONG", new=MY_CODES_MISSING_LONG
+        )
     session_mocker.patch("pysurfex.fa.resource", new=MyFaResource)
     session_mocker.patch("pysurfex.verification.sqlite_name")
     session_mocker.patch("pysurfex.verification.create_table")

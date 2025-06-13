@@ -1,4 +1,5 @@
 """Titan."""
+
 import abc
 import json
 import logging

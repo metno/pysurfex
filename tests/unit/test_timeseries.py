@@ -1,4 +1,5 @@
 """Test timeseries."""
+
 import json
 
 import pytest

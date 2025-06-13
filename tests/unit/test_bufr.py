@@ -1,4 +1,5 @@
 """Bufr testing."""
+
 import pytest
 
 from pysurfex.bufr import BufrObservationSet

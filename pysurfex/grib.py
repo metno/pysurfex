@@ -1,4 +1,5 @@
 """Grib treatment."""
+
 import logging
 
 import numpy as np
