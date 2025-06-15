@@ -172,7 +172,8 @@ class VerificationDataFromSurfexConverter:
         basetime = converter.initial_time
         lons = stationlist.geo.lons
         nlons = len(lons)
-        ileadtime = np.array([validtime - basetime]).astype(np.timedelta64)
+        ileadtime2 = np.array([validtime - basetime]).astype(np.timedelta64)
+        ileadtime = [np.timedelta64(elem, "h").astype("int") for elem in ileadtime2]
         cbasetime = np.array([basetime]).astype(np.datetime64)
         basetime = np.array(basetime).astype(np.datetime64)
 
