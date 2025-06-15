@@ -49,7 +49,7 @@ jobs:
 
       - name: Install dependencies (if venv cache is not found)
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root --only linting
+        run: poetry install --no-interaction --no-root --extras linting
 
       - name: Install the project itself
         run: poetry install --no-interaction --only-root

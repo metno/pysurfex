@@ -1,4 +1,5 @@
 """Test binary input data to surfex commands."""
+
 import contextlib
 import json
 import logging

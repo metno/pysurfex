@@ -1,4 +1,5 @@
 """Converter and read data."""
+
 import copy
 import logging
 from abc import ABCMeta, abstractmethod

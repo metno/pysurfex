@@ -8,9 +8,16 @@ import os
 import shutil
 import time
 
-import netCDF4
+try:
+    import netCDF4
+except ModuleNotFoundError:
+    logging.debug("netCDF4 not loaded")
 import numpy as np
-import yaml
+
+try:
+    import yaml
+except ModuleNotFoundError:
+    logging.debug("yaml not loaded")
 
 from . import PACKAGE_DIRECTORY
 from .cache import Cache
@@ -311,9 +318,9 @@ class NetCDFOutput(SurfexOutputForcing):
                         "Number_of_points",
                     ),
                 )
-                self.forcing_file[
-                    "DIR_SWdown"
-                ].longname = "Surface_Incident_Downwelling_Shortwave_Radiation"
+                self.forcing_file["DIR_SWdown"].longname = (
+                    "Surface_Incident_Downwelling_Shortwave_Radiation"
+                )
                 self.forcing_file["DIR_SWdown"].units = "W/m2"
             elif this_var == "SCA_SW":
                 self.forcing_file["SCA_SWdown"] = self.file_handler.createVariable(
@@ -324,9 +331,9 @@ class NetCDFOutput(SurfexOutputForcing):
                         "Number_of_points",
                     ),
                 )
-                self.forcing_file[
-                    "SCA_SWdown"
-                ].longname = "Surface_Incident_Diffuse_Shortwave_Radiation"
+                self.forcing_file["SCA_SWdown"].longname = (
+                    "Surface_Incident_Diffuse_Shortwave_Radiation"
+                )
                 self.forcing_file["SCA_SWdown"].units = "W/m2"
             elif this_var == "LW":
                 self.forcing_file["LWdown"] = self.file_handler.createVariable(
@@ -337,9 +344,9 @@ class NetCDFOutput(SurfexOutputForcing):
                         "Number_of_points",
                     ),
                 )
-                self.forcing_file[
-                    "LWdown"
-                ].longname = "Surface_Incident_Diffuse_Longwave_Radiation"
+                self.forcing_file["LWdown"].longname = (
+                    "Surface_Incident_Diffuse_Longwave_Radiation"
+                )
                 self.forcing_file["LWdown"].units = "W/m2"
             elif this_var == "RAIN":
                 self.forcing_file["Rainf"] = self.file_handler.createVariable(

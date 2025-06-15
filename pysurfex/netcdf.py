@@ -1,12 +1,17 @@
 """Netcdf."""
+
 import logging
 import os
 import re
 from enum import Enum
 
-import netCDF4
 import numpy as np
 
+try:
+    import netCDF4
+except ModuleNotFoundError:
+    netCDF4 = None  # noqa: N816
+    logging.debug("netCDF4 not loaded")
 try:
     import cfunits
 except ModuleNotFoundError:
@@ -34,6 +39,8 @@ class Netcdf(object):
         """
         self.filename = filename
         logging.debug("filename: %s", filename)
+        if netCDF4 is None:
+            raise ModuleNotFoundError("netCDF4 is needed for this")
         self.file = netCDF4.Dataset(filename, "r")
 
     def nc_slice(

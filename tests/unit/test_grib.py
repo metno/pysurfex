@@ -1,4 +1,5 @@
 """Test grib."""
+
 import json
 
 import pytest

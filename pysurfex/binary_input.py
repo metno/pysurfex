@@ -1,4 +1,5 @@
 """Input data for surfex binaries."""
+
 import json
 import logging
 import os

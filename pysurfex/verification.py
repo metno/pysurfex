@@ -7,7 +7,10 @@ import sys
 from argparse import ArgumentParser
 from datetime import datetime
 
-import pandas
+try:
+    import pandas
+except ModuleNotFoundError:
+    logging.debug("pandas not loaded")
 
 try:
     from grib2sqlite import create_table, sqlite_name, write_to_sqlite
@@ -17,7 +20,11 @@ except ModuleNotFoundError:
     write_to_sqlite = None
 
 import numpy as np
-import xarray as xr
+
+try:
+    import xarray as xr
+except ModuleNotFoundError:
+    logging.debug("xarray not loaded")
 
 from pysurfex.cmd_parsing import parse_args_variable, variable_parse_options
 from pysurfex.datetime_utils import as_datetime, as_timedelta
@@ -165,7 +172,8 @@ class VerificationDataFromSurfexConverter:
         basetime = converter.initial_time
         lons = stationlist.geo.lons
         nlons = len(lons)
-        ileadtime = np.array([validtime - basetime]).astype(np.timedelta64)
+        ileadtime2 = np.array([validtime - basetime]).astype(np.timedelta64)
+        ileadtime = [np.timedelta64(elem, "h").astype("int") for elem in ileadtime2]
         cbasetime = np.array([basetime]).astype(np.datetime64)
         basetime = np.array(basetime).astype(np.datetime64)
 

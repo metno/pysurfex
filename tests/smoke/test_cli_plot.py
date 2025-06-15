@@ -1,4 +1,5 @@
 """Test plotting."""
+
 import pytest
 
 from pysurfex.cli import cli_set_geo_from_obs_set, plot_points

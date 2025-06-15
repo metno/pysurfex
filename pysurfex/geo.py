@@ -1,4 +1,5 @@
 """Geometry."""
+
 import json
 import logging
 import math

@@ -1,4 +1,5 @@
 """Observation tests."""
+
 import json
 
 import pytest

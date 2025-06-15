@@ -1,4 +1,5 @@
 """Obsoul unit testing."""
+
 import pytest
 
 from pysurfex.input_methods import get_datasources

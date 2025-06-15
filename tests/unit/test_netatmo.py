@@ -1,4 +1,5 @@
 """Test netatmo data."""
+
 import pytest
 
 from pysurfex.datetime_utils import as_datetime

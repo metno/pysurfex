@@ -1,4 +1,5 @@
 """FA support."""
+
 import logging
 
 try:

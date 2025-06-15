@@ -1,12 +1,19 @@
 """obs."""
+
 import json
 import logging
 import os
 
 import numpy as np
-import requests
-import xarray as xr
 
+try:
+    import requests
+except ModuleNotFoundError:
+    logging.debug("requests not loaded")
+try:
+    import xarray as xr
+except ModuleNotFoundError:
+    logging.debug("xarray not loaded")
 try:
     import cfunits
 except ModuleNotFoundError:

@@ -1,4 +1,5 @@
 """Test titan."""
+
 import numpy as np
 import pytest
 

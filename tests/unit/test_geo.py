@@ -1,4 +1,5 @@
 """Test geometry."""
+
 import f90nml
 import pytest
 

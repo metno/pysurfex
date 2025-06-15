@@ -1,4 +1,5 @@
 """Test forcing."""
+
 import contextlib
 import os
 import shutil

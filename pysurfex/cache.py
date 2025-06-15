@@ -1,4 +1,5 @@
 """Cache."""
+
 import logging
 
 from .datetime_utils import as_datetime_args

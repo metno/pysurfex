@@ -1,4 +1,5 @@
 """Test create_namelist."""
+
 import json
 
 import pytest

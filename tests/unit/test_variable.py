@@ -1,4 +1,5 @@
 """Test variable."""
+
 import pytest
 
 from pysurfex.datetime_utils import as_datetime, as_datetime_args, as_timedelta
