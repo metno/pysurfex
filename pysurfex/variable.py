@@ -31,6 +31,7 @@ class Variable(object):
                                               Defaults to True.
 
         Raises:
+            RuntimeError: Initial base time not set
             RuntimeError: No filepattern provided
             RuntimeError: variable must have attribute
             RuntimeError: You can not have larger offset than the frequency of forecasts
@@ -45,6 +46,8 @@ class Variable(object):
 
         self.filepattern = self.substitute_macros(var_dict["filepattern"])
         self.initial_basetime = initial_basetime
+        if self.initial_basetime is None:
+            raise RuntimeError("Initial base time not set")
         try:
             self.fcint = int(self.var_dict["fcint"])
         except KeyError:
