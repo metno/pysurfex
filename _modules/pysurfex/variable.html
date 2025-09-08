@@ -70,6 +70,7 @@
 <span class="sd">                                              Defaults to True.</span>
 
 <span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: Initial base time not set</span>
 <span class="sd">            RuntimeError: No filepattern provided</span>
 <span class="sd">            RuntimeError: variable must have attribute</span>
 <span class="sd">            RuntimeError: You can not have larger offset than the frequency of forecasts</span>
@@ -84,6 +85,8 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">filepattern</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substitute_macros</span><span class="p">(</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;filepattern&quot;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initial_basetime</span> <span class="o">=</span> <span class="n">initial_basetime</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_basetime</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Initial base time not set&quot;</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fcint</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_dict</span><span class="p">[</span><span class="s2">&quot;fcint&quot;</span><span class="p">])</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -109,6 +112,16 @@
                 <span class="o">+</span> <span class="s2">&quot; &gt; &quot;</span>
                 <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fcint</span><span class="p">)</span>
             <span class="p">)</span>
+        <span class="c1"># Calculate basetime offset based on initial basetime and fcint</span>
+        <span class="n">seconds_since_midnight</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">initial_basetime</span>
+                <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_basetime</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">hour</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">minute</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">second</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">microsecond</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">seconds_since_midnight</span> <span class="o">==</span> <span class="mi">86400</span><span class="p">:</span>
+            <span class="n">seconds_since_midnight</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">basetime_offset</span> <span class="o">=</span> <span class="n">seconds_since_midnight</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">fcint</span>
         <span class="n">accumulated</span><span class="p">,</span> <span class="n">instant</span><span class="p">,</span> <span class="n">file_var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_var</span><span class="p">(</span><span class="n">validtime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_basetime</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file_var</span> <span class="o">=</span> <span class="n">file_var</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">instant</span> <span class="o">=</span> <span class="n">instant</span>
@@ -628,11 +641,18 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;                offset: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">)</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;      initial_basetime: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_basetime</span><span class="p">)</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;  Basetime with offset: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">basetime</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;       Basetime offset: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basetime_offset</span><span class="p">)</span>
 
         <span class="c1"># Modify based on fcint</span>
         <span class="n">seconds_since_midnight</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
             <span class="p">(</span>
-                <span class="n">basetime</span> <span class="o">-</span> <span class="n">basetime</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">hour</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">minute</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">second</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">microsecond</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">basetime</span>
+                <span class="o">-</span> <span class="n">basetime</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                    <span class="n">hour</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">basetime_offset</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">),</span>
+                    <span class="n">minute</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="n">second</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="n">microsecond</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="p">)</span>
             <span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="n">seconds_since_midnight</span> <span class="o">==</span> <span class="mi">86400</span><span class="p">:</span>
@@ -655,7 +675,9 @@
 
         <span class="n">fcint</span> <span class="o">=</span> <span class="n">as_timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fcint</span><span class="p">)</span>
         <span class="n">basetime</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">basetime</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">hour</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">minute</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">second</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">microsecond</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">basetime</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                <span class="n">hour</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">basetime_offset</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">),</span> <span class="n">minute</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">second</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">microsecond</span><span class="o">=</span><span class="mi">0</span>
+            <span class="p">)</span>
             <span class="o">+</span> <span class="p">(</span><span class="n">basetime_inc</span> <span class="o">*</span> <span class="n">fcint</span><span class="p">)</span>
             <span class="o">-</span> <span class="n">prefer_forecast</span>
         <span class="p">)</span>

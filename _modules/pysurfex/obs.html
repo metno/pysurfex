@@ -1055,11 +1055,11 @@
                 <span class="n">lat</span> <span class="o">=</span> <span class="n">odata</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">]</span>
                 <span class="n">elev</span> <span class="o">=</span> <span class="n">odata</span><span class="p">[</span><span class="s2">&quot;hgt&quot;</span><span class="p">]</span>
                 <span class="n">obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-                <span class="k">if</span> <span class="n">obname</span> <span class="ow">in</span> <span class="n">obsx</span><span class="p">[</span><span class="n">stid</span><span class="p">]:</span>
-                    <span class="n">obs</span> <span class="o">=</span> <span class="n">obsx</span><span class="p">[</span><span class="n">stid</span><span class="p">][</span><span class="n">obname</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">obname</span> <span class="ow">in</span> <span class="n">odata</span><span class="p">:</span>
+                    <span class="n">obs</span> <span class="o">=</span> <span class="n">odata</span><span class="p">[</span><span class="n">obname</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">obs</span> <span class="o">==</span> <span class="o">-</span><span class="mi">99</span><span class="p">:</span>
                     <span class="n">obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-                <span class="n">value</span> <span class="o">=</span> <span class="n">obsx</span><span class="p">[</span><span class="n">stid</span><span class="p">][</span><span class="n">obname</span><span class="p">]</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">odata</span><span class="p">[</span><span class="n">obname</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">varname</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">varname</span> <span class="o">==</span> <span class="n">obname</span><span class="p">:</span>
                     <span class="n">observations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                         <span class="n">Observation</span><span class="p">(</span>
