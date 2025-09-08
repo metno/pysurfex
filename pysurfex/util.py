@@ -24,7 +24,7 @@ def deep_update(source, overrides):
             returned = deep_update(source.get(key, {}), value)
             source[key] = returned
         else:
-            override = overrides[key]
+            override = value
             source[key] = override
     return source
 
