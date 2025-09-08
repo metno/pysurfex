@@ -318,9 +318,9 @@ class NetCDFOutput(SurfexOutputForcing):
                         "Number_of_points",
                     ),
                 )
-                self.forcing_file["DIR_SWdown"].longname = (
-                    "Surface_Incident_Downwelling_Shortwave_Radiation"
-                )
+                self.forcing_file[
+                    "DIR_SWdown"
+                ].longname = "Surface_Incident_Downwelling_Shortwave_Radiation"
                 self.forcing_file["DIR_SWdown"].units = "W/m2"
             elif this_var == "SCA_SW":
                 self.forcing_file["SCA_SWdown"] = self.file_handler.createVariable(
@@ -331,9 +331,9 @@ class NetCDFOutput(SurfexOutputForcing):
                         "Number_of_points",
                     ),
                 )
-                self.forcing_file["SCA_SWdown"].longname = (
-                    "Surface_Incident_Diffuse_Shortwave_Radiation"
-                )
+                self.forcing_file[
+                    "SCA_SWdown"
+                ].longname = "Surface_Incident_Diffuse_Shortwave_Radiation"
                 self.forcing_file["SCA_SWdown"].units = "W/m2"
             elif this_var == "LW":
                 self.forcing_file["LWdown"] = self.file_handler.createVariable(
@@ -344,9 +344,9 @@ class NetCDFOutput(SurfexOutputForcing):
                         "Number_of_points",
                     ),
                 )
-                self.forcing_file["LWdown"].longname = (
-                    "Surface_Incident_Diffuse_Longwave_Radiation"
-                )
+                self.forcing_file[
+                    "LWdown"
+                ].longname = "Surface_Incident_Diffuse_Longwave_Radiation"
                 self.forcing_file["LWdown"].units = "W/m2"
             elif this_var == "RAIN":
                 self.forcing_file["Rainf"] = self.file_handler.createVariable(
