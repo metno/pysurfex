@@ -25,7 +25,16 @@ def parse_args(argv):
 
 
 def test_single_parameter(system_file_paths):
-    argv = ["--inputfile", "fil_rh", "--inputtype", "surfex", "--variable", "rh2m"]
+    argv = [
+        "--basetime",
+        "2019010100",
+        "--inputfile",
+        "fil_rh",
+        "--inputtype",
+        "surfex",
+        "--variable",
+        "rh2m",
+    ]
     parent_parser = argparse.ArgumentParser(add_help=False)
     variable_parse_options(parent_parser)
 

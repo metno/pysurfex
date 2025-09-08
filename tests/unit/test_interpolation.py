@@ -297,7 +297,7 @@ def test_plot_wind_barbs(data_thredds_nc_file_aa):
             assert pytest.approx(new_field_y[i][j]) == target_new_field_y[i][j]
 
     if plot:
-        import matplotlib.pyplot as plt
+        import matplotlib.pyplot as plt  # noqa: PLC0415
 
         plt.clf()
         plt.barbs(lon, lat, old_field_x, old_field_y, barbcolor=["red"])

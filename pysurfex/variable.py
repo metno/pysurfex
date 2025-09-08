@@ -31,6 +31,7 @@ class Variable(object):
                                               Defaults to True.
 
         Raises:
+            RuntimeError: Initial base time not set
             RuntimeError: No filepattern provided
             RuntimeError: variable must have attribute
             RuntimeError: You can not have larger offset than the frequency of forecasts
@@ -45,6 +46,8 @@ class Variable(object):
 
         self.filepattern = self.substitute_macros(var_dict["filepattern"])
         self.initial_basetime = initial_basetime
+        if self.initial_basetime is None:
+            raise RuntimeError("Initial base time not set")
         try:
             self.fcint = int(self.var_dict["fcint"])
         except KeyError:
@@ -70,6 +73,16 @@ class Variable(object):
                 + " > "
                 + str(self.fcint)
             )
+        # Calculate basetime offset based on initial basetime and fcint
+        seconds_since_midnight = int(
+            (
+                self.initial_basetime
+                - self.initial_basetime.replace(hour=0, minute=0, second=0, microsecond=0)
+            ).total_seconds()
+        )
+        if seconds_since_midnight == 86400:
+            seconds_since_midnight = 0
+        self.basetime_offset = seconds_since_midnight % self.fcint
         accumulated, instant, file_var = self.set_var(validtime=self.initial_basetime)
         self.file_var = file_var
         self.instant = instant
@@ -559,11 +572,18 @@ class Variable(object):
         logging.debug("                offset: %s", self.offset)
         logging.debug("      initial_basetime: %s", self.initial_basetime)
         logging.debug("  Basetime with offset: %s", basetime)
+        logging.info("       Basetime offset: %s", self.basetime_offset)
 
         # Modify based on fcint
         seconds_since_midnight = int(
             (
-                basetime - basetime.replace(hour=0, minute=0, second=0, microsecond=0)
+                basetime
+                - basetime.replace(
+                    hour=int(self.basetime_offset / 3600),
+                    minute=0,
+                    second=0,
+                    microsecond=0,
+                )
             ).total_seconds()
         )
         if seconds_since_midnight == 86400:
@@ -586,7 +606,9 @@ class Variable(object):
 
         fcint = as_timedelta(seconds=self.fcint)
         basetime = (
-            basetime.replace(hour=0, minute=0, second=0, microsecond=0)
+            basetime.replace(
+                hour=int(self.basetime_offset / 3600), minute=0, second=0, microsecond=0
+            )
             + (basetime_inc * fcint)
             - prefer_forecast
         )

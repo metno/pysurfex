@@ -971,11 +971,11 @@ class ObsSetFromVobs(ObservationSet):
                 lat = odata["lat"]
                 elev = odata["hgt"]
                 obs = np.nan
-                if obname in obsx[stid]:
-                    obs = obsx[stid][obname]
+                if obname in odata:
+                    obs = odata[obname]
                 if obs == -99:
                     obs = np.nan
-                value = obsx[stid][obname]
+                value = odata[obname]
                 if varname is None or varname == obname:
                     observations.append(
                         Observation(

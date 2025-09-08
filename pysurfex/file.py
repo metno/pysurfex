@@ -1186,7 +1186,7 @@ class NetCDFSurfexFile(SurfexIO):
                                     and self.geo.mask[j] == iii
                                 ):
                                     field2d[i] = np.nan
-                                    if field[tstep, xxx, yyy, patch] != np.nan:
+                                    if not np.isnan(field[tstep, xxx, yyy, patch]):
                                         field2d[i] = field[tstep, xxx, yyy, patch]
                                     i = i + 1
                                     j = j + 1
@@ -1195,7 +1195,7 @@ class NetCDFSurfexFile(SurfexIO):
                         for yyy in range(field.shape[2]):
                             for xxx in range(field.shape[1]):
                                 field2d[i] = np.nan
-                                if field[tstep, xxx, yyy, patch] != np.nan:
+                                if not np.isnan(field[tstep, xxx, yyy, patch]):
                                     field2d[i] = field[tstep, xxx, yyy, patch]
                                 i = i + 1
                 if i != npoints:

@@ -279,6 +279,7 @@ def test_open_new_file_grib1(fixture):
 
 def test_open_new_file_grib2(fixture):
     """Test to open a grib2 file."""
+    basetime = as_datetime_args(year=2019, month=11, day=13, hour=0)
     initialtime = as_datetime_args(year=2019, month=11, day=13, hour=2)
     intervall = 3600
     case = "grib2"
@@ -288,7 +289,7 @@ def test_open_new_file_grib2(fixture):
     for i in range(11):
         validtime = initialtime + as_timedelta(seconds=intervall * i)
         previoustime = validtime - as_timedelta(seconds=intervall)
-        variable = Variable(var_type, var_dict, initialtime)
+        variable = Variable(var_type, var_dict, basetime)
         previous_filename = variable.get_filename(validtime, previoustime=previoustime)
         filename = variable.get_filename(validtime)
         assert filename == var_dict["blueprint"][str(i)]
