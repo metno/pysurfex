@@ -4,6 +4,7 @@
   description = "Python API to SURFEX"
   authors = [{name = "Trygve Aspelien"}]
   license = "MIT"
+  license_files = []
   readme = "README.rst"
   repository = "https://github.com/metno/pysurfex"
   documentation = "https://metno.github.io/pysurfex/"
