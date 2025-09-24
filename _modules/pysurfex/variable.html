@@ -655,7 +655,7 @@
                 <span class="p">)</span>
             <span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
         <span class="p">)</span>
-        <span class="k">if</span> <span class="n">seconds_since_midnight</span> <span class="o">==</span> <span class="mi">86400</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">seconds_since_midnight</span> <span class="o">==</span> <span class="mi">86400</span> <span class="ow">or</span> <span class="n">seconds_since_midnight</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">seconds_since_midnight</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">basetime_inc</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
             <span class="n">seconds_since_midnight</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="n">as_timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fcint</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">())</span>
