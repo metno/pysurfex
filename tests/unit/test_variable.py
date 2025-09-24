@@ -9,6 +9,150 @@ from pysurfex.variable import Variable
 @pytest.fixture
 def fixture():
     cfg = {
+        "arome_arctic_mbr0_00": {
+            "fcint": 10800,
+            "offset": 0,
+            "timestep": 3600,
+            "discipline": 0,
+            "parameterCategory": 0,
+            "parameterNumber": 0,
+            "levelType": 0,
+            "level": 0,
+            "typeOfStatisticalProcessing": 0,
+            "prefer_forecast": True,
+            "filepattern": "archive/@YYYY@/@MM@/@DD@/@HH@/fc@YYYY@@MM@@DD@@HH@_@LLL@grib2_fp",
+            "blueprint": {
+                "0": "archive/2019/11/13/21/fc2019111321_000grib2_fp",
+                "1": "archive/2019/11/13/21/fc2019111321_001grib2_fp",
+                "2": "archive/2019/11/13/21/fc2019111321_002grib2_fp",
+                "3": "archive/2019/11/13/21/fc2019111321_003grib2_fp",
+            },
+            "blueprint_previous": {
+                "1": "archive/2019/11/13/21/fc2019111321_000grib2_fp",
+                "2": "archive/2019/11/13/21/fc2019111321_001grib2_fp",
+                "3": "archive/2019/11/13/21/fc2019111321_002grib2_fp",
+            },
+        },
+        "arome_arctic_mbr1_01": {
+            "fcint": 10800,
+            "offset": 0,
+            "timestep": 3600,
+            "discipline": 0,
+            "parameterCategory": 0,
+            "parameterNumber": 0,
+            "levelType": 0,
+            "level": 0,
+            "typeOfStatisticalProcessing": 0,
+            "prefer_forecast": True,
+            "filepattern": "archive/@YYYY@/@MM@/@DD@/@HH@/fc@YYYY@@MM@@DD@@HH@_@LLL@grib2_fp",
+            "blueprint": {
+                "0": "archive/2019/11/13/22/fc2019111322_000grib2_fp",
+                "1": "archive/2019/11/13/22/fc2019111322_001grib2_fp",
+                "2": "archive/2019/11/13/22/fc2019111322_002grib2_fp",
+                "3": "archive/2019/11/13/22/fc2019111322_003grib2_fp",
+            },
+            "blueprint_previous": {
+                "1": "archive/2019/11/13/22/fc2019111322_000grib2_fp",
+                "2": "archive/2019/11/13/22/fc2019111322_001grib2_fp",
+                "3": "archive/2019/11/13/22/fc2019111322_002grib2_fp",
+            },
+        },
+        "arome_arctic_mbr2_02": {
+            "fcint": 10800,
+            "offset": 0,
+            "timestep": 3600,
+            "discipline": 0,
+            "parameterCategory": 0,
+            "parameterNumber": 0,
+            "levelType": 0,
+            "level": 0,
+            "typeOfStatisticalProcessing": 0,
+            "prefer_forecast": True,
+            "filepattern": "archive/@YYYY@/@MM@/@DD@/@HH@/fc@YYYY@@MM@@DD@@HH@_@LLL@grib2_fp",
+            "blueprint": {
+                "0": "archive/2019/11/13/23/fc2019111323_000grib2_fp",
+                "1": "archive/2019/11/13/23/fc2019111323_001grib2_fp",
+                "2": "archive/2019/11/13/23/fc2019111323_002grib2_fp",
+                "3": "archive/2019/11/13/23/fc2019111323_003grib2_fp",
+            },
+            "blueprint_previous": {
+                "1": "archive/2019/11/13/23/fc2019111323_000grib2_fp",
+                "2": "archive/2019/11/13/23/fc2019111323_001grib2_fp",
+                "3": "archive/2019/11/13/23/fc2019111323_002grib2_fp",
+            },
+        },
+        "arome_arctic_mbr0_12": {
+            "fcint": 10800,
+            "offset": 0,
+            "timestep": 3600,
+            "discipline": 0,
+            "parameterCategory": 0,
+            "parameterNumber": 0,
+            "levelType": 0,
+            "level": 0,
+            "typeOfStatisticalProcessing": 0,
+            "prefer_forecast": True,
+            "filepattern": "archive/@YYYY@/@MM@/@DD@/@HH@/fc@YYYY@@MM@@DD@@HH@_@LLL@grib2_fp",
+            "blueprint": {
+                "0": "archive/2019/11/14/09/fc2019111409_000grib2_fp",
+                "1": "archive/2019/11/14/09/fc2019111409_001grib2_fp",
+                "2": "archive/2019/11/14/09/fc2019111409_002grib2_fp",
+                "3": "archive/2019/11/14/09/fc2019111409_003grib2_fp",
+            },
+            "blueprint_previous": {
+                "1": "archive/2019/11/14/09/fc2019111409_000grib2_fp",
+                "2": "archive/2019/11/14/09/fc2019111409_001grib2_fp",
+                "3": "archive/2019/11/14/09/fc2019111409_002grib2_fp",
+            },
+        },
+        "arome_arctic_mbr1_13": {
+            "fcint": 10800,
+            "offset": 0,
+            "timestep": 3600,
+            "discipline": 0,
+            "parameterCategory": 0,
+            "parameterNumber": 0,
+            "levelType": 0,
+            "level": 0,
+            "typeOfStatisticalProcessing": 0,
+            "prefer_forecast": True,
+            "filepattern": "archive/@YYYY@/@MM@/@DD@/@HH@/fc@YYYY@@MM@@DD@@HH@_@LLL@grib2_fp",
+            "blueprint": {
+                "0": "archive/2019/11/14/10/fc2019111410_000grib2_fp",
+                "1": "archive/2019/11/14/10/fc2019111410_001grib2_fp",
+                "2": "archive/2019/11/14/10/fc2019111410_002grib2_fp",
+                "3": "archive/2019/11/14/10/fc2019111410_003grib2_fp",
+            },
+            "blueprint_previous": {
+                "1": "archive/2019/11/14/10/fc2019111410_000grib2_fp",
+                "2": "archive/2019/11/14/10/fc2019111410_001grib2_fp",
+                "3": "archive/2019/11/14/10/fc2019111410_002grib2_fp",
+            },
+        },
+        "arome_arctic_mbr2_14": {
+            "fcint": 10800,
+            "offset": 0,
+            "timestep": 3600,
+            "discipline": 0,
+            "parameterCategory": 0,
+            "parameterNumber": 0,
+            "levelType": 0,
+            "level": 0,
+            "typeOfStatisticalProcessing": 0,
+            "prefer_forecast": True,
+            "filepattern": "archive/@YYYY@/@MM@/@DD@/@HH@/fc@YYYY@@MM@@DD@@HH@_@LLL@grib2_fp",
+            "blueprint": {
+                "0": "archive/2019/11/14/11/fc2019111411_000grib2_fp",
+                "1": "archive/2019/11/14/11/fc2019111411_001grib2_fp",
+                "2": "archive/2019/11/14/11/fc2019111411_002grib2_fp",
+                "3": "archive/2019/11/14/11/fc2019111411_003grib2_fp",
+            },
+            "blueprint_previous": {
+                "1": "archive/2019/11/14/11/fc2019111411_000grib2_fp",
+                "2": "archive/2019/11/14/11/fc2019111411_001grib2_fp",
+                "3": "archive/2019/11/14/11/fc2019111411_002grib2_fp",
+            },
+        },
         "long_forecast": {
             "fcint": 10800,
             "offset": 0,
@@ -233,6 +377,37 @@ def test_open_new_file_nc(fixture):
     var_dict = fixture[case]
     var_type = case
     for i in range(11):
+        validtime = initialtime + as_timedelta(seconds=intervall * i)
+        previoustime = validtime - as_timedelta(seconds=intervall)
+        variable = Variable(var_type, var_dict, initialtime)
+        previous_filename = variable.get_filename(validtime, previoustime=previoustime)
+        filename = variable.get_filename(validtime)
+        assert filename == var_dict["blueprint"][str(i)]
+        if i > 0:
+            assert previous_filename == var_dict["blueprint_previous"][str(i)]
+
+
+@pytest.mark.parametrize(
+    "case",
+    [
+        "arome_arctic_mbr0_00",
+        "arome_arctic_mbr1_01",
+        "arome_arctic_mbr2_02",
+        "arome_arctic_mbr0_12",
+        "arome_arctic_mbr1_13",
+        "arome_arctic_mbr2_14",
+    ],
+)
+def test_arome_arctic_mbr1(case, fixture):
+    """Test to open a grib1 file."""
+    hh = int(case[-2:])
+    validtime = as_datetime_args(year=2019, month=11, day=14, hour=hh)
+    intervall = 3600
+    initialtime = validtime - as_timedelta(seconds=10800)
+
+    var_dict = fixture[case]
+    var_type = "grib2"
+    for i in range(4):
         validtime = initialtime + as_timedelta(seconds=intervall * i)
         previoustime = validtime - as_timedelta(seconds=intervall)
         variable = Variable(var_type, var_dict, initialtime)
