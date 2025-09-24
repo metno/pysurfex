@@ -586,7 +586,7 @@ class Variable(object):
                 )
             ).total_seconds()
         )
-        if seconds_since_midnight == 86400:
+        if seconds_since_midnight == 86400 or seconds_since_midnight < 0:
             seconds_since_midnight = 0
         basetime_inc = int(
             seconds_since_midnight / int(as_timedelta(seconds=self.fcint).total_seconds())
