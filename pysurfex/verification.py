@@ -281,24 +281,6 @@ class VerifData:
         leadtime = ds_model["leadtime"].data
         model_reference_time = ds_model["time"].data
         location = ds_model["location"].data
-        model_valid_time = []
-        for tim in model_reference_time:
-            for lt in leadtime:
-                model_valid_time.append(tim + lt)
-        unique_model_valid_time = np.sort(np.unique(model_valid_time))
-        ntimes = unique_model_valid_time.shape[0]
-
-        # dummy observations
-        nlocations = location.shape[0]
-        dummy_obs = np.nan * np.random.randn(ntimes, nlocations)
-        ds3 = xr.Dataset(
-            data_vars={"obs": (["obstime", "location"], dummy_obs)},
-            coords={
-                "obstime": unique_model_valid_time,
-                "location": location,
-            },
-        )
-        ds_obs = ds3.update(ds_obs)
 
         fcst = ds_model.fcst.data
         obs = ds_obs.obs.sel(obstime=ds_model.time + ds_model.leadtime).data
@@ -1051,7 +1033,7 @@ def converter2harp(converter, **kwargs):
     if sqlite_template is None:
         sqlite_template = "{MODEL}/{YYYY}/{MM}/FCTABLE_{PP}_{YYYY}{MM}.sqlite"
 
-    leadtime = int((validtime - basetime).total_seconds() / 3600.0)
+    leadtime = int((validtime - basetime).total_seconds())
     cache = None
     param = {
         "varname": variable,
@@ -1064,6 +1046,12 @@ def converter2harp(converter, **kwargs):
     data_vector = ConvertedInput(geo, variable, converter).read_time_step(
         validtime, cache
     )
+
+    if harp_param_unit == "%" and max(data_vector) <= 2:
+        logging.warning("Harp exepcts percentage but data seems to be fraction")
+        logging.warning("Scaling fractional data to percent")
+        data_vector = data_vector * 100
+        data_vector[data_vector > 100] = 100.0
 
     lons, lats, elevs = stationlist.get_pos_from_stid(stationlist.stids)
     harp_station_list = pandas.DataFrame(
