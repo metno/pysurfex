@@ -16,8 +16,7 @@ def netatmo_obs_time():
 def netatmo_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/netatmo.json"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
-        fhandler.write(
-            """
+        fhandler.write("""
 [
     {
         "location":[8.842586,59.990364],
@@ -59,8 +58,7 @@ def netatmo_file(tmp_path_factory):
         "altitude":162
     }
 ]
-        """
-        )
+        """)
     return fname
 
 

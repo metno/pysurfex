@@ -113,8 +113,7 @@ class ObservationDataSetFromObsoul(ObservationSet):
                             add_obs = False
                     else:
                         logging.debug(
-                            "Not checking time window.",
-                            "neg_dt=%s and/or pos_dt=%s are None",
+                            "Not checking time window. neg_dt=%s and/or pos_dt=%s None",
                             neg_dt,
                             pos_dt,
                         )

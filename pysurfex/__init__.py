@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """pysurfex module."""
+
 from importlib.metadata import version
 from pathlib import Path
 

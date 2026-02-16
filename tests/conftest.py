@@ -606,8 +606,7 @@ def bufr_bad_file(tmp_path_factory):
 def obsoul_cryoclim_cy43(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/cryoclim.obsoul"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
-        fhandler.write(
-            """
+        fhandler.write("""
             1           2
   15  1        17  80.47041   24.15402  'CRYO    '  20200220  60000 -2.14748e+09     1   1111   0
          92  999999.00  -2147483647.00  0.100  2048
@@ -617,8 +616,7 @@ def obsoul_cryoclim_cy43(tmp_path_factory):
          92  999999.00  -2147483647.00  0.100  2048
   15  1        17  80.21594   25.50849  'CRYO    '  20200220  60000 -2.14748e+09     1   1111   0
          92  999999.00  -2147483647.00  0.000  2048
-"""
-        )
+""")
     return fname
 
 
@@ -627,8 +625,7 @@ def data_thredds_nc_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_thredds_nc.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_thredds_nc.cdl"
     with open(cdlfname, mode="w", encoding="utf-8") as fhandler:
-        fhandler.write(
-            """
+        fhandler.write("""
 netcdf meps_thredds {
 dimensions:
         time = UNLIMITED ;
@@ -746,8 +743,7 @@ liquid_water_content_of_surface_snow =
 200, 0, 230, 20, 0, 1000,
 300, 0, 330, 30, 0, 3000;
 }
-"""
-        )
+""")
     Dataset(fname, mode="w").fromcdl(
         cdlfname, ncfilename=fname, mode="a", format="NETCDF3_CLASSIC"
     )
@@ -759,8 +755,7 @@ def data_thredds_nc_file_aa(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_thredds_nc.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_thredds_nc.cdl"
     with open(cdlfname, mode="w", encoding="utf-8") as fhandler:
-        fhandler.write(
-            """
+        fhandler.write("""
 netcdf aa_thredds {
 dimensions:
         time = UNLIMITED ;
@@ -827,8 +822,7 @@ y_wind_10m =
 -20.0, -20.0, -20.0, -20.0, -20.0, -20.0,-20.0, -20.0, -20.0, -20.0, -20.0, -20.0,-20.0, -20.0, -20.0, -20.0, -20.0, -20.0,
 -20.0, -20.0, -20.0, -20.0, -20.0, -20.0,-20.0, -20.0, -20.0, -20.0, -20.0, -20.0,-20.0, -20.0, -20.0, -20.0, -20.0, -20.0;
 }
-"""
-        )
+""")
     Dataset(fname, mode="w").fromcdl(
         cdlfname, ncfilename=fname, mode="a", format="NETCDF3_CLASSIC"
     )
@@ -857,8 +851,7 @@ def data_surfex_pgd_nc_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_surfex_pgd_nc.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_surfex_pgd_nc.cdl"
     with open(cdlfname, mode="w", encoding="utf-8") as fhandler:
-        fhandler.write(
-            """
+        fhandler.write("""
 netcdf PGD {
 dimensions:
         xx = 2 ;
@@ -1013,8 +1006,7 @@ COVER006 =
 0.0, 1.0, 0.8, 0.25, 0.75, 0.1;
 
 }
-"""
-        )
+""")
     Dataset(fname, mode="w").fromcdl(
         cdlfname, ncfilename=fname, mode="a", format="NETCDF3_CLASSIC"
     )
@@ -1038,8 +1030,7 @@ def firstguess4gridpp(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/FirstGuess4gridpp.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/FirstGuess4gridpp.cdl"
     with open(cdlfname, mode="w", encoding="utf-8") as fhandler:
-        fhandler.write(
-            """
+        fhandler.write("""
 netcdf FirstGuess4gridpp {
 dimensions:
         y = 3 ;
@@ -1129,8 +1120,7 @@ altitude =
 land_area_fraction =
    1, 1, 0, 1, 0.1664643, 0.1266151;
 }
-"""
-        )
+""")
     if not os.path.exists(fname):
         Dataset(fname, mode="w").fromcdl(cdlfname, ncfilename=fname, mode="a")
     return fname
@@ -1141,8 +1131,7 @@ def data_cryoclim_nc_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/cryoclim_nc.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/cryoclim_nc.cdl"
     with open(cdlfname, mode="w", encoding="utf-8") as fhandler:
-        fhandler.write(
-            """
+        fhandler.write("""
 netcdf cryoclim {
 dimensions:
         time = 1 ;
@@ -1206,8 +1195,7 @@ lat = 59.91072795, 60.00064574, 60.09056224, 59.90937931, 59.99929347, 60.089206
 classed_value_c = 1, 1, 2, 3, 0, 4;
 classed_product = 1, 1, 2, 3, 0, 4;
 }
-"""
-        )
+""")
     Dataset(fname, mode="w").fromcdl(
         cdlfname, ncfilename=fname, mode="a", format="NETCDF3_CLASSIC"
     )
