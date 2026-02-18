@@ -10,7 +10,7 @@
     
     <script src="../../_static/documentation_options.js?v=9fa44488"></script>
     <script src="../../_static/doctools.js?v=695de88e"></script>
-    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -328,24 +328,6 @@
         <span class="n">leadtime</span> <span class="o">=</span> <span class="n">ds_model</span><span class="p">[</span><span class="s2">&quot;leadtime&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
         <span class="n">model_reference_time</span> <span class="o">=</span> <span class="n">ds_model</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
         <span class="n">location</span> <span class="o">=</span> <span class="n">ds_model</span><span class="p">[</span><span class="s2">&quot;location&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
-        <span class="n">model_valid_time</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">tim</span> <span class="ow">in</span> <span class="n">model_reference_time</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">lt</span> <span class="ow">in</span> <span class="n">leadtime</span><span class="p">:</span>
-                <span class="n">model_valid_time</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tim</span> <span class="o">+</span> <span class="n">lt</span><span class="p">)</span>
-        <span class="n">unique_model_valid_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">model_valid_time</span><span class="p">))</span>
-        <span class="n">ntimes</span> <span class="o">=</span> <span class="n">unique_model_valid_time</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-        <span class="c1"># dummy observations</span>
-        <span class="n">nlocations</span> <span class="o">=</span> <span class="n">location</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">dummy_obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">ntimes</span><span class="p">,</span> <span class="n">nlocations</span><span class="p">)</span>
-        <span class="n">ds3</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span>
-            <span class="n">data_vars</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;obs&quot;</span><span class="p">:</span> <span class="p">([</span><span class="s2">&quot;obstime&quot;</span><span class="p">,</span> <span class="s2">&quot;location&quot;</span><span class="p">],</span> <span class="n">dummy_obs</span><span class="p">)},</span>
-            <span class="n">coords</span><span class="o">=</span><span class="p">{</span>
-                <span class="s2">&quot;obstime&quot;</span><span class="p">:</span> <span class="n">unique_model_valid_time</span><span class="p">,</span>
-                <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="n">location</span><span class="p">,</span>
-            <span class="p">},</span>
-        <span class="p">)</span>
-        <span class="n">ds_obs</span> <span class="o">=</span> <span class="n">ds3</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ds_obs</span><span class="p">)</span>
 
         <span class="n">fcst</span> <span class="o">=</span> <span class="n">ds_model</span><span class="o">.</span><span class="n">fcst</span><span class="o">.</span><span class="n">data</span>
         <span class="n">obs</span> <span class="o">=</span> <span class="n">ds_obs</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">obstime</span><span class="o">=</span><span class="n">ds_model</span><span class="o">.</span><span class="n">time</span> <span class="o">+</span> <span class="n">ds_model</span><span class="o">.</span><span class="n">leadtime</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
@@ -1139,7 +1121,7 @@
     <span class="k">if</span> <span class="n">sqlite_template</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">sqlite_template</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{MODEL}</span><span class="s2">/</span><span class="si">{YYYY}</span><span class="s2">/</span><span class="si">{MM}</span><span class="s2">/FCTABLE_</span><span class="si">{PP}</span><span class="s2">_</span><span class="si">{YYYY}{MM}</span><span class="s2">.sqlite&quot;</span>
 
-    <span class="n">leadtime</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">validtime</span> <span class="o">-</span> <span class="n">basetime</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="mf">3600.0</span><span class="p">)</span>
+    <span class="n">leadtime</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">validtime</span> <span class="o">-</span> <span class="n">basetime</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">())</span>
     <span class="n">cache</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">param</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;varname&quot;</span><span class="p">:</span> <span class="n">variable</span><span class="p">,</span>
@@ -1152,6 +1134,12 @@
     <span class="n">data_vector</span> <span class="o">=</span> <span class="n">ConvertedInput</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">converter</span><span class="p">)</span><span class="o">.</span><span class="n">read_time_step</span><span class="p">(</span>
         <span class="n">validtime</span><span class="p">,</span> <span class="n">cache</span>
     <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">harp_param_unit</span> <span class="o">==</span> <span class="s2">&quot;%&quot;</span> <span class="ow">and</span> <span class="nb">max</span><span class="p">(</span><span class="n">data_vector</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Harp exepcts percentage but data seems to be fraction&quot;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Scaling fractional data to percent&quot;</span><span class="p">)</span>
+        <span class="n">data_vector</span> <span class="o">=</span> <span class="n">data_vector</span> <span class="o">*</span> <span class="mi">100</span>
+        <span class="n">data_vector</span><span class="p">[</span><span class="n">data_vector</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">]</span> <span class="o">=</span> <span class="mf">100.0</span>
 
     <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">elevs</span> <span class="o">=</span> <span class="n">stationlist</span><span class="o">.</span><span class="n">get_pos_from_stid</span><span class="p">(</span><span class="n">stationlist</span><span class="o">.</span><span class="n">stids</span><span class="p">)</span>
     <span class="n">harp_station_list</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
@@ -1207,7 +1195,7 @@
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     </div>
   </body>
 </html>
