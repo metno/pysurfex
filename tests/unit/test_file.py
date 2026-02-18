@@ -27,8 +27,7 @@ from pysurfex.read import ConvertedInput, Converter
 def ascii_conf_proj_float_record_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/ascii_conf_proj_float.txt"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
-        fhandler.write(
-            """
+        fhandler.write("""
  &FULL   VERSION
 (-)
            8
@@ -114,8 +113,7 @@ CONF PROJ
  &FULL   INTEGER_TYPE
 
      99
-"""
-        )
+""")
     return fname
 
 
@@ -123,8 +121,7 @@ CONF PROJ
 def ascii_ign_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/ascii_ign.txt"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
-        fhandler.write(
-            """
+        fhandler.write("""
  &FULL   GRID_TYPE
 GRID TYPE
 IGN
@@ -146,8 +143,7 @@ IGN
  &FULL   XDY
 
    0.10000000D+05    0.20000000D+05 0.30000000D+05  0.40000000D+05  0.50000000D+05  0.60000000D+05
-        """
-        )
+        """)
     return fname
 
 
@@ -155,8 +151,7 @@ IGN
 def ascii_lonlatval_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/ascii_lonlatval.txt"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
-        fhandler.write(
-            """
+        fhandler.write("""
  &FULL   GRID_TYPE
 GRID TYPE
 LONLATVAL
@@ -172,8 +167,7 @@ LONLATVAL
  &FULL   XDY
 
    0.10000000D+01    0.20000000D+01 0.30000000D+01  0.40000000D+01  0.50000000D+01  0.60000000D+01
-"""
-        )
+""")
     return fname
 
 
@@ -181,8 +175,7 @@ LONLATVAL
 def ascii_lonlat_reg_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/ascii_lonlat_reg.txt"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
-        fhandler.write(
-            """
+        fhandler.write("""
  &FULL   GRID_TYPE
 GRID TYPE
 LONLAT REG
@@ -204,8 +197,7 @@ LONLAT REG
   &FULL   NLAT
 
   3
-"""
-        )
+""")
     return fname
 
 
@@ -260,11 +252,9 @@ def test_read_ascii_geo_lonlat_reg(ascii_lonlat_reg_file):
 def texte_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/texte.TXT"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
-        fhandler.write(
-            """
+        fhandler.write("""
  1.0 2.0 3.0 4.0 5.0 6.0
-"""
-        )
+""")
     return fname
 
 
@@ -439,8 +429,7 @@ def data_surfex_nc_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_surfex_nc.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_surfex_nc.cdl"
     with open(cdlfname, mode="w", encoding="utf-8") as fhandler:
-        fhandler.write(
-            """
+        fhandler.write("""
 netcdf PREP_CONF_PROJ {
 dimensions:
         xx = 2 ;
@@ -582,8 +571,7 @@ data:
   TG1P1 =
   285, 285, 285, 285, 285, 285;
 }
-"""
-        )
+""")
     Dataset(fname, mode="w").fromcdl(
         cdlfname, ncfilename=fname, mode="a", format="NETCDF3_CLASSIC"
     )
@@ -595,8 +583,7 @@ def data_forcing_nc_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_forcing_nc.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_forcing_nc.cdl"
     with open(cdlfname, mode="w", encoding="utf-8") as fhandler:
-        fhandler.write(
-            """
+        fhandler.write("""
 netcdf FORCING {
 dimensions:
         Number_of_points = 6 ;
@@ -666,8 +653,7 @@ data:
   271.1142, 271.2324, 271.9492, 271.5849, 270.9042, 269.662,
   270.7881, 270.5206, 271.3282, 271.1231, 270.2364, 268.9913;
 }
-"""
-        )
+""")
     Dataset(fname, mode="w").fromcdl(
         cdlfname, ncfilename=fname, mode="a", format="NETCDF3_CLASSIC"
     )
@@ -727,8 +713,7 @@ def data_timeseries_netcdf_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_timeseries_netcdf.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_timeries_netcdf.cdl"
     with open(cdlfname, mode="w", encoding="utf-8") as fhandler:
-        fhandler.write(
-            """
+        fhandler.write("""
 netcdf ISBA_PROGNOSTIC.OUT {
 dimensions:
         xx = 2 ;
@@ -777,8 +762,7 @@ data:
     272.366437323069, 272.341285478363, 272.515206303509, 272.477738673727,
     272.439227443228, 272.398908654572, 272.366437323069, 272.341285478363;
 }
-"""
-        )
+""")
     Dataset(fname, mode="w").fromcdl(
         cdlfname, ncfilename=fname, mode="a", format="NETCDF3_CLASSIC"
     )

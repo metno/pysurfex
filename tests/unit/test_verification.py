@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Unit tests for the config file parsing module."""
+
 import contextlib
 import json
 import os
@@ -273,14 +274,41 @@ def test_xarray_converter(
     verif_ds.save_as(output)
     verif_ds = VerifDataFromFile(output)
 
+    assert pytest.approx(float(verif_ds.ds.fcst[0, 0, 0]), 1) == pytest.approx(
+        ds.fcst[0, 0, 0], 1
+    )
+    assert pytest.approx(float(verif_ds.ds.fcst[1, 0, 0]), 1) == pytest.approx(
+        ds.fcst[1, 0, 0], 1
+    )
+    assert pytest.approx(float(verif_ds.ds.fcst[0, 0, 1]), 1) == pytest.approx(
+        ds.fcst[0, 0, 1], 1
+    )
+    assert pytest.approx(float(verif_ds.ds.fcst[1, 0, 1]), 1) == pytest.approx(
+        ds.fcst[1, 0, 1], 1
+    )
+    assert pytest.approx(float(verif_ds.ds.obs[0, 0, 0]), 1) == pytest.approx(
+        obs_ds.obs[1, 0], 1
+    )
+    assert pytest.approx(float(verif_ds.ds.obs[1, 0, 0]), 1) == pytest.approx(
+        obs_ds.obs[1, 1], 1
+    )
+    assert pytest.approx(float(verif_ds.ds.obs[0, 0, 1]), 1) == pytest.approx(
+        obs_ds.obs[2, 0], 1
+    )
+    assert pytest.approx(float(verif_ds.ds.obs[1, 0, 1]), 1) == pytest.approx(
+        obs_ds.obs[2, 1], 1
+    )
+    assert pytest.approx(float(verif_ds.ds.obs[1, 0, 1]), 1) == pytest.approx(
+        obs_ds.obs[2, 1], 1
+    )
+
 
 @pytest.fixture(name="data_surfex_nc_file")
 def fixture_data_surfex_nc_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_surfex2_nc.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/data_surfex2_nc.cdl"
     with open(cdlfname, mode="w", encoding="utf-8") as fhandler:
-        fhandler.write(
-            """
+        fhandler.write("""
 netcdf PREP_CONF_PROJ {
 dimensions:
         xx = 2 ;
@@ -366,7 +394,10 @@ variables:
                 T2M:_FillValue = 1.e+20 ;
                 T2M:long_name = "T2M" ;
                 T2M:comment = "T2M (K)" ;
-
+        double HU2M(yy, xx) ;
+                HU2M:_FillValue = 1.e+20 ;
+                HU2M:long_name = "T2M" ;
+                HU2M:comment = "T2M (K)" ;
 data:
 
  VERSION = 8 ;
@@ -421,9 +452,11 @@ data:
 
   T2M =
   285, 285, 285, 285, 285, 285;
+
+  HU2M =
+  0.1, 0.2, 0.3, 0.4, 0.5, 0.6;
 }
-"""
-        )
+""")
     Dataset(fname, mode="w").fromcdl(
         cdlfname, ncfilename=fname, mode="a", format="NETCDF3_CLASSIC"
     )
@@ -542,7 +575,6 @@ def test_converter2ds_bufr(stationlist_file, tmp_path_factory, bufr_file_for_ver
         assert pytest.approx(ds.obs.data[0][1]) == 273.15
 
 
-@pytest.mark.usefixtures("_mockers")
 def test_converter2harp(stationlist_file, tmp_path_factory, data_surfex_nc_file):
     var = "T2M"
     dt_string = "2023110808"
@@ -554,6 +586,35 @@ def test_converter2harp(stationlist_file, tmp_path_factory, data_surfex_nc_file)
         "T2m",
         "--harp-param-unit",
         "K",
+        "--model-name",
+        "TEST",
+        "--inputfile",
+        data_surfex_nc_file,
+        "--inputtype",
+        "surfex",
+        "--variable",
+        var,
+        "--basetime",
+        basetime,
+        "--validtime",
+        dt_string,
+    ]
+
+    with working_directory(tmp_path_factory.getbasetemp()):
+        converter2harp_cli(argv=argv)
+
+
+def test_converter2harp_rh(stationlist_file, tmp_path_factory, data_surfex_nc_file):
+    var = "HU2M"
+    dt_string = "2023110808"
+    basetime = "2023110807"
+    argv = [
+        "--station-list",
+        stationlist_file,
+        "--harp-param",
+        "RH2m",
+        "--harp-param-unit",
+        "%",
         "--model-name",
         "TEST",
         "--inputfile",

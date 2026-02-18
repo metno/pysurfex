@@ -173,8 +173,7 @@ def data_sentinel_nc_file(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/sentinel_nc.nc"
     cdlfname = f"{tmp_path_factory.getbasetemp().as_posix()}/sentinel_nc.cdl"
     with open(cdlfname, mode="w", encoding="utf-8") as fhandler:
-        fhandler.write(
-            """
+        fhandler.write("""
 netcdf sentinel {
 dimensions:
         xc = 2 ;
@@ -194,8 +193,7 @@ LAT = 59, 60, 61;
 
 surface_soil_moisture = 0.01, 0.01, 0.01, 0.03, 0.001, 0.001;
 }
-"""
-        )
+""")
     Dataset(fname, mode="w").fromcdl(
         cdlfname, ncfilename=fname, mode="a", format="NETCDF3_CLASSIC"
     )

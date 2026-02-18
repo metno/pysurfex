@@ -13,7 +13,7 @@ def settings(bufr_file):
         "label": {
             "filetype": "bufr",
             "filepattern": bufr_file,
-            "varname": "airTemperatureAt2m",
+            "varname": ["airTemperatureAt2M"],
             "lonrange": [0, 20],
             "latrange": [55, 65],
             "dt": 1800,

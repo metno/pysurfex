@@ -10,8 +10,7 @@ from pysurfex.obsoul import ObservationDataSetFromObsoulFile
 def obsoul_carra1(tmp_path_factory):
     fname = f"{tmp_path_factory.getbasetemp().as_posix()}/carra1.obsoul"
     with open(fname, mode="w", encoding="utf-8") as fhandler:
-        fhandler.write(
-            """
+        fhandler.write("""
      20200220          06
   17  4      1165  73.94860   29.84100  '2600537 '  20200220  90000  0.000000000     1  1111      100000
            1  -100130.00000000000        1.7000000000000000E+038   0.0000000000000000             2064
@@ -34,8 +33,7 @@ def obsoul_carra1(tmp_path_factory):
            1   100000.00000000000        1.7000000000000000E+038   1370.0000000000000             2560
            2   100000.00000000000        1.7000000000000000E+038   269.88999999999999             2560
           29   100000.00000000000        1.7000000000000000E+038   73.000000000000000             2560
-"""
-        )
+""")
     return fname
 
 
