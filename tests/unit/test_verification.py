@@ -575,6 +575,7 @@ def test_converter2ds_bufr(stationlist_file, tmp_path_factory, bufr_file_for_ver
         assert pytest.approx(ds.obs.data[0][1]) == 273.15
 
 
+@pytest.mark.usefixtures("_mockers")
 def test_converter2harp(stationlist_file, tmp_path_factory, data_surfex_nc_file):
     var = "T2M"
     dt_string = "2023110808"
@@ -604,6 +605,7 @@ def test_converter2harp(stationlist_file, tmp_path_factory, data_surfex_nc_file)
         converter2harp_cli(argv=argv)
 
 
+@pytest.mark.usefixtures("_mockers")
 def test_converter2harp_rh(stationlist_file, tmp_path_factory, data_surfex_nc_file):
     var = "HU2M"
     dt_string = "2023110808"
