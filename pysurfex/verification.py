@@ -1067,7 +1067,7 @@ def converter2harp(converter, **kwargs):
     logging.info("SQLITE: writing var=%s for mode=%sn", variable, model_name)
     sqlite_file = sqlite_name(param, validtime, model_name, sqlite_template)
     data = create_table(
-        data_vector, harp_station_list, param, validtime, leadtime, model_name + "_det"
+        data_vector, harp_station_list, param, basetime, leadtime, model_name + "_det"
     )
     logging.info("SQLITE: writing sqlite_file=%s", sqlite_file)
     write_to_sqlite(data, sqlite_file, param, model_name + "_det")
