@@ -326,7 +326,8 @@ def gridpos2points(
     )
 
 
-def grid2points(grid, points, grid_values, operator="bilinear", elev_gradient=None):
+def grid2points(grid, points, grid_values, operator="bilinear", elev_gradient=None,
+                max_distance=25000.0):
     """Convert a grid to points.
 
     Args:
@@ -355,6 +356,8 @@ def grid2points(grid, points, grid_values, operator="bilinear", elev_gradient=No
             values = gridpp.simple_gradient(
                 grid.grid, points.points, grid_values, elev_gradient, gridpp.Bilinear
             )
+        in_grid = np.array(points.inside_grid(grid, distance=max_distance))
+        values[in_grid == False] = np.nan
     elif operator == "nearest":
         if elev_gradient is None:
             values = gridpp.nearest(grid.grid, points.points, grid_values)
@@ -362,13 +365,15 @@ def grid2points(grid, points, grid_values, operator="bilinear", elev_gradient=No
             values = gridpp.simple_gradient(
                 grid.grid, points.points, grid_values, elev_gradient, gridpp.Nearest
             )
+        in_grid = np.array(points.inside_grid(grid, distance=max_distance))
+        values[in_grid == False] = np.nan
     else:
         raise NotImplementedError(f"Operator {operator} not implemented!")
     return values
 
 
 def inside_grid(grid_lons, grid_lats, p_lons, p_lats, distance=2500.0):
-    """Get number of neighbours.
+    """Check if inside grid.
 
     Args:
         grid_lons (np.ndarray): Grid longitudes
