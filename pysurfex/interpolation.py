@@ -326,8 +326,12 @@ def gridpos2points(
     )
 
 
-def grid2points(grid, points, grid_values, operator="bilinear", elev_gradient=None,
-                max_distance=25000.0):
+def grid2points(grid, points,
+                grid_values,
+                operator="bilinear",
+                elev_gradient=None,
+                max_distance=25000.0
+                ):
     """Convert a grid to points.
 
     Args:
