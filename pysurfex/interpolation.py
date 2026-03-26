@@ -342,6 +342,8 @@ def grid2points(
         grid_values (np.ndarray): Grid values
         operator (str, optional): Interpolation operator. Defaults to "bilinear".
         elev_gradient (float, optional): Elevation gradient for downscaler
+        max_distance (float, optional): Maximum distance from grid points.
+                                        Defaults to 25000.0.
 
     Raises:
         NotImplementedError: Operator not implemented
@@ -363,7 +365,7 @@ def grid2points(
                 grid.grid, points.points, grid_values, elev_gradient, gridpp.Bilinear
             )
         in_grid = np.array(points.inside_grid(grid, distance=max_distance))
-        values[in_grid == False] = np.nan
+        values[in_grid == False] = np.nan  # noqa: E712
     elif operator == "nearest":
         if elev_gradient is None:
             values = gridpp.nearest(grid.grid, points.points, grid_values)
@@ -372,7 +374,7 @@ def grid2points(
                 grid.grid, points.points, grid_values, elev_gradient, gridpp.Nearest
             )
         in_grid = np.array(points.inside_grid(grid, distance=max_distance))
-        values[in_grid == False] = np.nan
+        values[in_grid == False] = np.nan  # noqa: E712
     else:
         raise NotImplementedError(f"Operator {operator} not implemented!")
     return values
