@@ -326,7 +326,8 @@ def gridpos2points(
     )
 
 
-def grid2points(grid, points,
+def grid2points(grid,
+    points,
     grid_values,
     operator="bilinear",
     elev_gradient=None,
