@@ -430,28 +430,28 @@ data:
 
  BETA = 0 ;
 
- LATORI = 59.1044427299632 ;
+ LATORI = 59.0 ;
 
- LONORI = 9.09806611390404 ;
+ LONORI = 9.1 ;
 
  IMAX = 2 ;
 
  JMAX = 3 ;
 
   XX =
-  10000, 20000, 30000, 40000, 50000, 60000;
+  40000, 80000, 40000, 80000, 40000, 80000;
 
   YY =
-  10000, 20000, 30000, 40000, 50000, 60000;
+  0, 40000, 80000, 0, 40000, 80000;
 
   DX =
-  10000, 10000, 10000, 10000, 10000, 10000;
+  40000, 40000, 40000, 40000, 40000, 40000;
 
   DY =
-  10000, 10000, 10000, 10000, 10000, 10000;
+  40000, 40000, 40000, 40000, 40000, 40000;
 
   T2M =
-  285, 285, 285, 285, 285, 285;
+  281, 282, 283, 284, 285, 286;
 
   HU2M =
   0.1, 0.2, 0.3, 0.4, 0.5, 0.6;
@@ -488,7 +488,7 @@ def test_verif_nc(tmp_path_factory, stationlist_file, data_surfex_nc_file):
     with working_directory(tmp_path_factory.getbasetemp()):
         converter2ds(argv=argv)
         ds = xr.open_dataset(vfilename, engine="netcdf4")
-        assert ds.fcst.data[0][0][1] == 285
+        assert ds.fcst.data[0][0][1] == 283.0
 
 
 @pytest.mark.usefixtures("_mockers")
