@@ -379,9 +379,14 @@
     <span class="p">)</span>
 
 
-<div class="viewcode-block" id="grid2points">
-<a class="viewcode-back" href="../../index.html#pysurfex.interpolation.grid2points">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">grid2points</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span> <span class="n">elev_gradient</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">grid2points</span><span class="p">(</span>
+    <span class="n">grid</span><span class="p">,</span>
+    <span class="n">points</span><span class="p">,</span>
+    <span class="n">grid_values</span><span class="p">,</span>
+    <span class="n">operator</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span>
+    <span class="n">elev_gradient</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">max_distance</span><span class="o">=</span><span class="mf">25000.0</span><span class="p">,</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a grid to points.</span>
 
 <span class="sd">    Args:</span>
@@ -390,6 +395,8 @@
 <span class="sd">        grid_values (np.ndarray): Grid values</span>
 <span class="sd">        operator (str, optional): Interpolation operator. Defaults to &quot;bilinear&quot;.</span>
 <span class="sd">        elev_gradient (float, optional): Elevation gradient for downscaler</span>
+<span class="sd">        max_distance (float, optional): Maximum distance from grid points.</span>
+<span class="sd">                                        Defaults to 25000.0.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        NotImplementedError: Operator not implemented</span>
@@ -410,6 +417,8 @@
             <span class="n">values</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">simple_gradient</span><span class="p">(</span>
                 <span class="n">grid</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span> <span class="n">points</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">,</span> <span class="n">elev_gradient</span><span class="p">,</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">Bilinear</span>
             <span class="p">)</span>
+        <span class="n">in_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">points</span><span class="o">.</span><span class="n">inside_grid</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="n">max_distance</span><span class="p">))</span>
+        <span class="n">values</span><span class="p">[</span><span class="n">in_grid</span> <span class="o">==</span> <span class="kc">False</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>  <span class="c1"># noqa: E712</span>
     <span class="k">elif</span> <span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;nearest&quot;</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">elev_gradient</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">values</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">nearest</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span> <span class="n">points</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">)</span>
@@ -417,16 +426,17 @@
             <span class="n">values</span> <span class="o">=</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">simple_gradient</span><span class="p">(</span>
                 <span class="n">grid</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span> <span class="n">points</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">grid_values</span><span class="p">,</span> <span class="n">elev_gradient</span><span class="p">,</span> <span class="n">gridpp</span><span class="o">.</span><span class="n">Nearest</span>
             <span class="p">)</span>
+        <span class="n">in_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">points</span><span class="o">.</span><span class="n">inside_grid</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="n">max_distance</span><span class="p">))</span>
+        <span class="n">values</span><span class="p">[</span><span class="n">in_grid</span> <span class="o">==</span> <span class="kc">False</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>  <span class="c1"># noqa: E712</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Operator </span><span class="si">{</span><span class="n">operator</span><span class="si">}</span><span class="s2"> not implemented!&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">values</span></div>
-
+    <span class="k">return</span> <span class="n">values</span>
 
 
 <div class="viewcode-block" id="inside_grid">
 <a class="viewcode-back" href="../../index.html#pysurfex.interpolation.inside_grid">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">inside_grid</span><span class="p">(</span><span class="n">grid_lons</span><span class="p">,</span> <span class="n">grid_lats</span><span class="p">,</span> <span class="n">p_lons</span><span class="p">,</span> <span class="n">p_lats</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="mf">2500.0</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get number of neighbours.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if inside grid.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        grid_lons (np.ndarray): Grid longitudes</span>
