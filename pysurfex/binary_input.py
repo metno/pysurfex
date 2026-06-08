@@ -332,11 +332,22 @@ class InputDataFromNamelist(JsonInputData):
             setting (any): Namelist setting
 
         """
-        nam_section = string.split(sep)[0]
-        nam_key = string.split(sep)[1]
-        return InputDataFromNamelist.get_nml_value(
-            nml, nam_section, nam_key, indices=indices
-        )
+        start = string.find("{")
+        end = string.find("}")
+        substring = string[start + 1 : end] if start >= 0 and end >= 0 else string
+        value = substring
+        if substring.find(sep) > 0:
+            nam_section = substring.split(sep)[0]
+            nam_key = substring.split(sep)[1]
+            value = InputDataFromNamelist.get_nml_value(
+                nml, nam_section, nam_key, indices=indices
+            )
+        result = value
+        if start >= 0 and end >= 0:
+            result = string[: start + 1] + value + string[end:]
+            result = result.replace("{", "")
+            result = result.replace("}", "")
+        return result
 
     def substitute(self, key, val, macros=None, micro="@", check_parsing=False):
         """Substitute patterns.
