@@ -8,6 +8,8 @@ testdata
 unittest_*
 old_testdata
 testdata.zip
+OPTIONS.nam
+test_1.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

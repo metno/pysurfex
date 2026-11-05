@@ -123,7 +123,8 @@
     "RET504",
     "RUF012",
     "PERF401",
-    "PD011"
+    "PD011",
+    "PLR0917"
   ]
   line-length = 90
   select = [

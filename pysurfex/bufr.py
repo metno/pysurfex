@@ -263,7 +263,7 @@ class BufrObservationSet(ObservationSet):
                         if key == "heightOfBaseOfCloud":
                             c_b = val
 
-                    except eccodes.CodesInternalError:  # noqa PERF203
+                    except eccodes.CodesInternalError:
                         logging.debug('Report does not contain key="%s"', key)
 
                 got_pos = True
