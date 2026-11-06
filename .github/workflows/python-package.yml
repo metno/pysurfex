@@ -36,9 +36,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          apt-get update
-          apt-cache search qmake
-          apt-get install -y libudunits2-dev libproj-dev libeccodes0 libeccodes-dev libnetcdf-dev netcdf-bin qt5-qmake
+          apt-get update && apt-cache search qmake && apt-get install -y libudunits2-dev libproj-dev libeccodes0 libeccodes-dev libnetcdf-dev netcdf-bin qt5-qmake
 
       #----------------------------------------------
       #  --- configure poetry & install project  ----
