@@ -37,8 +37,6 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update
-          apt-cache search qt5
-          apt-cache search qt6
           apt-get install -y libudunits2-dev libproj-dev libeccodes0 libeccodes-dev libnetcdf-dev netcdf-bin
 
       #----------------------------------------------
@@ -61,8 +59,7 @@ jobs:
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: |
            poetry debug tags
-           python -m pip install --upgrade pip
-           poetry install -vvv --no-interaction --no-root --all-extras
+           poetry install --no-interaction --no-root --all-extras
 
       - name: Install the project itself
         run: poetry install --no-interaction --only-root
