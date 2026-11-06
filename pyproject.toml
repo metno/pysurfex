@@ -76,6 +76,7 @@
   plot = ["matplotlib>=3.7.1"]
   verification = [
     "verif>=1.2.3",
+    "pyqt6<6.10",
     "xarray>=2025.3.1",
     "pandas>=2.0.0",
   ]
