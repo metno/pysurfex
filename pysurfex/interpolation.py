@@ -510,19 +510,11 @@ def horizontal_oi(
     glats = geo.lats
     glons = geo.lons
 
-    def obs2vectors(my_obs):
-        return (
-            my_obs.lons,
-            my_obs.lats,
-            my_obs.stids,
-            my_obs.elevs,
-            my_obs.values,
-            my_obs.epsilons,
-            my_obs.lafs,
-        )
-
-    vectors = np.vectorize(obs2vectors)
-    lons, lats, __, elevs, values, sigmaos, __ = vectors(observations)
+    lons = np.asarray(observations.lons)
+    lats = np.asarray(observations.lats)
+    elevs = np.asarray(observations.elevs)
+    values = np.asarray(observations.values)
+    sigmaos = np.asarray(observations.epsilons)
 
     bgrid = Grid(glons, glats, gelevs)
     points = Points(lons, lats, elevs)

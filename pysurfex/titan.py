@@ -149,6 +149,9 @@ class Plausibility(QualityControl):
             maxvals.append(self.maxvals[i])
             values.append(dataset.values[mask_ind])
 
+        values = np.asarray(values)
+        minvals = np.asarray(minvals)
+        maxvals = np.asarray(maxvals)
         global_flags = dataset.flags
         flags = tit.range_check(values, minvals, maxvals)
 
@@ -275,6 +278,9 @@ class FirstGuess(QualityControl):
             maxvals.append(maxval)
             values.append(dataset.values[mask_ind])
 
+        values = np.asarray(values)
+        minvals = np.asarray(minvals)
+        maxvals = np.asarray(maxvals)
         flags = tit.range_check(values, minvals, maxvals)
 
         global_flags = dataset.flags
@@ -812,17 +818,21 @@ class Buddy(QualityControl):
             elevs.append(dataset.elevs[i])
             values.append(dataset.values[i])
 
+        lats = np.asarray(lats)
+        lons = np.asarray(lons)
+        elevs = np.asarray(elevs)
+        values = np.asarray(values)
         points = tit.Points(lats, lons, elevs)
         status, flags = tit.buddy_check(
             points,
             values,
-            self.distance_lim,
-            self.priorities,
-            self.buddies_min,
-            self.thresholds,
+            np.asarray(self.distance_lim),
+            np.asarray(self.priorities),
+            np.asarray(self.buddies_min),
+            np.asarray(self.thresholds),
             self.diff_elev_max,
             self.adjust_for_elev_diff,
-            self.obs_to_check,
+            np.asarray(self.obs_to_check),
         )
         if not status:
             raise RuntimeError("Buddy check failed!")
@@ -928,9 +938,17 @@ class Climatology(QualityControl):
             val = dataset.values[mask_ind] + self.offset[obs]
             values.append(val)
 
+        lats = np.asarray(lats)
+        lons = np.asarray(lons)
+        elevs = np.asarray(elevs)
+        values = np.asarray(values)
         points = tit.Points(lats, lons, elevs)
         flags = tit.range_check_climatology(
-            points, values, self.unixtime, self.maxvals, self.minvals
+            points,
+            values,
+            self.unixtime,
+            np.asarray(self.maxvals),
+            np.asarray(self.minvals),
         )
 
         global_flags = dataset.flags
@@ -1660,8 +1678,8 @@ class TitanDataSet(QCDataSet):
                     sigmao=sigmaos[i],
                 )
             )
-        points = tit.Points(lats, lons, elevs)
-        self.titan_dataset = tit.Dataset(points, values)
+        points = tit.Points(np.asarray(lats), np.asarray(lons), np.asarray(elevs))
+        self.titan_dataset = tit.Dataset(points, np.asarray(values))
         if passed_tests is None:
             passed_tests = []
             for __ in range(len(lons)):

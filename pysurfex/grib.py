@@ -302,7 +302,7 @@ class Grib(object):
             try:
                 logging.debug("  %s: %s", key, eccodes.codes_get(gid, key))
                 geo_dict.update({key: eccodes.codes_get(gid, key)})
-            except eccodes.KeyValueNotFoundError as err:  # noqa PERF203
+            except eccodes.KeyValueNotFoundError as err:
                 logging.debug('  Key="%s" was not found: %s', key, err.msg)
             except eccodes.CodesInternalError as err:
                 logging.error('Error with key="%s" : %s', key, err.msg)
