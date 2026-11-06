@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ "ubuntu-24.04" ]
+        os: [ "ubuntu-latest" ]
         env: [ "pytest" ]
         python-version: [ "3.12" ]
 
@@ -37,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update
-          apt-get install -y libudunits2-dev libproj-dev libeccodes0 libeccodes-dev libnetcdf-dev netcdf-bin
+          apt-get install -y libudunits2-dev libproj-dev libeccodes0 libeccodes-dev libnetcdf-dev netcdf-bin qt6-qmake
 
       #----------------------------------------------
       #  --- configure poetry & install project  ----
