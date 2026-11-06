@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ "ubuntu-latest" ]
+        os: [ "ubuntu-24.04" ]
         env: [ "pytest" ]
         python-version: [ "3.12" ]
 
