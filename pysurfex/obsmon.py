@@ -106,20 +106,13 @@ def populate_usage_db(conn, dtg, varname, observations):
     cursor = conn.cursor()
     # Insert a row of data
 
-    def obs2vectors(my_obs):
-        return (
-            my_obs.lons,
-            my_obs.lats,
-            my_obs.stids,
-            my_obs.elevs,
-            my_obs.values,
-            my_obs.flags,
-            my_obs.fg_dep,
-            my_obs.an_dep,
-        )
-
-    vectors = np.vectorize(obs2vectors)
-    lons, lats, stids, __, values, flags, fg_deps, an_deps = vectors(observations)
+    lons = np.asarray(observations.lons)
+    stids = np.asarray(observations.stids)
+    lats = np.asarray(observations.lats)
+    values = np.asarray(observations.values)
+    fg_deps = np.asarray(observations.fg_dep)
+    an_deps = np.asarray(observations.an_dep)
+    flags = np.asarray(observations.flags)
 
     for i, lon_val in enumerate(lons):
         lon = Observation.format_lon(lon_val)
