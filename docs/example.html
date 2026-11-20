@@ -41,9 +41,9 @@
 pgd
 
 <span class="c1"># Use empty env variables in examples</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">LOCAL</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">CONTAINER</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">POETRY</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">LOCAL</span><span class="o">=</span><span class="s2">""</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">CONTAINER</span><span class="o">=</span><span class="s2">""</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">POETRY</span><span class="o">=</span><span class="s2">""</span>
 </pre></div>
 </div>
 <p>This is how you run the pgd entry point with poetry</p>
@@ -51,9 +51,9 @@ pgd
 poetry<span class="w"> </span>run<span class="w"> </span>pgd
 
 <span class="c1"># Use empty env variables in examples</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">LOCAL</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">CONTAINER</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">POETRY</span><span class="o">=</span><span class="s2">&quot;poetry run&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">LOCAL</span><span class="o">=</span><span class="s2">""</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">CONTAINER</span><span class="o">=</span><span class="s2">""</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">POETRY</span><span class="o">=</span><span class="s2">"poetry run"</span>
 </pre></div>
 </div>
 <p>This is how to create an apptainer container on ECMWF-atos and run it.</p>
@@ -65,11 +65,11 @@ singularity<span class="w"> </span>pull<span class="w"> </span>/scratch/<span cl
 singularity<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>/scratch/<span class="nv">$USER</span>/pysurfex.sif<span class="w"> </span>poetry<span class="w"> </span>run<span class="w"> </span>pgd
 
 <span class="w"> </span><span class="c1"># Assume set in variables with local bindings</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">LOCAL</span><span class="o">=</span><span class="s2">&quot;/local/&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">LOCAL</span><span class="o">=</span><span class="s2">"/local/"</span>
 <span class="c1"># X11 not working yet</span>
-<span class="c1"># export CONTAINER=&quot;singularity exec --bind .:$LOCAL --env=QT_X11_NO_MITSHM=1 --bind=/tmp/.X11-unix:/tmp/.X11-unix:rw /scratch/$USER/pysurfex.sif&quot;</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">CONTAINER</span><span class="o">=</span><span class="s2">&quot;singularity exec --bind .:</span><span class="nv">$LOCAL</span><span class="s2"> /scratch/</span><span class="nv">$USER</span><span class="s2">/pysurfex.sif&quot;</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">POETRY</span><span class="o">=</span><span class="s2">&quot;poetry run&quot;</span>
+<span class="c1"># export CONTAINER="singularity exec --bind .:$LOCAL --env=QT_X11_NO_MITSHM=1 --bind=/tmp/.X11-unix:/tmp/.X11-unix:rw /scratch/$USER/pysurfex.sif"</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">CONTAINER</span><span class="o">=</span><span class="s2">"singularity exec --bind .:</span><span class="nv">$LOCAL</span><span class="s2"> /scratch/</span><span class="nv">$USER</span><span class="s2">/pysurfex.sif"</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">POETRY</span><span class="o">=</span><span class="s2">"poetry run"</span>
 </pre></div>
 </div>
 <p>This is how to create a container with podman and run it. Podman is recommended as you can run docker containers without root/sudo.</p>
@@ -77,9 +77,9 @@ singularity<span class="w"> </span><span class="nb">exec</span><span class="w"> 
 podman<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>docker://ghcr.io/metno/pysurfex:latest<span class="w"> </span>poetry<span class="w"> </span>run<span class="w"> </span>pgd
 
 <span class="c1"># Assume set in a variables with local bindings</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">LOCAL</span><span class="o">=</span><span class="s2">&quot;/local/&quot;</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">CONTAINER</span><span class="o">=</span><span class="s2">&quot;podman -v .:</span><span class="nv">$LOCAL</span><span class="s2"> --env=&#39;DISPLAY&#39; --env=&#39;QT_X11_NO_MITSHM=1&#39; --volume=&#39;/tmp/.X11-unix:/tmp/.X11-unix:rw&#39; run -it docker://ghcr.io/metno/pysurfex:latest&quot;</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">POETRY</span><span class="o">=</span><span class="s2">&quot;poetry run&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">LOCAL</span><span class="o">=</span><span class="s2">"/local/"</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">CONTAINER</span><span class="o">=</span><span class="s2">"podman -v .:</span><span class="nv">$LOCAL</span><span class="s2"> --env='DISPLAY' --env='QT_X11_NO_MITSHM=1' --volume='/tmp/.X11-unix:/tmp/.X11-unix:rw' run -it docker://ghcr.io/metno/pysurfex:latest"</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">POETRY</span><span class="o">=</span><span class="s2">"poetry run"</span>
 </pre></div>
 </div>
 </section>
@@ -107,44 +107,44 @@ podman<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </s
 </div>
 <p>Example on a Lambert conf proj domain</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;nam_pgd_grid&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;cgrid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CONF PROJ&quot;</span>
+<span class="w">  </span><span class="nt">"nam_pgd_grid"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"cgrid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CONF PROJ"</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;nam_conf_proj&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">   </span><span class="nt">&quot;xbeta&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span>
-<span class="w">   </span><span class="nt">&quot;xlat0&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">63.0</span><span class="p">,</span>
-<span class="w">   </span><span class="nt">&quot;xlon0&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">15.0</span><span class="p">,</span>
-<span class="w">   </span><span class="nt">&quot;xrpk&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.8910065241883678</span>
+<span class="w">  </span><span class="nt">"nam_conf_proj"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="nt">"xbeta"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">"xlat0"</span><span class="p">:</span><span class="w"> </span><span class="mf">63.0</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">"xlon0"</span><span class="p">:</span><span class="w"> </span><span class="mf">15.0</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">"xrpk"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.8910065241883678</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;nam_conf_proj_grid&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;nimax&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;njmax&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;xdx&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1000.0</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;xdy&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1000.0</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;xlatcen&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">61.5</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;xloncen&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">9.0</span>
+<span class="w">  </span><span class="nt">"nam_conf_proj_grid"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"nimax"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"njmax"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"xdx"</span><span class="p">:</span><span class="w"> </span><span class="mf">1000.0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"xdy"</span><span class="p">:</span><span class="w"> </span><span class="mf">1000.0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"xlatcen"</span><span class="p">:</span><span class="w"> </span><span class="mf">61.5</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"xloncen"</span><span class="p">:</span><span class="w"> </span><span class="mf">9.0</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Example on a system json file for ECMWF-atos</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;sand_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/perm/sbu/soilgrid_carra2/&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;clay_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/perm/sbu/soilgrid_carra2/&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;soilgrid_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/perm/sbu/soilgrid_carra2/&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;soc_top_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/ec/res4/hpcperm/hlam/data/climate/PGD/&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;soc_sub_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/ec/res4/hpcperm/hlam/data/climate/PGD/&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;ecoclimap_cover_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/ec/res4/hpcperm/hlam/data/climate/PGD/&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;ecoclimap_bin_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/scratch/sbu/sfx_data/test_default/lib/offline/MY_RUN/ECOCLIMAP&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;flake_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/ec/res4/hpcperm/hlam/data/climate/PGD/&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;ecoclimap_sg_cover_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/ec/res4/hpcperm/hlam/data/climate/ECOCLIMAP-SG/COVER/&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;albnir_soil_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/ec/res4/hpcperm/hlam/data/climate/ECOCLIMAP-SG/ALBNIR_SAT/&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;albvis_soil_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/ec/res4/hpcperm/hlam/data/climate/ECOCLIMAP-SG/ALBVIS_SAT/&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;albnir_veg_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/ec/res4/hpcperm/hlam/data/climate/ECOCLIMAP-SG/ALBNIR_SAT&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;albvis_veg_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/ec/res4/hpcperm/hlam/data/climate/ECOCLIMAP-SG/ALBVIS_SAT/&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;tree_height_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/ec/res4/hpcperm/hlam/data/climate/ECOCLIMAP-SG/HT/&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;lai_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/ec/res4/hpcperm/hlam/data/climate/ECOCLIMAP-SG/LAI_SAT/&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;oro_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/perm/sbu/gmted_carra2/&quot;</span>
+<span class="w">  </span><span class="nt">"sand_dir"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/perm/sbu/soilgrid_carra2/"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"clay_dir"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/perm/sbu/soilgrid_carra2/"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"soilgrid_dir"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/perm/sbu/soilgrid_carra2/"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"soc_top_dir"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/ec/res4/hpcperm/hlam/data/climate/PGD/"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"soc_sub_dir"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/ec/res4/hpcperm/hlam/data/climate/PGD/"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"ecoclimap_cover_dir"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/ec/res4/hpcperm/hlam/data/climate/PGD/"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"ecoclimap_bin_dir"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/scratch/sbu/sfx_data/test_default/lib/offline/MY_RUN/ECOCLIMAP"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"flake_dir"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/ec/res4/hpcperm/hlam/data/climate/PGD/"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"ecoclimap_sg_cover_dir"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/ec/res4/hpcperm/hlam/data/climate/ECOCLIMAP-SG/COVER/"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"albnir_soil_dir"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/ec/res4/hpcperm/hlam/data/climate/ECOCLIMAP-SG/ALBNIR_SAT/"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"albvis_soil_dir"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/ec/res4/hpcperm/hlam/data/climate/ECOCLIMAP-SG/ALBVIS_SAT/"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"albnir_veg_dir"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/ec/res4/hpcperm/hlam/data/climate/ECOCLIMAP-SG/ALBNIR_SAT"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"albvis_veg_dir"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/ec/res4/hpcperm/hlam/data/climate/ECOCLIMAP-SG/ALBVIS_SAT/"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"tree_height_dir"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/ec/res4/hpcperm/hlam/data/climate/ECOCLIMAP-SG/HT/"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"lai_dir"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/ec/res4/hpcperm/hlam/data/climate/ECOCLIMAP-SG/LAI_SAT/"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"oro_dir"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/perm/sbu/gmted_carra2/"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -245,7 +245,7 @@ podman<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </s
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
     </div>
   </body>
 </html>

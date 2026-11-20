@@ -33,7 +33,7 @@
           <div class="body" role="main">
             
   <h1>Source code for pysurfex.util</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Misc.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Misc."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">collections</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -45,7 +45,7 @@
 <div class="viewcode-block" id="deep_update">
 <a class="viewcode-back" href="../../index.html#pysurfex.util.deep_update">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">deep_update</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">overrides</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update a nested dictionary or similar mapping.</span>
+<span class="w">    </span><span class="sd">"""Update a nested dictionary or similar mapping.</span>
 
 <span class="sd">    Modify ``source`` in place.</span>
 
@@ -55,7 +55,7 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        source(dict): Updated dict</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">overrides</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Mapping</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span><span class="p">:</span>
             <span class="n">returned</span> <span class="o">=</span> <span class="n">deep_update</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">{}),</span> <span class="n">value</span><span class="p">)</span>
@@ -70,7 +70,7 @@
 <div class="viewcode-block" id="remove_existing_file">
 <a class="viewcode-back" href="../../index.html#pysurfex.util.remove_existing_file">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">remove_existing_file</span><span class="p">(</span><span class="n">f_in</span><span class="p">,</span> <span class="n">f_out</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove existing file.</span>
+<span class="w">    </span><span class="sd">"""Remove existing file.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        f_in (_type_): _description_</span>
@@ -80,14 +80,14 @@
 <span class="sd">        FileNotFoundError: _description_</span>
 <span class="sd">        IsADirectoryError: _description_</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">f_in</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;Input file not set&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">"Input file not set"</span><span class="p">)</span>
     <span class="c1"># If files are not the same file</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">f_in</span><span class="p">)</span> <span class="o">!=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">f_out</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">f_out</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">IsADirectoryError</span><span class="p">(</span>
-                <span class="n">f_out</span> <span class="o">+</span> <span class="s2">&quot; is a directory! Please remove it if desired&quot;</span>
+                <span class="n">f_out</span> <span class="o">+</span> <span class="s2">" is a directory! Please remove it if desired"</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">islink</span><span class="p">(</span><span class="n">f_out</span><span class="p">):</span>
             <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">f_out</span><span class="p">)</span>
@@ -102,7 +102,7 @@
 <div class="viewcode-block" id="parse_filepattern">
 <a class="viewcode-back" href="../../index.html#pysurfex.util.parse_filepattern">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_filepattern</span><span class="p">(</span><span class="n">file_pattern</span><span class="p">,</span> <span class="n">basetime</span><span class="p">,</span> <span class="n">validtime</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the file pattern.</span>
+<span class="w">    </span><span class="sd">"""Parse the file pattern.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        file_pattern (str): File pattern.</span>
@@ -112,40 +112,40 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        str: File name</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">basetime</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">validtime</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">file_pattern</span>
 
     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-        <span class="s2">&quot;file_pattern=</span><span class="si">%s</span><span class="s2"> basetime=</span><span class="si">%s</span><span class="s2"> validtime=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">file_pattern</span><span class="p">,</span> <span class="n">basetime</span><span class="p">,</span> <span class="n">validtime</span>
+        <span class="s2">"file_pattern=</span><span class="si">%s</span><span class="s2"> basetime=</span><span class="si">%s</span><span class="s2"> validtime=</span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">file_pattern</span><span class="p">,</span> <span class="n">basetime</span><span class="p">,</span> <span class="n">validtime</span>
     <span class="p">)</span>
     <span class="n">file_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">file_pattern</span><span class="p">)</span>
-    <span class="n">year</span> <span class="o">=</span> <span class="n">basetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y&quot;</span><span class="p">)</span>
-    <span class="n">year2</span> <span class="o">=</span> <span class="n">basetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%y&quot;</span><span class="p">)</span>
-    <span class="n">month</span> <span class="o">=</span> <span class="n">basetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%m&quot;</span><span class="p">)</span>
-    <span class="n">day</span> <span class="o">=</span> <span class="n">basetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">hour</span> <span class="o">=</span> <span class="n">basetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H&quot;</span><span class="p">)</span>
-    <span class="n">mins</span> <span class="o">=</span> <span class="n">basetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%M&quot;</span><span class="p">)</span>
+    <span class="n">year</span> <span class="o">=</span> <span class="n">basetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">"%Y"</span><span class="p">)</span>
+    <span class="n">year2</span> <span class="o">=</span> <span class="n">basetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">"%y"</span><span class="p">)</span>
+    <span class="n">month</span> <span class="o">=</span> <span class="n">basetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">"%m"</span><span class="p">)</span>
+    <span class="n">day</span> <span class="o">=</span> <span class="n">basetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">"</span><span class="si">%d</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">hour</span> <span class="o">=</span> <span class="n">basetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">"%H"</span><span class="p">)</span>
+    <span class="n">mins</span> <span class="o">=</span> <span class="n">basetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">"%M"</span><span class="p">)</span>
     <span class="n">d_t</span> <span class="o">=</span> <span class="n">validtime</span> <span class="o">-</span> <span class="n">basetime</span>
-    <span class="n">ll_d</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">d_t</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">3600</span><span class="p">)</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="n">ll_2</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">d_t</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">3600</span><span class="p">)</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="n">ll_3</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">d_t</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">3600</span><span class="p">)</span><span class="si">:</span><span class="s2">03d</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="n">ll_4</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">d_t</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">3600</span><span class="p">)</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@YYYY@&quot;</span><span class="p">,</span> <span class="n">year</span><span class="p">)</span>
-    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@YY@&quot;</span><span class="p">,</span> <span class="n">year2</span><span class="p">)</span>
-    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@MM@&quot;</span><span class="p">,</span> <span class="n">month</span><span class="p">)</span>
-    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@DD@&quot;</span><span class="p">,</span> <span class="n">day</span><span class="p">)</span>
-    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@HH@&quot;</span><span class="p">,</span> <span class="n">hour</span><span class="p">)</span>
-    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@mm@&quot;</span><span class="p">,</span> <span class="n">mins</span><span class="p">)</span>
-    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@L@&quot;</span><span class="p">,</span> <span class="n">ll_d</span><span class="p">)</span>
-    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@LL@&quot;</span><span class="p">,</span> <span class="n">ll_2</span><span class="p">)</span>
-    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@LLL@&quot;</span><span class="p">,</span> <span class="n">ll_3</span><span class="p">)</span>
-    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@LLLL@&quot;</span><span class="p">,</span> <span class="n">ll_4</span><span class="p">)</span>
+    <span class="n">ll_d</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">d_t</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">3600</span><span class="p">)</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">"</span>
+    <span class="n">ll_2</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">d_t</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">3600</span><span class="p">)</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">"</span>
+    <span class="n">ll_3</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">d_t</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">3600</span><span class="p">)</span><span class="si">:</span><span class="s2">03d</span><span class="si">}</span><span class="s2">"</span>
+    <span class="n">ll_4</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">d_t</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">3600</span><span class="p">)</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">"</span>
+    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"@YYYY@"</span><span class="p">,</span> <span class="n">year</span><span class="p">)</span>
+    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"@YY@"</span><span class="p">,</span> <span class="n">year2</span><span class="p">)</span>
+    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"@MM@"</span><span class="p">,</span> <span class="n">month</span><span class="p">)</span>
+    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"@DD@"</span><span class="p">,</span> <span class="n">day</span><span class="p">)</span>
+    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"@HH@"</span><span class="p">,</span> <span class="n">hour</span><span class="p">)</span>
+    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"@mm@"</span><span class="p">,</span> <span class="n">mins</span><span class="p">)</span>
+    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"@L@"</span><span class="p">,</span> <span class="n">ll_d</span><span class="p">)</span>
+    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"@LL@"</span><span class="p">,</span> <span class="n">ll_2</span><span class="p">)</span>
+    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"@LLL@"</span><span class="p">,</span> <span class="n">ll_3</span><span class="p">)</span>
+    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"@LLLL@"</span><span class="p">,</span> <span class="n">ll_4</span><span class="p">)</span>
 
     <span class="n">file_name</span> <span class="o">=</span> <span class="n">SystemFilePaths</span><span class="o">.</span><span class="n">parse_setting</span><span class="p">(</span>
         <span class="n">file_name</span><span class="p">,</span> <span class="n">basedtg</span><span class="o">=</span><span class="n">basetime</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="n">validtime</span>
     <span class="p">)</span>
-    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;file_name=</span><span class="si">%s</span><span class="s2"> basetime=</span><span class="si">%s</span><span class="s2"> validtime=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">basetime</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"file_name=</span><span class="si">%s</span><span class="s2"> basetime=</span><span class="si">%s</span><span class="s2"> validtime=</span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">basetime</span><span class="p">,</span> <span class="n">validtime</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">file_name</span></div>
 
 </pre></div>
@@ -183,7 +183,7 @@
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
     </div>
   </body>
 </html>

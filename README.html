@@ -118,13 +118,13 @@ epygram
 After installing this you need to set it up for the current session or permanently add it to your shell.
 Now it is easy to create a suitable environment for pysurfex. Below is a recipie for micromamba.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install micromamba (linux, https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html)</span>
-<span class="s2">&quot;</span><span class="si">${</span><span class="nv">SHELL</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span>&lt;<span class="o">(</span>curl<span class="w"> </span>-L<span class="w"> </span>micro.mamba.pm/install.sh<span class="o">)</span>
+<span class="s2">"</span><span class="si">${</span><span class="nv">SHELL</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span>&lt;<span class="o">(</span>curl<span class="w"> </span>-L<span class="w"> </span>micro.mamba.pm/install.sh<span class="o">)</span>
 
 <span class="c1"># specify a installation location for micromamba and add it to your path afterwards. Default it will install in $HOME/.local/bin</span>
 <span class="nb">export</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$HOME</span>/.local/bin:<span class="nv">$PATH</span><span class="w">  </span><span class="c1"># Use your PATH</span>
 
 <span class="c1"># initialize your shell (needed in all shells), e.g:</span>
-<span class="nb">eval</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>micromamba<span class="w"> </span>shell<span class="w"> </span>hook<span class="w"> </span>--shell<span class="w"> </span>bash<span class="k">)</span><span class="s2">&quot;</span>
+<span class="nb">eval</span><span class="w"> </span><span class="s2">"</span><span class="k">$(</span>micromamba<span class="w"> </span>shell<span class="w"> </span>hook<span class="w"> </span>--shell<span class="w"> </span>bash<span class="k">)</span><span class="s2">"</span>
 
 micromamba<span class="w"> </span>create<span class="w"> </span>env<span class="w"> </span>pysurfex
 micromamba<span class="w"> </span>activate<span class="w"> </span>pysurfex
@@ -212,7 +212,7 @@ poetry<span class="w"> </span>run<span class="w"> </span>python<span class="w"> 
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
     </div>
   </body>
 </html>

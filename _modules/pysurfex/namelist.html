@@ -33,7 +33,7 @@
           <div class="body" role="main">
             
   <h1>Source code for pysurfex.namelist</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Namelist.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Namelist."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
@@ -48,22 +48,22 @@
 <div class="viewcode-block" id="NamelistGenerator">
 <a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGenerator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NamelistGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Namelist class.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Namelist class."""</span>
 
 <div class="viewcode-block" id="NamelistGenerator.__init__">
 <a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGenerator.__init__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">nml</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">micro</span><span class="o">=</span><span class="s2">&quot;@&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a base namelists class.</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">nml</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">micro</span><span class="o">=</span><span class="s2">"@"</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Construct a base namelists class.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            program (str): Which surfex binary you want to run</span>
-<span class="sd">                           [&quot;pgd&quot;, &quot;prep&quot;, &quot;offline&quot;, &quot;soda&quot;]</span>
+<span class="sd">                           ["pgd", "prep", "offline", "soda"]</span>
 <span class="sd">            nml (f90nml.Namelist): A parsed fortran namelist</span>
 <span class="sd">            assemble(dict): Assembly order. Defines the configuration</span>
 <span class="sd">            macros(dict, optional): Macros</span>
 <span class="sd">            micro(str, optional): Micro character</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">program</span> <span class="o">=</span> <span class="n">program</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nml</span> <span class="o">=</span> <span class="n">nml</span>
         <span class="k">if</span> <span class="n">macros</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -75,7 +75,7 @@
 <div class="viewcode-block" id="NamelistGenerator.get_namelist">
 <a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGenerator.get_namelist">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get namelist.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Get namelist."""</span>
         <span class="k">for</span> <span class="n">bkey</span><span class="p">,</span> <span class="n">block</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">items</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">block</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -83,8 +83,8 @@
                 <span class="n">items</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="n">rval</span><span class="p">})</span>
                 <span class="k">for</span> <span class="n">mkey</span><span class="p">,</span> <span class="n">mval</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">macros</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rval</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                        <span class="n">rval</span> <span class="o">=</span> <span class="n">rval</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">micro</span><span class="si">}{</span><span class="n">mkey</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">micro</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mval</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="n">rval</span> <span class="o">==</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mval</span><span class="si">}</span><span class="s2">&quot;</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mval</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+                        <span class="n">rval</span> <span class="o">=</span> <span class="n">rval</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">micro</span><span class="si">}{</span><span class="n">mkey</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">micro</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">mval</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">rval</span> <span class="o">==</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">mval</span><span class="si">}</span><span class="s2">"</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mval</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
                             <span class="n">rval</span> <span class="o">=</span> <span class="n">mval</span>
                     <span class="n">items</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="n">rval</span><span class="p">})</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="p">[</span><span class="n">bkey</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
@@ -94,7 +94,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">input_data_from_namelist</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">input_data</span><span class="p">,</span> <span class="n">platform</span><span class="p">,</span> <span class="n">basetime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_existence</span><span class="o">=</span><span class="kc">True</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a base namelists class to be implemented by namelist implementations.</span>
+<span class="w">        </span><span class="sd">"""Construct a base namelists class to be implemented by namelist implementations.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            input_data (dict): Input data definitions</span>
@@ -106,8 +106,8 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            data_obj (InputDataFromNamelist): Input data from namelist</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Set input data from namelist for program: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">program</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Set input data from namelist for program: </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">program</span><span class="p">)</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">process_macros</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -119,7 +119,7 @@
                     <span class="n">vv</span> <span class="o">=</span> <span class="n">v</span>
                     <span class="k">for</span> <span class="n">macro</span><span class="p">,</span> <span class="n">mval</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">macros</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vv</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mval</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                            <span class="n">vv</span> <span class="o">=</span> <span class="n">vv</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">micro</span><span class="si">}{</span><span class="n">macro</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">micro</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mval</span><span class="p">)</span>
+                            <span class="n">vv</span> <span class="o">=</span> <span class="n">vv</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">micro</span><span class="si">}{</span><span class="n">macro</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">micro</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">mval</span><span class="p">)</span>
                     <span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">vv</span>
             <span class="k">return</span> <span class="n">data</span>
 
@@ -143,31 +143,31 @@
         <span class="k">return</span> <span class="n">data_obj</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">uppercase</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">true_repr</span><span class="o">=</span><span class="s2">&quot;.TRUE.&quot;</span><span class="p">,</span> <span class="n">false_repr</span><span class="o">=</span><span class="s2">&quot;.FALSE.&quot;</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">uppercase</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">true_repr</span><span class="o">=</span><span class="s2">".TRUE."</span><span class="p">,</span> <span class="n">false_repr</span><span class="o">=</span><span class="s2">".FALSE."</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the namelists for &#39;target&#39;.</span>
+<span class="w">        </span><span class="sd">"""Generate the namelists for 'target'.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            output_file (str): where to write the result</span>
 <span class="sd">            (OPTIONS.nam, fort.4 or EXSEG1.nam typically)</span>
 <span class="sd">            uppercase (bool, optional): Upper case namelist. Default to True</span>
 <span class="sd">            true_repr (str, optional): String representation of fortran boolean true.</span>
-<span class="sd">                                       Defaults to &quot;.TRUE.&quot;</span>
+<span class="sd">                                       Defaults to ".TRUE."</span>
 <span class="sd">            false_repr (str, optional): String representation of fortran boolean false.</span>
-<span class="sd">                                        Defaults to &quot;.FALSE.&quot;</span>
+<span class="sd">                                        Defaults to ".FALSE."</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="o">.</span><span class="n">uppercase</span> <span class="o">=</span> <span class="n">uppercase</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="o">.</span><span class="n">true_repr</span> <span class="o">=</span> <span class="n">true_repr</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="o">.</span><span class="n">false_repr</span> <span class="o">=</span> <span class="n">false_repr</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nml</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Wrote: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Wrote: </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
 
 <div class="viewcode-block" id="NamelistGenerator.lower_case_namelist_dict">
 <a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGenerator.lower_case_namelist_dict">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">lower_case_namelist_dict</span><span class="p">(</span><span class="n">dict_in</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Lower case namelist.</span>
+<span class="w">        </span><span class="sd">"""Lower case namelist.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            dict_in (dict): Namelist dictionary to lower case</span>
@@ -175,7 +175,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: Namelist in lower case</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">new_dict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">dict_in</span><span class="p">:</span>
             <span class="n">lower_case_dict</span> <span class="o">=</span> <span class="p">{}</span>
@@ -190,21 +190,21 @@
 <div class="viewcode-block" id="NamelistGeneratorFromNamelistFile">
 <a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGeneratorFromNamelistFile">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NamelistGeneratorFromNamelistFile</span><span class="p">(</span><span class="n">NamelistGenerator</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Namelist class.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Namelist class."""</span>
 
 <div class="viewcode-block" id="NamelistGeneratorFromNamelistFile.__init__">
 <a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGeneratorFromNamelistFile.__init__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">nml_file</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">micro</span><span class="o">=</span><span class="s2">&quot;@&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a base namelists class from a file.</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">nml_file</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">micro</span><span class="o">=</span><span class="s2">"@"</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Construct a base namelists class from a file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            program (str): Which surfex binary you want to run</span>
-<span class="sd">                           [&quot;pgd&quot;, &quot;prep&quot;, &quot;offline&quot;, &quot;soda&quot;]</span>
+<span class="sd">                           ["pgd", "prep", "offline", "soda"]</span>
 <span class="sd">            nml_file (str): Namelist file</span>
 <span class="sd">            macros(dict, optional): Macros</span>
 <span class="sd">            micro(str, optional): Micro character</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">f90nml</span><span class="o">.</span><span class="n">Parser</span><span class="p">()</span>
         <span class="n">nml</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">nml_file</span><span class="p">)</span>
         <span class="n">NamelistGenerator</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">nml</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="n">macros</span><span class="p">,</span> <span class="n">micro</span><span class="o">=</span><span class="n">micro</span><span class="p">)</span></div>
@@ -215,29 +215,29 @@
 <div class="viewcode-block" id="NamelistGeneratorAssemble">
 <a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGeneratorAssemble">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NamelistGeneratorAssemble</span><span class="p">(</span><span class="n">NamelistGenerator</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Namelist class.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Namelist class."""</span>
 
 <div class="viewcode-block" id="NamelistGeneratorAssemble.__init__">
 <a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGeneratorAssemble.__init__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">definitions</span><span class="p">,</span> <span class="n">assemble</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">micro</span><span class="o">=</span><span class="s2">&quot;@&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a base namelists class.</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">definitions</span><span class="p">,</span> <span class="n">assemble</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">micro</span><span class="o">=</span><span class="s2">"@"</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Construct a base namelists class.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            program (str): Which surfex binary you want to run</span>
-<span class="sd">                           [&quot;pgd&quot;, &quot;prep&quot;, &quot;offline&quot;, &quot;soda&quot;]</span>
+<span class="sd">                           ["pgd", "prep", "offline", "soda"]</span>
 <span class="sd">            definitions (dict): Namelist definitions</span>
 <span class="sd">            assemble(dict): Assembly order. Defines the configuration</span>
 <span class="sd">            macros(dict, optional): Macros</span>
 <span class="sd">            micro(str, optional): Micro character</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nldict</span> <span class="o">=</span> <span class="n">definitions</span>
         <span class="k">if</span> <span class="n">macros</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">macros</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">macros</span> <span class="o">=</span> <span class="n">macros</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">assemble</span> <span class="o">=</span> <span class="n">assemble</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Namelist blocks for program </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">assemble</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Namelist blocks for program </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">assemble</span><span class="p">)</span>
         <span class="n">nlres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assemble_namelist</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
         <span class="n">nml</span> <span class="o">=</span> <span class="n">f90nml</span><span class="o">.</span><span class="n">Namelist</span><span class="p">(</span><span class="n">nlres</span><span class="p">)</span>
         <span class="n">NamelistGenerator</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">nml</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="n">macros</span><span class="p">,</span> <span class="n">micro</span><span class="o">=</span><span class="n">micro</span><span class="p">)</span></div>
@@ -246,11 +246,11 @@
 <div class="viewcode-block" id="NamelistGeneratorAssemble.assemble_namelist">
 <a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGeneratorAssemble.assemble_namelist">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">assemble_namelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the namelists for &#39;target&#39;.</span>
+<span class="w">        </span><span class="sd">"""Generate the namelists for 'target'.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            program (str): Which surfex binary you want to run</span>
-<span class="sd">                           [&quot;pgd&quot;, &quot;prep&quot;, &quot;offline&quot;, &quot;soda&quot;]</span>
+<span class="sd">                           ["pgd", "prep", "offline", "soda"]</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            KeyError: Key not found</span>
@@ -258,7 +258,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            nlres (dict): Assembled namelist</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Read namelist file with all the categories</span>
 
         <span class="c1"># Check target is valid</span>
@@ -275,11 +275,11 @@
             <span class="c1"># assemble namelists for this category</span>
             <span class="k">if</span> <span class="n">catg</span> <span class="ow">in</span> <span class="n">nldict</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">nl</span> <span class="ow">in</span> <span class="n">nldict</span><span class="p">[</span><span class="n">catg</span><span class="p">]:</span>
-                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;nl=</span><span class="si">%s</span><span class="s2"> catg=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">nl</span><span class="p">,</span> <span class="n">catg</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"nl=</span><span class="si">%s</span><span class="s2"> catg=</span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">nl</span><span class="p">,</span> <span class="n">catg</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">nl</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">nlres</span><span class="p">:</span>
                         <span class="c1"># create the result namelist dict</span>
                         <span class="n">nlres</span><span class="p">[</span><span class="n">nl</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-                    <span class="k">if</span> <span class="n">catg</span> <span class="o">==</span> <span class="s2">&quot;rm{&quot;</span> <span class="o">+</span> <span class="n">nl</span> <span class="o">+</span> <span class="s2">&quot;}&quot;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">catg</span> <span class="o">==</span> <span class="s2">"rm{"</span> <span class="o">+</span> <span class="n">nl</span> <span class="o">+</span> <span class="s2">"}"</span><span class="p">:</span>
                         <span class="c1"># clear/remove the given namelist (but not used for now)</span>
                         <span class="n">nlres</span><span class="p">[</span><span class="n">nl</span><span class="p">]</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
                     <span class="k">else</span><span class="p">:</span>
@@ -289,34 +289,34 @@
                             <span class="c1"># Replace ${var-def} with value from config, possibly</span>
                             <span class="c1"># macro-expanded. For now assumes only one subst. per line,</span>
                             <span class="c1"># could be generalized if needed</span>
-                            <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">finval</span><span class="p">)</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;$&quot;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">finval</span><span class="p">)</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">"$"</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
                                 <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
-                                    <span class="sa">r</span><span class="s2">&quot;^([^\$]*)\$\{([\w\#]+)\-?([^}]*)\}(.*)&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+                                    <span class="sa">r</span><span class="s2">"^([^\$]*)\$\{([\w\#]+)\-?([^}]*)\}(.*)"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
                                 <span class="p">)</span>
                                 <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
                                     <span class="n">pre</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
                                     <span class="n">nam</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
                                     <span class="n">defval</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
                                     <span class="n">post</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
-                                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;macros=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">macros</span><span class="p">)</span>
-                                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;look for nam=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">nam</span><span class="p">)</span>
+                                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"macros=</span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">macros</span><span class="p">)</span>
+                                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"look for nam=</span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">nam</span><span class="p">)</span>
                                     <span class="k">try</span><span class="p">:</span>
                                         <span class="n">repval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">macros</span><span class="p">[</span><span class="n">nam</span><span class="p">]</span>
                                     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
                                         <span class="n">repval</span> <span class="o">=</span> <span class="kc">None</span>
                                     <span class="k">if</span> <span class="n">repval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                                        <span class="k">if</span> <span class="n">defval</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                                        <span class="k">if</span> <span class="n">defval</span> <span class="o">!=</span> <span class="s2">""</span><span class="p">:</span>
                                             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                                                <span class="s2">&quot;Using default value </span><span class="si">%s</span><span class="s2"> for &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span>
+                                                <span class="s2">"Using default value </span><span class="si">%s</span><span class="s2"> for '</span><span class="si">%s</span><span class="s2">'"</span><span class="p">,</span>
                                                 <span class="n">defval</span><span class="p">,</span>
                                                 <span class="n">nam</span><span class="p">,</span>
                                             <span class="p">)</span>
                                             <span class="n">repval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_num</span><span class="p">(</span><span class="n">defval</span><span class="p">)</span>
                                         <span class="k">else</span><span class="p">:</span>
-                                            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No value found for: &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">nam</span><span class="p">)</span>
+                                            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"No value found for: '</span><span class="si">%s</span><span class="s2">'"</span><span class="p">,</span> <span class="n">nam</span><span class="p">)</span>
                                     <span class="k">else</span><span class="p">:</span>
                                         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                                            <span class="s2">&quot;Replaced </span><span class="si">%s</span><span class="s2"> with: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">nam</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">repval</span><span class="p">)</span>
+                                            <span class="s2">"Replaced </span><span class="si">%s</span><span class="s2"> with: </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">nam</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">repval</span><span class="p">)</span>
                                         <span class="p">)</span>
                                     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">repval</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                                         <span class="n">finval</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">pre</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">repval</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
@@ -325,9 +325,9 @@
                                 <span class="k">else</span><span class="p">:</span>
                                     <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
                             <span class="n">nlres</span><span class="p">[</span><span class="n">nl</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">finval</span>
-                            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;nl=</span><span class="si">%s</span><span class="s2"> key=</span><span class="si">%s</span><span class="s2">, finval=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">nl</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">finval</span><span class="p">)</span>
+                            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"nl=</span><span class="si">%s</span><span class="s2"> key=</span><span class="si">%s</span><span class="s2">, finval=</span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">nl</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">finval</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Category </span><span class="si">%s</span><span class="s2"> not found in definitions&quot;</span><span class="p">,</span> <span class="n">catg</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Category </span><span class="si">%s</span><span class="s2"> not found in definitions"</span><span class="p">,</span> <span class="n">catg</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">nlres</span></div>
 
 
@@ -335,7 +335,7 @@
 <a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGeneratorAssemble.flatten_list">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">flatten_list</span><span class="p">(</span><span class="n">li</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Recursively flatten a list of lists (of lists).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Recursively flatten a list of lists (of lists)."""</span>
         <span class="k">if</span> <span class="n">li</span> <span class="o">==</span> <span class="p">[]:</span>
             <span class="k">return</span> <span class="n">li</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">li</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
@@ -349,7 +349,7 @@
 <a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGeneratorAssemble.find_num">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">find_num</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Purpose: un-quote numbers.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Purpose: un-quote numbers."""</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">i</span>
@@ -367,25 +367,25 @@
 <div class="viewcode-block" id="NamelistGeneratorAssembleFromFiles">
 <a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGeneratorAssembleFromFiles">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NamelistGeneratorAssembleFromFiles</span><span class="p">(</span><span class="n">NamelistGeneratorAssemble</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Namelist class.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Namelist class."""</span>
 
 <div class="viewcode-block" id="NamelistGeneratorAssembleFromFiles.__init__">
 <a class="viewcode-back" href="../../index.html#pysurfex.namelist.NamelistGeneratorAssembleFromFiles.__init__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">definitions</span><span class="p">,</span> <span class="n">assemble</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">micro</span><span class="o">=</span><span class="s2">&quot;@&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a base namelists class.</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">definitions</span><span class="p">,</span> <span class="n">assemble</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">micro</span><span class="o">=</span><span class="s2">"@"</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Construct a base namelists class.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            program (str): Which surfex binary you want to run</span>
-<span class="sd">                           [&quot;pgd&quot;, &quot;prep&quot;, &quot;offline&quot;, &quot;soda&quot;]</span>
+<span class="sd">                           ["pgd", "prep", "offline", "soda"]</span>
 <span class="sd">            definitions (str): Namelist definitions</span>
 <span class="sd">            assemble(str)): Assembly order. Defines the configuration</span>
 <span class="sd">            macros(dict, optional): Macros</span>
 <span class="sd">            micro(str, optional): Micro character</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">definitions</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_handler</span><span class="p">:</span>
+<span class="sd">        """</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">definitions</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"r"</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf8"</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_handler</span><span class="p">:</span>
             <span class="n">definitions</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">assemble</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_handler</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">assemble</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"r"</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf8"</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_handler</span><span class="p">:</span>
             <span class="n">assemble</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span>
         <span class="n">NamelistGeneratorAssemble</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">definitions</span><span class="p">,</span> <span class="n">assemble</span><span class="p">,</span> <span class="n">macros</span><span class="o">=</span><span class="n">macros</span><span class="p">,</span> <span class="n">micro</span><span class="o">=</span><span class="n">micro</span>
@@ -427,7 +427,7 @@
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
     </div>
   </body>
 </html>

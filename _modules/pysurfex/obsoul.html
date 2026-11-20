@@ -33,7 +33,7 @@
           <div class="body" role="main">
             
   <h1>Source code for pysurfex.obsoul</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Obsoul.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Obsoul."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
@@ -47,13 +47,13 @@
 <div class="viewcode-block" id="ObservationDataSetFromObsoul">
 <a class="viewcode-back" href="../../index.html#pysurfex.obsoul.ObservationDataSetFromObsoul">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ObservationDataSetFromObsoul</span><span class="p">(</span><span class="n">ObservationSet</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Observation set from obsoul file.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Observation set from obsoul file."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">content</span><span class="p">,</span>
         <span class="n">an_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
         <span class="n">obnumber</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">obtypes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">subtypes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -61,7 +61,7 @@
         <span class="n">pos_dt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">sigmao</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constuct obs set from a obsoul json file.</span>
+<span class="w">        </span><span class="sd">"""Constuct obs set from a obsoul json file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            content(str): Obsoul content</span>
@@ -71,40 +71,40 @@
 <span class="sd">            obtypes  (list, optional): Observation types. Defaults to None.</span>
 <span class="sd">            subtypes  (list, optional): Observation sub types. Defaults to None.</span>
 <span class="sd">            obnumber (int, optional): Observation number. Defaults to None.</span>
-<span class="sd">            label (str, optional): Label for observation set. Defaults to &quot;&quot;.</span>
+<span class="sd">            label (str, optional): Label for observation set. Defaults to "".</span>
 <span class="sd">            sigmao (float, optional): Observation error relative to normal background</span>
 <span class="sd">                                      error. Defaults to None.</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">observations</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">lineno</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">first_line</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">lines</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found </span><span class="si">%s</span><span class="s2"> lines&quot;</span><span class="p">,</span> <span class="n">lines</span><span class="p">)</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Found </span><span class="si">%s</span><span class="s2"> lines"</span><span class="p">,</span> <span class="n">lines</span><span class="p">)</span>
         <span class="k">while</span> <span class="n">lineno</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">line</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">lineno</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
                 <span class="n">lineno</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">if</span> <span class="n">first_line</span><span class="p">:</span>
                 <span class="n">line</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">lineno</span><span class="p">]</span>
                 <span class="n">parts</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;First row parts </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">parts</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"First row parts </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">parts</span><span class="p">)</span>
                 <span class="n">first_line</span> <span class="o">=</span> <span class="kc">False</span>
                 <span class="n">lineno</span> <span class="o">+=</span> <span class="mi">1</span>
 
             <span class="c1"># Header</span>
             <span class="n">line</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">lineno</span><span class="p">]</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Header </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Header </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
             <span class="n">obt</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">7</span><span class="p">])</span>
             <span class="n">subt</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">7</span><span class="p">:</span><span class="mi">17</span><span class="p">])</span>
             <span class="n">lon</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">17</span><span class="p">:</span><span class="mi">27</span><span class="p">])</span>
             <span class="n">lat</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">27</span><span class="p">:</span><span class="mi">38</span><span class="p">])</span>
-            <span class="n">stid</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">38</span><span class="p">:</span><span class="mi">50</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">stid</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">38</span><span class="p">:</span><span class="mi">50</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"'"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
             <span class="n">elev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">date</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">50</span><span class="p">:</span><span class="mi">60</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
             <span class="n">time</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">60</span><span class="p">:</span><span class="mi">67</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
-            <span class="n">yyyymmdhhmm</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">date</span><span class="si">}{</span><span class="n">time</span><span class="si">:</span><span class="s2">06d</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Date=</span><span class="si">%s</span><span class="s2"> Time=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+            <span class="n">yyyymmdhhmm</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">date</span><span class="si">}{</span><span class="n">time</span><span class="si">:</span><span class="s2">06d</span><span class="si">}</span><span class="s2">"</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Date=</span><span class="si">%s</span><span class="s2"> Time=</span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
             <span class="n">obtime</span> <span class="o">=</span> <span class="n">as_datetime</span><span class="p">(</span><span class="n">yyyymmdhhmm</span><span class="p">)</span>
             <span class="n">records</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">80</span><span class="p">:</span><span class="mi">86</span><span class="p">])</span>
             <span class="n">lineno</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -112,24 +112,24 @@
             <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">records</span><span class="p">):</span>
                 <span class="n">line</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">lineno</span><span class="p">]</span>
                 <span class="n">parts</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Data parts </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">parts</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Data parts </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">parts</span><span class="p">)</span>
                 <span class="n">obn</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
                 <span class="n">add_obs</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;obtypes=</span><span class="si">%s</span><span class="s2"> obn=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">obtypes</span><span class="p">,</span> <span class="n">obn</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"obtypes=</span><span class="si">%s</span><span class="s2"> obn=</span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">obtypes</span><span class="p">,</span> <span class="n">obn</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">obtypes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">obt</span> <span class="ow">in</span> <span class="n">obtypes</span><span class="p">:</span>
                         <span class="k">if</span> <span class="n">subtypes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                             <span class="k">if</span> <span class="n">subt</span> <span class="ow">in</span> <span class="n">subtypes</span><span class="p">:</span>
                                 <span class="k">pass</span>
                             <span class="k">else</span><span class="p">:</span>
-                                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Wrong subtype </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">subt</span><span class="p">,</span> <span class="n">subtypes</span><span class="p">)</span>
+                                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Wrong subtype </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">subt</span><span class="p">,</span> <span class="n">subtypes</span><span class="p">)</span>
                                 <span class="n">add_obs</span> <span class="o">=</span> <span class="kc">False</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Wrong obtype </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">obt</span><span class="p">,</span> <span class="n">obtypes</span><span class="p">)</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Wrong obtype </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">obt</span><span class="p">,</span> <span class="n">obtypes</span><span class="p">)</span>
                         <span class="n">add_obs</span> <span class="o">=</span> <span class="kc">False</span>
 
                 <span class="k">if</span> <span class="n">obnumber</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">obn</span> <span class="o">!=</span> <span class="n">obnumber</span><span class="p">:</span>
-                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Wrong obnumber </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">obn</span><span class="p">,</span> <span class="n">obnumber</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Wrong obnumber </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">obn</span><span class="p">,</span> <span class="n">obnumber</span><span class="p">)</span>
                     <span class="n">add_obs</span> <span class="o">=</span> <span class="kc">False</span>
 
                 <span class="c1"># Remove if outside window</span>
@@ -141,7 +141,7 @@
                             <span class="k">pass</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                                <span class="s2">&quot;Outside time window </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                                <span class="s2">"Outside time window </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span>
                                 <span class="n">obtime</span><span class="p">,</span>
                                 <span class="n">an_time</span><span class="p">,</span>
                                 <span class="n">n_dt</span><span class="p">,</span>
@@ -150,12 +150,12 @@
                             <span class="n">add_obs</span> <span class="o">=</span> <span class="kc">False</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                            <span class="s2">&quot;Not checking time window. neg_dt=</span><span class="si">%s</span><span class="s2"> and/or pos_dt=</span><span class="si">%s</span><span class="s2"> None&quot;</span><span class="p">,</span>
+                            <span class="s2">"Not checking time window. neg_dt=</span><span class="si">%s</span><span class="s2"> and/or pos_dt=</span><span class="si">%s</span><span class="s2"> None"</span><span class="p">,</span>
                             <span class="n">neg_dt</span><span class="p">,</span>
                             <span class="n">pos_dt</span><span class="p">,</span>
                         <span class="p">)</span>
                 <span class="n">value</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Obs </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">obn</span><span class="p">,</span> <span class="n">obnumber</span><span class="p">,</span> <span class="n">add_obs</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Obs </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">obn</span><span class="p">,</span> <span class="n">obnumber</span><span class="p">,</span> <span class="n">add_obs</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">add_obs</span><span class="p">:</span>
                     <span class="n">observations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                         <span class="n">Observation</span><span class="p">(</span>
@@ -170,7 +170,7 @@
                         <span class="p">)</span>
                     <span class="p">)</span>
                 <span class="n">lineno</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;nObs </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">observations</span><span class="p">))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"nObs </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">observations</span><span class="p">))</span>
         <span class="n">ObservationSet</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span></div>
 
 
@@ -178,7 +178,7 @@
 <div class="viewcode-block" id="ObservationDataSetFromObsoulFile">
 <a class="viewcode-back" href="../../index.html#pysurfex.obsoul.ObservationDataSetFromObsoulFile">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ObservationDataSetFromObsoulFile</span><span class="p">(</span><span class="n">ObservationDataSetFromObsoul</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Observation set from obsoul file.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Observation set from obsoul file."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -186,13 +186,13 @@
         <span class="n">an_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">neg_dt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">pos_dt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
         <span class="n">obnumber</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">obtypes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">subtypes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">sigmao</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constuct obs set from a obsoul file.</span>
+<span class="w">        </span><span class="sd">"""Constuct obs set from a obsoul file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            filename (str): File name</span>
@@ -202,13 +202,13 @@
 <span class="sd">            obtypes  (list, optional): Observation types. Defaults to None.</span>
 <span class="sd">            subtypes  (list, optional): Observation sub types. Defaults to None.</span>
 <span class="sd">            obnumber (int, optional): Observation number. Defaults to None.</span>
-<span class="sd">            label (str, optional): Label for observation set. Defaults to &quot;&quot;.</span>
+<span class="sd">            label (str, optional): Label for observation set. Defaults to "".</span>
 <span class="sd">            sigmao (float, optional): Observation error relative to normal background</span>
 <span class="sd">                                      error. Defaults to None.</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Opening OBSOUL file </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fhandler</span><span class="p">:</span>
+<span class="sd">        """</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Opening OBSOUL file </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"r"</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf8"</span><span class="p">)</span> <span class="k">as</span> <span class="n">fhandler</span><span class="p">:</span>
             <span class="n">content</span> <span class="o">=</span> <span class="n">fhandler</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
             <span class="n">ObservationDataSetFromObsoul</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
                 <span class="bp">self</span><span class="p">,</span>
@@ -258,7 +258,7 @@
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2020, Trygve Aspelien.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
     </div>
   </body>
 </html>
